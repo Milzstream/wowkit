@@ -1,0 +1,29 @@
+name: Feature request
+description: A new idea, a spell for a list, or support for a UI addon.
+labels: ["enhancement"]
+body:
+  - type: input
+    id: addon
+    attributes:
+      label: Addon
+      placeholder: Glowing Bars
+    validations:
+      required: true
+  - type: textarea
+    id: request
+    attributes:
+      label: What would you like?
+      placeholder: Tell me what should glow, and when.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: The situation in the game where you miss it.
+  - type: input
+    id: spell
+    attributes:
+      label: Spell, item or UI addon
+      description: The name and ID of the spell or item, or the name of the UI addon, if it is about one.
+      placeholder: Recklessness, 1719

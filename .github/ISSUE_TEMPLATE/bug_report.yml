@@ -1,0 +1,58 @@
+name: Bug report
+description: Something glows when it should not, does not glow, or shows an error.
+labels: ["bug"]
+body:
+  - type: input
+    id: addon
+    attributes:
+      label: Addon and version
+      description: The name and the version, from the AddOns list in the game.
+      placeholder: Glowing Bars 1.8.0
+    validations:
+      required: true
+  - type: input
+    id: character
+    attributes:
+      label: Class, level and talent tree
+      placeholder: Paladin, level 40, Protection
+    validations:
+      required: true
+  - type: input
+    id: spell
+    attributes:
+      label: Spell or item
+      description: The name, and its ID if you know it (turn on "Show spell IDs in tooltips" on the Settings page).
+      placeholder: Blessing of Kings, 20217
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect?
+      placeholder: Blessing of Kings keeps glowing, although it is on me.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can it be repeated?
+      description: Were you in combat, in a party or a raid, in a town?
+      placeholder: |
+        1. Join a party
+        2. Cast the blessing on a party member
+        3. The button keeps glowing
+  - type: input
+    id: bars
+    attributes:
+      label: Action bars
+      description: Blizzard's bars, gamepad bars, or a UI addon, with its version.
+      placeholder: Blizzard's bars
+  - type: textarea
+    id: lua-error
+    attributes:
+      label: Lua error
+      description: If there is an error, paste it here. To see errors in the game, type `/console scriptErrors 1`.
+      render: text
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: A picture of the action bar or the `/gb` table helps a lot. You can drag it here.
