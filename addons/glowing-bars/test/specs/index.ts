@@ -27,5 +27,7 @@ import "./id-tooltip.spec";
 import "./sound-repeat.spec";
 import "./repeat-kinds.spec";
 import "./low-stock.spec";
+import "./low-stock-table.spec";
+import "./food-buff-names.spec";
 import "./buff-groups.spec";
 import "./warlock.spec";
