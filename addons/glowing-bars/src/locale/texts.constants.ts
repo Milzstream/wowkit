@@ -77,7 +77,7 @@ export const TEXTS = {
     TABLE_TITLE: "Glowing Bars",
     HDR_TABLE_DEFAULTS: "Defaults",
     HDR_TABLE_SPELLS: "Spells (override the defaults)",
-    COL_SPELL: "Spell",
+    COL_SPELL: "Spell / Item",
     COL_KIND: "Type",
     COL_ID: "Spell / Item ID",
     COL_ON: "Enabled",
