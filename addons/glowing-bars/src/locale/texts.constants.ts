@@ -29,10 +29,17 @@ export const TEXTS = {
     HDR_BUFFS: "Buffs",
     OPT_PARTY_BUFFS: "Party members missing your buffs",
     TIP_PARTY_BUFFS:
-        "Out of combat, lists party members in range who are missing one of your buffs, and the buff's button glows. If two or more are missing it and you have the reagent, the group version (Prayer of Fortitude, Gift of the Wild...) is suggested. In a raid your blessings only on the classes you gave one there.",
-    OPT_GREATER_FOR_ONE: "Greater Blessing for a single member",
-    TIP_GREATER_FOR_ONE:
-        "In a party, suggests the Greater Blessing also when only one member of a class misses it: it lasts 15 minutes, but costs a Symbol of Kings. In a raid it always does.",
+        "Out of combat, in a party, lists members in range who are missing one of your buffs, and the buff's button glows. Off: only your own buffs are watched.",
+    OPT_RAID_BUFFS: "Raid members missing your buffs",
+    TIP_RAID_BUFFS:
+        "Out of combat, in a raid, lists members in range who are missing one of your buffs, and the buff's button glows. Your blessings only on the classes you gave one there. Off: only your own buffs are watched.",
+    OPT_GROUP_MIN: "Group version from",
+    TIP_PARTY_GROUP_MIN:
+        "In a party, how many missing a buff (you counted, but never you alone) make the group version glow instead: Prayer of Fortitude, Gift of the Wild, Arcane Brilliance, or a Greater Blessing (counting one class). It needs its reagent in your bags.",
+    TIP_RAID_GROUP_MIN:
+        "In a raid, how many missing a buff (you counted, but never you alone) make the group version glow instead: Prayer of Fortitude, Gift of the Wild, Arcane Brilliance, or a Greater Blessing (counting one class). It needs its reagent in your bags.",
+    OPT_MEMBER_MISSING: "%d member missing",
+    OPT_MEMBERS_MISSING: "%d members missing",
 
     HDR_WEAPON: "Weapon buff",
     OPT_WEAPON_PICK: "Weapon buff to keep up",

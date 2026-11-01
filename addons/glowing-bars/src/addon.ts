@@ -172,7 +172,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     );
     const reagents = addon.register(new ReagentsService(game.bags, game.spells, settings));
     const party = addon.register(
-        new PartyBuffsService(buffs.state, game.spells, game.clock, game.party, game.player, buffs.classBuffs, reagents, settings),
+        new PartyBuffsService(buffs.state, game.spells, game.clock, game.party, game.player, buffs.classBuffs, reagents, settings, buff),
     );
     const weaponChoice = addon.register(new WeaponChoiceService(game.player, game.spells, settings, game.actionBars, game.bags));
     const weaponMemory = addon.register(new WeaponMemoryService());
@@ -276,7 +276,7 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const widgets = addon.register(
         new WidgetsService(messages, { copy: locale.getText("INFO_COPY"), copied: locale.getText("INFO_COPIED") }),
     );
-    const reminderControls = addon.register(new ReminderControlsService(controls, locale));
+    const reminderControls = addon.register(new ReminderControlsService(controls, locale, settings));
     addon.register(new IdTooltipService(game.tooltips, settings, locale));
     const weaponSection = addon.register(
         new WeaponSection(locale, game.spells, reminders.weaponChoice, settings, controls, reminderControls),

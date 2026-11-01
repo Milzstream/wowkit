@@ -17,10 +17,13 @@ Your Rotation.
 - **Not on your bars**: a message names missing buffs you have learned but put on no action bar.
 - **Party buffs** (out of combat): a group member in range who misses one of your buffs (Fortitude, Mark of the Wild,
   Arcane Intellect for mana users, your blessing) makes its button glow; the message names them (their number past five).
-  - **Group versions**: with two or more missing and the reagent in your bags, Prayer of Fortitude, Gift of the Wild or
-    Arcane Brilliance glows instead.
+  - **Party and raid**: each has its own switch. Off, only your own buffs are watched (a buff someone else cast on you
+    counts).
+  - **Group versions**: when enough miss the buff (you counted, but never you alone) and the reagent is in your bags, Prayer of Fortitude,
+    Gift of the Wild or Arcane Brilliance glows instead. How many is yours to set, 1 to 5, for a party (2 by default)
+    and for a raid (1 by default).
   - **Paladins**: each class gets the blessing you last gave it; before that, Wisdom for casters and healers, Kings or
-    Might for the rest. A Greater Blessing when two of a class miss it (or one, if you turn that on). In a raid only the
+    Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the
     classes you buffed there.
 - **Reagents**: the group buff on your action bar (Prayer of Fortitude, Gift of the Wild...) glows, quietly, while its
   reagent runs low (5 or fewer by default, set on the Settings page), also in a town; on arriving in a town or an inn a message on the screen names the reagents.

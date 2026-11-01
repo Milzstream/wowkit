@@ -29,8 +29,8 @@ export class ControlsService<T extends object> {
         isOnByDefault: boolean,
         get: () => boolean,
         set: (isChecked: boolean) => void,
-    ): void {
-        Settings.CreateCheckbox(
+    ): SettingsInitializer {
+        return Settings.CreateCheckbox(
             category,
             this.registerSetting(category, variable, Settings.VarType.Boolean, label, isOnByDefault, get, set),
             tooltip,
@@ -38,8 +38,8 @@ export class ControlsService<T extends object> {
     }
 
     /** A switch stored in the settings under `key`; its default is the default of the setting. */
-    addSwitchCheckbox(category: SettingsCategory, key: SwitchKey<T>, label: string, tooltip: string): void {
-        this.addCheckbox(
+    addSwitchCheckbox(category: SettingsCategory, key: SwitchKey<T>, label: string, tooltip: string): SettingsInitializer {
+        return this.addCheckbox(
             category,
             String(key),
             label,
@@ -61,7 +61,7 @@ export class ControlsService<T extends object> {
         set: (value: string) => void,
         items: () => [value: string, label: string][],
         isStatic = false,
-    ): void {
+    ): SettingsInitializer {
         const setting = this.registerSetting(category, variable, Settings.VarType.String, label, defaultValue, get, set);
         let cached: unknown;
         const buildOptions = () => {
@@ -72,7 +72,7 @@ export class ControlsService<T extends object> {
             if (isStatic) cached = data;
             return data;
         };
-        Settings.CreateDropdown(category, setting, buildOptions, tooltip);
+        return Settings.CreateDropdown(category, setting, buildOptions, tooltip);
     }
 
     /** The sound of a reminder; choosing one plays it once as a preview. */

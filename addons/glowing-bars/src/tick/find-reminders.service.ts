@@ -79,17 +79,16 @@ export class FindRemindersService {
         return [...listed, ...this.customReminders.findReagentSpells()];
     }
 
-    /** The player's own missing buffs, then the party buffs that can be cast from the bars. */
+    /**
+     * The player's own missing buffs, then the party buffs that can be cast from the bars. A group version that glows and
+     * buffs the player too takes the place of the player's own reminder of that buff.
+     */
     private findBuffsToCast(ownBuffs: number[], partySuggestions: PartySuggestion[]): number[] {
-        const buffs = [...ownBuffs];
+        let buffs = [...ownBuffs];
         for (const suggestion of partySuggestions) {
-            if (
-                !buffs.includes(suggestion.spellId) &&
-                this.actionBars.isOnBars(suggestion.spellId) &&
-                this.spells.isCastable(suggestion.spellId) !== false
-            ) {
-                buffs.push(suggestion.spellId);
-            }
+            if (!this.actionBars.isOnBars(suggestion.spellId) || this.spells.isCastable(suggestion.spellId) === false) continue;
+            if (suggestion.isForPlayer) buffs = buffs.filter((id) => id !== suggestion.buffId);
+            if (!buffs.includes(suggestion.spellId)) buffs.push(suggestion.spellId);
         }
         return buffs;
     }

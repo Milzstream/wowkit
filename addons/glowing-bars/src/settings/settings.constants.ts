@@ -13,7 +13,9 @@ export function createDefaultSettings(): AddonSettings {
         showBuff: true,
         showWeapon: true,
         showPartyBuffs: true,
-        showGreaterForOne: false,
+        showRaidBuffs: true,
+        partyGroupMin: 2,
+        raidGroupMin: 1,
         showRanks: true,
         showReagents: true,
         showCooldowns: true,
@@ -70,6 +72,9 @@ export const COOLDOWN_GLOW_CHOICES = [2, 3, 5, 10, 0];
 /** The choices of how few of a reagent in the bags is running low. */
 export const REAGENT_LOW_CHOICES = [5, 10, 20, 40];
 
+/** The choices of from how many missing a buff its group version is asked for. */
+export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
+
 /** The kinds a spell can be added as, in the order the add button goes through them. */
 export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reagent", "seal", "tracking"];
 
@@ -106,6 +111,12 @@ export function repairSettings(values: AddonSettings): void {
     if (!COOLDOWN_GLOW_CHOICES.includes(values.cooldownGlowSeconds))
         values.cooldownGlowSeconds = createDefaultSettings().cooldownGlowSeconds;
     if (!REAGENT_LOW_CHOICES.includes(values.reagentLow)) values.reagentLow = defaults.reagentLow;
+    // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one
+    const old = values as { showGreaterForOne?: boolean };
+    if (old.showGreaterForOne === true) values.partyGroupMin = 1;
+    old.showGreaterForOne = undefined;
+    if (!GROUP_MIN_CHOICES.includes(values.partyGroupMin)) values.partyGroupMin = defaults.partyGroupMin;
+    if (!GROUP_MIN_CHOICES.includes(values.raidGroupMin)) values.raidGroupMin = defaults.raidGroupMin;
     for (const kind of KIND_ORDER) values.styles[kind] = repairStyle(values.styles[kind]);
     for (const [name, style] of pairs(values.spellStyles)) values.spellStyles[name as string] = repairStyle(style);
 }

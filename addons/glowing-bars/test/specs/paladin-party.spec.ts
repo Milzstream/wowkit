@@ -260,11 +260,11 @@ describe("a paladin's party blessings, by class and by group", () => {
         expect(createPaladinWorld("HUNTER").notice()).toContain("Blessing of Might missing on: Friend");
     });
 
-    it("asks the single blessing for one member of a class, unless the player wants the Greater one for one too", () => {
+    it("asks the single blessing for one member of a class, unless the player wants the Greater one from one member", () => {
         const world = createPaladinWorld("PRIEST");
         expect(world.notice()).toContain("Blessing of Wisdom missing on: Friend");
         expect(world.notice()).not.toContain("Greater");
-        world.setOption("showGreaterForOne", true);
+        world.setOption("partyGroupMin", "1");
         world.fire("GROUP_ROSTER_UPDATE");
         world.advance(2);
         expect(world.notice()).toContain("Greater Blessing of Wisdom missing on: Friend");

@@ -114,7 +114,10 @@ interface SettingsLayout {
     AddInitializer(initializer: SettingsInitializer): void;
 }
 
-interface SettingsInitializer {}
+interface SettingsInitializer {
+    /** Indents the control under `parent`; `isEnabled` greys it out while it says false (asked as the parent changes). */
+    SetParentInitializer(parent: SettingsInitializer, isEnabled?: (this: void) => boolean): void;
+}
 
 interface SettingsSetting {
     GetValue(): unknown;

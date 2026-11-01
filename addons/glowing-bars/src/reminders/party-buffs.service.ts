@@ -1,23 +1,24 @@
-// Party members missing one of the player's buffs. Out of combat only (in combat the client hides
-// other units' auras), members online, alive and in range. In a raid every member: a group version (Prayer of
-// Fortitude) covers the raid around the caster in Forever; but a blessing only on the classes the player gave one there
-// (the others are another paladin's). When two or
-// more miss a buff (of one class, for Greater Blessings; in a raid one is enough for those) and the reagent is in the
-// bags, the group version is suggested. Of a group the one the player wants is asked for: the one cast last, else the main talent
-// tree's, else the first. A blessing goes by the member's class: the one the player last gave that class (seen on its
-// members), else Wisdom for a class with mana and Kings, else Might, for the others.
+// Party members missing one of the player's buffs, in a party and in a raid (each has its switch). Out of combat only (in
+// combat the client hides other units' auras), members online, alive and in range. In a raid every member: a group version
+// (Prayer of Fortitude) covers the raid around the caster in Forever; but a blessing only on the classes the player gave
+// one there (the others are another paladin's). When enough miss a buff (the player's setting, for a party and for a raid;
+// of one class, for Greater Blessings) and the reagent is in the bags, the group version is suggested. The player counts
+// too, as the buff reminder sees it: the group version buffs the player as well; but never for the player alone, for whom
+// the single buff does. Of a group the one the player wants is
+// asked for: the one cast last, else the main talent tree's, else the first. A blessing goes by the member's class: the one
+// the player last gave that class (seen on its members), else Wisdom for a class with mana and Kings, else Might, for the
+// others; the player's own is the one the buff reminder asks for.
 
 import type { BuffStateService } from "../character/buff-state.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { ClockService, PartyService, PlayerService, SpellsService } from "@wowkit/wow";
+import type { BuffReminderService } from "./buff-reminder.service";
 import type { ClassBuff } from "./class-buff.interface";
 import { PARTY_BLESSINGS, WEAPON_MANA_CLASSES } from "./class-buffs.constants";
 import type { ClassBuffsService } from "./class-buffs.service";
 import type { PartySuggestion } from "./reminders.interface";
 
-/** The group version is worth it from this many members missing the buff. */
-const GROUP_MIN = 2;
 /** Party auras are read at most this often. */
 const REFRESH_SECONDS = 1;
 
@@ -25,6 +26,8 @@ interface Member {
     unit: UnitToken;
     name: string;
     classToken: string;
+    /** The player: counted for the group version, never named (the buff reminder asks for the player's own buffs). */
+    isPlayer?: boolean;
 }
 
 export class PartyBuffsService {
@@ -42,22 +45,28 @@ export class PartyBuffsService {
         private readonly classBuffs: ClassBuffsService,
         private readonly reagents: ReagentsService,
         private readonly settings: AddonSettingsService,
+        private readonly buffReminder: BuffReminderService,
     ) {}
 
-    /** What to cast on whom; empty in combat, or when the feature is off. */
+    /** What to cast on whom; empty in combat, or when the feature is off (for a party, or for a raid). */
     findPartyBuffSuggestions(): PartySuggestion[] {
-        if (!this.settings.get("showPartyBuffs") || this.player.isInCombat()) return [];
+        const isInRaid = this.party.isInRaid();
+        // Before the switches: the blessings of a raid are forgotten on leaving it, with the switch of the new place off too
+        if (this.wasInRaid !== undefined && this.wasInRaid !== isInRaid) {
+            this.forgetGivenBlessings();
+            this.cachedAt = -10;
+        }
+        this.wasInRaid = isInRaid;
+        if (!this.settings.get(isInRaid ? "showRaidBuffs" : "showPartyBuffs") || this.player.isInCombat()) return [];
         const now = this.clock.getCurrentTime();
         if (now - this.cachedAt < REFRESH_SECONDS) return this.cached;
         this.cachedAt = now;
-        const isInRaid = this.party.isInRaid();
-        if (this.wasInRaid !== undefined && this.wasInRaid !== isInRaid) this.forgetGivenBlessings();
-        this.wasInRaid = isInRaid;
-        const members: Member[] = (isInRaid ? this.party.getRaidUnits() : this.party.getPartyUnits())
+        const others: Member[] = (isInRaid ? this.party.getRaidUnits() : this.party.getPartyUnits())
             .filter((unit) => this.party.isReachable(unit))
             .map((unit) => ({ unit, ...this.party.getUnitIdentity(unit) }));
+        const members = [...others, { unit: "player" as UnitToken, ...this.party.getUnitIdentity("player"), isPlayer: true }];
         this.cached =
-            members.length === 0 ? [] : this.listPartyGroups().flatMap((group) => this.buildGroupSuggestions(group, members, isInRaid));
+            others.length === 0 ? [] : this.listPartyGroups().flatMap((group) => this.buildGroupSuggestions(group, members, isInRaid));
         return this.cached;
     }
 
@@ -86,8 +95,12 @@ export class PartyBuffsService {
 
     /** The suggestions of one category: the buff the player wants for all, or a blessing for each member's class. */
     private buildGroupSuggestions(group: ClassBuff[], members: Member[], isInRaid: boolean): PartySuggestion[] {
-        if (!group[0]!.party!.isPerClass) return this.buildSuggestionsFor(this.classBuffs.pickGroupBuff(group), members);
-        this.noteGivenBlessings(group, members);
+        if (!group[0]!.party!.isPerClass) return this.buildSuggestionsFor(this.classBuffs.pickGroupBuff(group), members, isInRaid);
+        // A blessing of the player's on the player says nothing of what the player gives the paladins
+        this.noteGivenBlessings(
+            group,
+            members.filter((member) => member.isPlayer !== true),
+        );
         const buffs: ClassBuff[] = [];
         const membersOf = new LuaMap<ClassBuff, Member[]>();
         for (const member of members) {
@@ -141,6 +154,7 @@ export class PartyBuffsService {
      * a raid only the one last given: the blessings are shared out there, a class the player gave none is another's.
      */
     private pickMemberBlessing(group: ClassBuff[], member: Member, isInRaid: boolean): ClassBuff | undefined {
+        if (member.isPlayer === true) return this.classBuffs.pickGroupBuff(group);
         const last = this.settings.get("lastBuffs")[this.getClassKey(group, member.classToken)];
         const shouldGetWisdom = this.party.doesUseMana(member.unit) && !WEAPON_MANA_CLASSES.includes(member.classToken);
         const order = isInRaid ? [] : shouldGetWisdom ? PARTY_BLESSINGS.mana : PARTY_BLESSINGS.other;
@@ -161,43 +175,64 @@ export class PartyBuffsService {
         return undefined;
     }
 
-    private buildSuggestionsFor(classBuff: ClassBuff, members: Member[], isInRaid = false): PartySuggestion[] {
-        const party = classBuff.party!;
-        const missing = members.filter(
-            (member) =>
-                (!party.isManaOnly || this.party.doesUseMana(member.unit)) &&
-                this.party.isInSpellRange(classBuff.id, member.unit) &&
-                this.auras.getUnitBuffState(member.unit, classBuff.id, party.isOwnOnly === true) === "missing",
-        );
+    private buildSuggestionsFor(classBuff: ClassBuff, members: Member[], isInRaid: boolean): PartySuggestion[] {
+        const missing = members.filter((member) => this.isMissing(classBuff, member));
         if (missing.length === 0) return [];
         const groupSpell = this.findUsableGroupSpell(classBuff);
-        if (groupSpell === undefined) return [{ spellId: classBuff.id, names: missing.map((m) => m.name) }];
-        if (!party.isPerClass) {
-            return [{ spellId: missing.length >= GROUP_MIN ? groupSpell : classBuff.id, names: missing.map((m) => m.name) }];
+        if (groupSpell === undefined) return this.buildSuggestion(classBuff, classBuff.id, missing);
+        const groupMin = this.settings.get(isInRaid ? "raidGroupMin" : "partyGroupMin");
+        if (!classBuff.party!.isPerClass) {
+            return this.buildSuggestion(classBuff, this.isGroupWorth(missing, groupMin) ? groupSpell : classBuff.id, missing);
         }
-        return this.buildGreaterSuggestions(classBuff.id, groupSpell, missing, isInRaid);
+        return this.buildGreaterSuggestions(classBuff, groupSpell, missing, groupMin);
+    }
+
+    /** Enough miss the buff for its group version, and not the player alone: the single buff does for that. */
+    private isGroupWorth(missing: Member[], groupMin: number): boolean {
+        return missing.length >= groupMin && missing.some((member) => member.isPlayer !== true);
+    }
+
+    /** Does the member miss the buff? The player as the buff reminder sees it: anyone's buff of its group counts. */
+    private isMissing(classBuff: ClassBuff, member: Member): boolean {
+        if (member.isPlayer === true) return this.buffReminder.checkBuff(classBuff).isWanted;
+        const party = classBuff.party!;
+        return (
+            (!party.isManaOnly || this.party.doesUseMana(member.unit)) &&
+            this.party.isInSpellRange(classBuff.id, member.unit) &&
+            this.auras.getUnitBuffState(member.unit, classBuff.id, party.isOwnOnly === true) === "missing"
+        );
     }
 
     /**
-     * Greater Blessings cover one class: the group version for classes with enough members missing, the single blessing
-     * for the rest. One is enough in a raid (it lasts longer, and covers the class's members to come), or where the player
-     * wants it.
+     * The suggestion of a spell for the members who miss the buff, naming all but the player; none for the single buff on
+     * the player alone (the buff reminder asks for it). A group version that buffs the player says so.
      */
-    private buildGreaterSuggestions(spellId: number, groupSpell: number, missing: Member[], isInRaid: boolean): PartySuggestion[] {
-        const greaterMin = isInRaid || this.settings.get("showGreaterForOne") ? 1 : GROUP_MIN;
-        const byClass = new LuaMap<string, string[]>();
+    private buildSuggestion(classBuff: ClassBuff, spellId: number, missing: Member[]): PartySuggestion[] {
+        const isGroup = spellId !== classBuff.id;
+        const names = missing.filter((member) => member.isPlayer !== true).map((member) => member.name);
+        if (!isGroup && names.length === 0) return [];
+        const isForPlayer = isGroup && missing.some((member) => member.isPlayer === true);
+        return [{ spellId, names, buffId: this.spells.resolve(classBuff.id) ?? classBuff.id, isForPlayer }];
+    }
+
+    /**
+     * Greater Blessings cover one class: the group version for classes with enough members missing (the player's
+     * setting), the single blessing for the rest.
+     */
+    private buildGreaterSuggestions(classBuff: ClassBuff, groupSpell: number, missing: Member[], groupMin: number): PartySuggestion[] {
+        const byClass = new LuaMap<string, Member[]>();
         for (const member of missing) {
-            const names = byClass.get(member.classToken) ?? [];
-            names.push(member.name);
-            byClass.set(member.classToken, names);
+            const list = byClass.get(member.classToken) ?? [];
+            list.push(member);
+            byClass.set(member.classToken, list);
         }
         const out: PartySuggestion[] = [];
-        const singles: string[] = [];
-        for (const [, names] of byClass) {
-            if (names.length >= greaterMin) out.push({ spellId: groupSpell, names });
-            else singles.push(...names);
+        const singles: Member[] = [];
+        for (const [, list] of byClass) {
+            if (this.isGroupWorth(list, groupMin)) out.push(...this.buildSuggestion(classBuff, groupSpell, list));
+            else singles.push(...list);
         }
-        if (singles.length > 0) out.push({ spellId, names: singles });
+        out.push(...this.buildSuggestion(classBuff, classBuff.id, singles));
         return out;
     }
 }

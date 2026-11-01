@@ -63,10 +63,14 @@ export class RemindersPage implements OptionsPage {
         // The party members: a part of the buff reminder that is not one buff
         if (this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party !== undefined)) {
             this.reminderControls.addHeader(layout, "HDR_BUFFS");
-            this.reminderControls.addSwitch(category, "showPartyBuffs", "OPT_PARTY_BUFFS", "TIP_PARTY_BUFFS");
-            if (this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party?.isPerClass === true)) {
-                this.reminderControls.addSwitch(category, "showGreaterForOne", "OPT_GREATER_FOR_ONE", "TIP_GREATER_FOR_ONE");
-            }
+            // Each switch with the number of members its group versions wait for, under it
+            const hasGroupVersion = this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party?.groupIds !== undefined);
+            const partySwitch = this.reminderControls.addSwitch(category, "showPartyBuffs", "OPT_PARTY_BUFFS", "TIP_PARTY_BUFFS");
+            if (hasGroupVersion)
+                this.reminderControls.addGroupMin(category, "partyGroupMin", "TIP_PARTY_GROUP_MIN", partySwitch, "showPartyBuffs");
+            const raidSwitch = this.reminderControls.addSwitch(category, "showRaidBuffs", "OPT_RAID_BUFFS", "TIP_RAID_BUFFS");
+            if (hasGroupVersion)
+                this.reminderControls.addGroupMin(category, "raidGroupMin", "TIP_RAID_GROUP_MIN", raidSwitch, "showRaidBuffs");
         }
 
         this.weaponSection.addWeaponSection(category, layout);

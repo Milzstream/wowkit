@@ -16,8 +16,9 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 
 *   **Missing buffs** – Fortitude, Mark of the Wild, Arcane Intellect, aspects, paladin auras, armors… Of a group (one aspect, one aura) any one counts. In combat, when the game hides your buffs, the ones you saw or cast are remembered.
 *   **Party buffs** – out of combat, a group member in range who misses your buff makes its button glow.
-    *   **Group versions**: with two or more missing and the reagent in your bags, Prayer of Fortitude, Gift of the Wild or Arcane Brilliance glows instead.
-    *   **Paladins**: each class gets the blessing you last gave it; before that, Wisdom for casters and healers, Kings or Might for the rest. A Greater Blessing when two of a class miss it (or one, if you turn that on). In a raid only the classes you buffed there.
+    *   **Party and raid**: each has its own switch.
+    *   **Group versions**: when enough miss the buff (you counted, but never you alone) and the reagent is in your bags, Prayer of Fortitude, Gift of the Wild or Arcane Brilliance glows instead. You set how many, 1 to 5: 2 by default in a party, 1 in a raid.
+    *   **Paladins**: each class gets the blessing you last gave it; before that, Wisdom for casters and healers, Kings or Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the classes you buffed there.
 *   **Weapon buffs** – shaman imbues, rogue poisons (per hand) and warlock stones, when missing or about to run out.
 *   **Paladin seals** – in a fight with no seal up, the seal you used last glows gold, already a moment before it runs out. Before your first seal, the one of your talent tree.
 *   **Gathering** – a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow. Any tracking counts, so a hunter tracking beasts is left alone.
@@ -49,7 +50,7 @@ On the Settings page (_Options > AddOns > Glowing Bars_):
 *   **Action bars that glow**: turn any of the eight bars off (your UI addon's bars too)
 *   **Faded until they glow**: any of the eight bars stays faint until one of their buttons glows, so a bar in the middle of your screen shows only what's due
 *   **Spell IDs in tooltips** (off by default): every spell's tooltip shows its ID, and an elixir's, potion's or food's the spell it casts
-*   The weapon buff to keep up, the party buff message, when cooldowns glow, and how few reagents are low
+*   The weapon buff to keep up, the party and raid buffs with their group version counts, when cooldowns glow, and how few reagents are low
 
 All settings are kept per character.
 

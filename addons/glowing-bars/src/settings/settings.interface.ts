@@ -43,8 +43,14 @@ export interface AddonSettings {
     showWeapon: boolean;
     /** Party members missing the player's buffs. */
     showPartyBuffs: boolean;
-    /** In a party, a Greater Blessing for one member of a class too (it lasts longer); in a raid it always is. */
-    showGreaterForOne: boolean;
+    /** Raid members missing the player's buffs. */
+    showRaidBuffs: boolean;
+    /**
+     * The group version (Prayer of Fortitude, a Greater Blessing) is asked for from this many missing the buff, the player
+     * counted (1 to 5): in a party, and in a raid. A Greater Blessing counts the members of its class.
+     */
+    partyGroupMin: number;
+    raidGroupMin: number;
     /** Spells on the bars at a lower rank than the one the player knows. */
     showRanks: boolean;
     /** The reagents of the group buffs running low, on arriving in a town. */

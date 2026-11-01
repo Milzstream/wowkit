@@ -1,6 +1,7 @@
 // Every spec file, in the order they run. A new *.spec.ts is added here (pnpm test checks it is).
 import "./priest.spec";
 import "./party.spec";
+import "./party-settings.spec";
 import "./paladin.spec";
 import "./paladin-party.spec";
 import "./mage.spec";
