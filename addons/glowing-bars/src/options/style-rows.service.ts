@@ -67,11 +67,16 @@ export class StyleRowsService {
         }));
     }
 
+    /** Is it a food or drink? Many of their spells go by one name, so only the ID tells them apart. */
+    isSharingName(spellId: number): boolean {
+        return this.fedBuffs.isFedSpell(spellId);
+    }
+
     /** How a row shows a spell. A food or drink the player added goes by its item: the spell's name is the same for all of them. */
     private readLook(spellId: number, name: string, isCustom: boolean): { key: string; label: string; iconId: number | undefined } {
         const item = isCustom ? this.fedBuffs.findItemLook(spellId) : undefined;
         return {
-            key: item?.name ?? name,
+            key: isCustom && this.isSharingName(spellId) ? string.format("%d", spellId) : name,
             label: item?.name ?? this.spells.getSpellLabel(spellId) ?? name,
             iconId: item?.iconId ?? this.spells.getSpellInfo(spellId)?.iconID,
         };

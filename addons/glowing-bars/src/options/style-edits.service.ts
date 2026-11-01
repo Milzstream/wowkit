@@ -150,7 +150,7 @@ export class StyleEditsService {
             return undefined;
         }
         const name = this.styles.getSpellKey(spellId);
-        if (this.isListedElsewhere(name)) {
+        if (this.isListedElsewhere(spellId)) {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return undefined;
         }
@@ -172,23 +172,25 @@ export class StyleEditsService {
     /**
      * Is a spell of this name in the table already, on another row than `except`? A spell is listed once, so a second one
      * would take the place of the first. Every ranked spell has a row of its own (old ranks are found for all): the rank rows
-     * do not count.
+     * do not count. Foods and drinks of one name are different ones: only their ID counts.
      */
-    private isListedElsewhere(name: string, except?: StyleRow): boolean {
+    private isListedElsewhere(spellId: number, except?: StyleRow): boolean {
+        const name = this.styles.getSpellKey(spellId);
+        const isSharingName = this.rows.isSharingName(spellId);
         return this.rows
             .listSpellRows()
             .some(
                 (row) =>
                     row.kind !== "rank" &&
                     row.spellId !== undefined &&
-                    this.styles.getSpellKey(row.spellId) === name &&
+                    (isSharingName ? row.spellId === spellId : this.styles.getSpellKey(row.spellId) === name) &&
                     !(except !== undefined && row.kind === except.kind && row.listId === except.listId && row.spellId === except.spellId),
             );
     }
 
     private changeId(row: StyleRow, spellId: number): void {
         const name = this.customCues.isKnownSpell(spellId) ? this.styles.getSpellKey(spellId) : undefined;
-        if (name !== undefined && this.isListedElsewhere(name, row)) {
+        if (name !== undefined && this.isListedElsewhere(spellId, row)) {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return;
         }
