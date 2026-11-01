@@ -8,6 +8,7 @@
 import { type EventBus, type OnFirstLogin, trimText } from "@wowkit/core";
 import type { ButtonRegistryService, ButtonShape } from "./button-registry.service";
 import type { ClockService } from "./clock.service";
+import { findButtonItem, getItemButtonKey } from "./utils/item-button.utils";
 import { attempt, attemptMulti } from "./utils/protected-call.utils";
 import { getReadableId, isReadable } from "./utils/secret-value.utils";
 import type { SpellsService } from "./spells.service";
@@ -255,7 +256,9 @@ export class ActionBarsService implements OnFirstLogin {
             this.addMacroSpells(macro, button);
         }
         if (slot !== undefined) this.slotByButton.set(button, slot);
-        if (slot !== undefined && this.hasAction(slot)) this.addIcons(button, slot);
+        const itemId = findButtonItem(this, button);
+        if (itemId !== undefined) this.push(this.buttonsBySpell, getItemButtonKey(itemId), button);
+        if (slot !== undefined && attempt(C_ActionBar.HasAction, slot) === true) this.addIcons(button, slot);
         if (kind === "spell" && id !== undefined) {
             this.addSpell(getReadableId(this.spells.getSpellInfo(getReadableId(id))?.spellID) ?? getReadableId(id), button);
         }
@@ -352,10 +355,6 @@ export class ActionBarsService implements OnFirstLogin {
         );
     }
 
-    private hasAction(slot: number): boolean {
-        return attempt(C_ActionBar.HasAction, slot) === true;
-    }
-
     /** The spell an item casts (a poison, a warlock stone): that is what the reminders name. */
     private findItemSpell(actionId: unknown): number | undefined {
         const itemId = getReadableId(actionId);
@@ -383,7 +382,7 @@ export class ActionBarsService implements OnFirstLogin {
                 attempt(() => button.GetAttribute(attrType)),
             );
         if (attrType !== undefined && attrType !== "action") return $multi(attrType, undefined);
-        if (slot === undefined || !this.hasAction(slot)) return $multi(attrType, undefined);
+        if (slot === undefined || !attempt(C_ActionBar.HasAction, slot) === true) return $multi(attrType, undefined);
         const [kind, id] = this.getSlotAction(slot);
         return $multi(kind ?? attrType, id);
     }

@@ -9,6 +9,8 @@ import { CUE_KINDS } from "../settings/settings.constants";
 import { COLUMN, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.constants";
 import { KIND_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 import type { StyleService } from "../settings/style.service";
+import type { ReagentsService } from "../reagents/reagents.service";
+import type { LowLimitsService } from "../reminders/low-limits.service";
 import type { CueKind } from "../settings/settings.interface";
 
 /** How faded the spell rows of a kind that is switched off are. */
@@ -26,6 +28,8 @@ export class StyleEditsService {
         private readonly switches: SwitchesService,
         private readonly rows: StyleRowsService,
         private readonly styles: StyleService,
+        private readonly limits: LowLimitsService,
+        private readonly reagents: ReagentsService,
     ) {}
 
     /** The Enabled box of a row: it switches the kind (on a kind's row) or the spell; its tooltip says which. */
@@ -39,7 +43,9 @@ export class StyleEditsService {
         box.SetScript("OnEnter", () => {
             const row = getRow();
             if (row === undefined) return;
-            this.showTooltip(box, row.spellId === undefined ? "TIP_ENABLED_KIND" : "TIP_ENABLED_SPELL");
+            const isStock = row.kind === "stock";
+            if (row.spellId === undefined) this.showTooltip(box, isStock ? "TIP_ENABLED_KIND_ITEM" : "TIP_ENABLED_KIND");
+            else this.showTooltip(box, isStock ? "TIP_ENABLED_ITEM" : "TIP_ENABLED_SPELL");
         });
         box.SetScript("OnLeave", () => GameTooltip.Hide());
     }
@@ -50,8 +56,9 @@ export class StyleEditsService {
         button.SetPoint("LEFT", button.GetParent() as Frame, "LEFT", COLUMN.actions.x + 50, 0);
         button.SetText("X");
         button.SetScript("OnClick", () => {
-            const spellId = getRow()?.spellId;
-            if (spellId !== undefined) this.customCues.removeCustom(spellId);
+            const row = getRow();
+            const id = row?.itemId ?? row?.spellId;
+            if (id !== undefined) this.customCues.removeCustom(id, row?.kind as CueKind);
         });
     }
 
@@ -68,7 +75,8 @@ export class StyleEditsService {
         const box = this.createNumberBox(frame, findCenteredX(COLUMN.id, 58), 58, 7);
         const restore = () => {
             const row = getRow();
-            box.SetText(row?.spellId !== undefined ? string.format("%d", row.spellId) : "");
+            const id = row?.itemId ?? row?.spellId;
+            box.SetText(id !== undefined ? string.format("%d", id) : "");
         };
         const apply = () => {
             const row = getRow();
@@ -87,7 +95,8 @@ export class StyleEditsService {
         // What the ID is for, or why an old rank's cannot be changed
         box.SetScript("OnEnter", () => {
             const row = getRow();
-            if (row !== undefined) this.showTooltip(box, this.isIdEditable(row) ? "TIP_ID_EDIT" : "TIP_ID_RANK");
+            if (row !== undefined)
+                this.showTooltip(box, row.itemId !== undefined ? "TIP_ID_ITEM" : this.isIdEditable(row) ? "TIP_ID_EDIT" : "TIP_ID_RANK");
         });
         box.SetScript("OnLeave", () => GameTooltip.Hide());
         return box;
@@ -96,16 +105,48 @@ export class StyleEditsService {
     /** Shows the ID of a spell's row (a kind's row has none); grayed where it cannot be changed (the ranks). */
     fillIdBox(box: EditBox, row: StyleRow): void {
         box.SetShown(row.spellId !== undefined);
-        if (row.spellId !== undefined) box.SetText(string.format("%d", row.spellId));
+        if (row.spellId !== undefined) box.SetText(string.format("%d", row.itemId ?? row.spellId));
         const isEditable = this.isIdEditable(row);
         box.SetEnabled(isEditable);
         const shade = isEditable ? 1 : 0.5;
         box.SetTextColor(shade, shade, shade);
     }
 
+    /** The Low at box of a row of a kind with a limit: a click out of it keeps a number, and an empty box takes back the old one. */
+    createLowAtBox(frame: Frame, getRow: (this: void) => StyleRow | undefined): EditBox {
+        const box = this.createNumberBox(frame, findCenteredX(COLUMN.lowAt, 44), 44, 5);
+        box.SetScript("OnEnterPressed", () => box.ClearFocus());
+        box.SetScript("OnEditFocusLost", () => {
+            const row = getRow();
+            const limit = tonumber(box.GetText());
+            if (row !== undefined && limit !== undefined && this.limits.hasLimit(row.kind)) {
+                this.limits.setLimit(row.kind, this.findLimitEntry(row), limit);
+            }
+            if (row !== undefined) this.fillLowAtBox(box, row);
+        });
+        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_LOW_AT_KIND" : "TIP_LOW_AT"));
+        box.SetScript("OnLeave", () => GameTooltip.Hide());
+        return box;
+    }
+
+    fillLowAtBox(box: EditBox, row: StyleRow): void {
+        const hasLimit = this.limits.hasLimit(row.kind);
+        box.SetShown(hasLimit);
+        if (this.limits.hasLimit(row.kind)) box.SetText(string.format("%d", this.limits.getLimit(row.kind, this.findLimitEntry(row))));
+    }
+
+    /** What the limit of a row is kept under: the item, or the spell the player added; a kind's row has none. */
+    private findLimitEntry(row: StyleRow): string | undefined {
+        if (row.spellId === undefined) return undefined;
+        if (row.itemId !== undefined) return string.format("%d", row.itemId);
+        if (row.isCustom === true) return `spell${string.format("%d", row.spellId)}`;
+        const reagent = this.reagents.findReagentOfSpell(row.spellId);
+        return reagent !== undefined ? string.format("%d", reagent.itemId) : undefined;
+    }
+
     /** A spell of the lists can be given another ID, and an added spell; a rank is the ID on the bar. */
     private isIdEditable(row: StyleRow): boolean {
-        return row.listId !== undefined || row.isCustom === true;
+        return row.itemId === undefined && (row.listId !== undefined || row.isCustom === true);
     }
 
     /** The row at the end of the list: an ID, the kind (a click goes to the next one), and the button that adds it. */
@@ -113,9 +154,9 @@ export class StyleEditsService {
         const frame = CreateFrame("Frame", undefined, content);
         frame.SetSize(TABLE_WIDTH, ROW_HEIGHT);
         const box = this.createNumberBox(frame, COLUMN.name.x, 90, 7);
-        box.SetScript("OnEnter", () => this.showTooltip(box, "TIP_ADD_ID"));
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
         let kindIndex = 0;
+        box.SetScript("OnEnter", () => this.showTooltip(box, CUE_KINDS[kindIndex] === "stock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
+        box.SetScript("OnLeave", () => GameTooltip.Hide());
         const kindButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         kindButton.SetSize(136, 24);
         kindButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
@@ -137,8 +178,13 @@ export class StyleEditsService {
         return frame;
     }
 
-    /** Adds a spell as the kind picked, or says why not (unknown ID, listed already, surely wrong kind). */
+    /** Adds a spell or item as the kind picked, or says why not (unknown ID, listed already, surely wrong kind). */
     private addSpell(spellId: number, kind: CueKind): boolean {
+        if (kind === "stock") {
+            if (this.customCues.addItem(spellId)) return true;
+            this.showProblem(string.format(this.locale.getText("MSG_UNKNOWN_ITEM"), spellId), ERROR_COLOR);
+            return false;
+        }
         if (!this.customCues.isKnownSpell(spellId)) {
             this.showUnknown(spellId);
             return false;

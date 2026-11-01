@@ -3,7 +3,7 @@
 // that dropped the reagent cost never nags about it.
 import { OnEvent, contains } from "@wowkit/core";
 import type { BagsService, SpellsService } from "@wowkit/wow";
-import type { AddonSettingsService } from "../settings/settings.interface";
+import type { LowLimitsService } from "../reminders/low-limits.service";
 import type { Reagent, ReagentStock } from "./reagent.interface";
 import { REAGENTS } from "./reagents.constants";
 
@@ -15,7 +15,7 @@ export class ReagentsService {
     constructor(
         private readonly bags: BagsService,
         private readonly spells: SpellsService,
-        private readonly settings: AddonSettingsService,
+        private readonly limits: LowLimitsService,
     ) {
         for (const reagent of REAGENTS) for (const spellId of reagent.spells) this.reagentBySpell.set(spellId, reagent);
     }
@@ -68,7 +68,7 @@ export class ReagentsService {
                     this.spells.isLearned(spellId) && this.findReagentFor(spellId) !== undefined && !this.isOutranked(spellId, index),
             );
             const count = this.getReagentCount(reagent);
-            if (usedBy !== undefined && this.isLow(count))
+            if (usedBy !== undefined && this.isLow(count, string.format("%d", reagent.itemId)))
                 low.push({ reagent, spellId: usedBy, name: this.getReagentName(reagent), count });
         });
         return low;
@@ -96,9 +96,9 @@ export class ReagentsService {
         return spellIds;
     }
 
-    /** This many of a reagent in the bags is running low: the player's limit or fewer. */
-    isLow(count: number): boolean {
-        return count <= this.settings.get("reagentLow");
+    /** This many of a reagent in the bags is running low: the limit of its row (`entry`), else the kind's, or fewer. */
+    isLow(count: number, entry?: string): boolean {
+        return count <= this.limits.getLimit("reagent", entry);
     }
 
     /** The name of the item (the client's, else the English one). */

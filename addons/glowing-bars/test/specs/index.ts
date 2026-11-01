@@ -26,5 +26,6 @@ import "./gathering.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";
 import "./repeat-kinds.spec";
+import "./low-stock.spec";
 import "./buff-groups.spec";
 import "./warlock.spec";

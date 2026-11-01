@@ -128,16 +128,6 @@ describe("the group buff on the bar of a priest low on candles", () => {
         expect(world.glowsOn(1)).toBe(0);
     });
 
-    it("glows with more candles when the player raised the limit on the Settings page", () => {
-        world.state.bags[HOLY_CANDLE] = 8;
-        world.fire("BAG_UPDATE");
-        world.advance(1);
-        expect(world.glowsOn(1)).toBe(0);
-        world.setOption("reagentLow", "10");
-        world.advance(1);
-        expect(world.glowsOn(1)).toBe(1);
-    });
-
     it("glows in a town too, although the other reminders keep quiet there", () => {
         world.state.isResting = true;
         world.fire("PLAYER_UPDATE_RESTING");

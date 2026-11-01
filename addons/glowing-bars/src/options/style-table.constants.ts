@@ -24,14 +24,15 @@ export const COLUMN = {
     icon: { x: 4, width: 34 },
     name: { x: 38, width: 146 },
     kind: { x: 184, width: 86 },
-    id: { x: 270, width: 70 },
-    color: { x: 340, width: 56 },
-    opacity: { x: 396, width: 60 },
-    message: { x: 456, width: 66 },
-    sound: { x: 522, width: 130 },
-    repeat: { x: 652, width: 62 },
-    enabled: { x: 714, width: 66 },
-    actions: { x: 780, width: 72 },
+    id: { x: 270, width: 90 },
+    color: { x: 360, width: 56 },
+    opacity: { x: 416, width: 60 },
+    message: { x: 476, width: 66 },
+    sound: { x: 542, width: 130 },
+    repeat: { x: 672, width: 62 },
+    lowAt: { x: 734, width: 56 },
+    enabled: { x: 790, width: 66 },
+    actions: { x: 856, width: 72 },
 } satisfies { [name: string]: Column };
 
 /** A row is as wide as its columns. The last one (Reset and X) is there only while a row shows one of its buttons. */

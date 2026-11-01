@@ -60,11 +60,6 @@ export const TEXTS = {
     OPT_SECONDS: "%d seconds",
     OPT_UNTIL_PRESSED: "Until pressed",
 
-    HDR_REAGENTS: "Reagents",
-    OPT_REAGENT_LOW: "Low at",
-    TIP_REAGENT_LOW: "A group buff glows, and the town message names its reagent, once you have this many or fewer in your bags.",
-    OPT_OR_FEWER: "%d or fewer",
-
     HDR_LOOKS: "Reminders",
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
@@ -84,21 +79,26 @@ export const TEXTS = {
     HDR_TABLE_SPELLS: "Spells (override the defaults)",
     COL_SPELL: "Spell",
     COL_KIND: "Type",
-    COL_ID: "Spell ID",
+    COL_ID: "Spell / Item ID",
     COL_ON: "Enabled",
     TIP_ENABLED_KIND: "Turns this reminder type on or off. While it's off, none of its spells glow and their rows are grayed out.",
     TIP_ID_EDIT:
         "The spell ID the addon looks for. Change it if the game uses a different ID for this spell, e.g. after a patch the addon hasn't caught up with yet.",
     TIP_ADD_ID:
         "Add a spell the addon doesn't know yet by its ID, e.g. a new or changed spell of Forever. Pick its type with the button next to it. To see a spell's ID in its tooltip, turn on \"Show spell IDs in tooltips\" in the Settings (Options > AddOns > Glowing Bars).",
+    TIP_ADD_ITEM:
+        'Add an item to watch by its ID, e.g. arrows or water. To see an item\'s ID in its tooltip, turn on "Show spell IDs in tooltips" in the Settings (Options > AddOns > Glowing Bars).',
     TIP_ID_RANK: "Old ranks are checked using the spells on your action bars and in your spellbook, so this ID can't be changed.",
     TIP_ENABLED_SPELL: "Turns the reminder for this spell on or off.",
-    HDR_TABLE_ADD: "Add a spell by ID",
+    TIP_ENABLED_ITEM: "Turns the reminder for this item on or off.",
+    TIP_ENABLED_KIND_ITEM: "Turns this reminder type on or off. While it's off, none of its items glow and their rows are grayed out.",
+    HDR_TABLE_ADD: "Add spell/item by ID",
     OPT_TOOLTIP_IDS: "Show spell IDs in tooltips",
     TIP_TOOLTIP_IDS:
-        "Adds the ID to every spell tooltip (spellbook, action bars, links), and to the tooltip of an item with a use (an elixir, a potion, food, a drink) the ID of the spell it casts. Handy to add a spell by its ID in the table.",
+        "Adds the ID to every spell tooltip (spellbook, action bars, links), and to every item tooltip the Item ID, with the ID of the spell it casts if it has a use (an elixir, a potion, food, a drink). Handy to add a spell by its ID in the table.",
     TOOLTIP_SPELL_ID: "Spell ID: %d",
     TOOLTIP_USE_SPELL_ID: "Use spell ID: %d",
+    TOOLTIP_ITEM_ID: "Item ID: %d",
     BTN_ADD: "Add",
     MSG_UNKNOWN_SPELL: "No spell found with ID %d.",
     MSG_ALREADY_LISTED: "%s is already in the list.",
@@ -107,6 +107,12 @@ export const TEXTS = {
     COL_COLOR: "Color",
     COL_OPACITY: "Glow %",
     COL_MESSAGE: "Message",
+    COL_LOW_AT: "Low at",
+    TIP_LOW_AT: "Reminds you when you have this many or fewer.",
+    TIP_LOW_AT_KIND:
+        "Reminds you when you have this many or fewer. Used for every row of this type, unless you set a different number on the row.",
+    TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
+    MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     TIP_KIND_REAGENT: "Its message and repeat work only in a town or an inn. The glow shows everywhere.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
@@ -123,6 +129,7 @@ export const TEXTS = {
     KIND_PROC: "Proc",
     KIND_RANK: "Old rank",
     KIND_REAGENT: "Low reagent",
+    KIND_STOCK: "Low stock",
     TEXT_BUFF: "Missing buff",
     TEXT_WEAPON: "Weapon buff",
     TEXT_SEAL: "Missing seal",
@@ -134,6 +141,7 @@ export const TEXTS = {
     NOTICE_PARTY: "%s missing on: %s",
     NOTICE_PARTY_COUNT: "%s missing on %d members",
     NOTICE_REAGENTS_LOW: "Reagents running low: %s",
+    NOTICE_STOCK_LOW: "Running low: %s (%d)",
 
     BLOCKED_ACTION: "The game blocked an action from this addon (%s). Please report it.",
 };

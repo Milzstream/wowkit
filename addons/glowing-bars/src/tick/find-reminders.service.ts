@@ -8,6 +8,7 @@ import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { OutdatedRanksService } from "../reminders/outdated-ranks.service";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { CustomRemindersService } from "../reminders/custom-reminders.service";
+import type { LowStockService } from "../reminders/low-stock.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { PartyBuffsService } from "../reminders/party-buffs.service";
@@ -20,6 +21,7 @@ import type { Reminders } from "./tick.interface";
 
 export class FindRemindersService {
     constructor(
+        private readonly lowStock: LowStockService,
         private readonly actionBars: ActionBarsService,
         private readonly idle: IdleService,
         private readonly player: PlayerService,
@@ -45,7 +47,8 @@ export class FindRemindersService {
 
         // The reagents are bought in a town, so their hint stays there; the rest keeps quiet when asked
         const reagentSpells = this.findReagentSpells();
-        if (this.idle.shouldStayIdle(this.settings.get("hideResting"))) return { ...this.createEmptyReminders(), reagentSpells };
+        const lowStock = this.lowStock.findLowStock();
+        if (this.idle.shouldStayIdle(this.settings.get("hideResting"))) return { ...this.createEmptyReminders(), reagentSpells, lowStock };
 
         const showBuff = this.settings.get("showBuff");
         const missingBuffs: MissingBuffs = showBuff ? this.buffReminder.findMissingBuffs() : { glow: [], notOnBars: [] };
@@ -66,6 +69,7 @@ export class FindRemindersService {
             readyCooldowns: this.glowCues.findReadyCooldowns(),
             procs: this.glowCues.findProcs(),
             reagentSpells,
+            lowStock,
             isInTown: this.player.isResting(),
         };
     }
@@ -106,6 +110,7 @@ export class FindRemindersService {
             outdatedRanks: [],
             readyCooldowns: [],
             reagentSpells: [],
+            lowStock: [],
             procs: [],
             isInTown: this.player.isResting(),
         };

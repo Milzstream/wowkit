@@ -45,6 +45,7 @@ interface RowWidgets {
     sound: Button;
     /** How often the sound repeats while the glow is on. */
     repeat: Button;
+    lowAtBox: EditBox;
     reset: Button;
     /** Takes out a spell the player added. */
     remove: Button;
@@ -209,6 +210,7 @@ export class StyleTableService {
         widgets.remove.SetShown(row.isCustom === true);
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
         this.edits.fillIdBox(widgets.spellIdBox, row);
+        this.edits.fillLowAtBox(widgets.lowAtBox, row);
     }
 
     private createWidgets(content: Frame): RowWidgets {
@@ -230,6 +232,7 @@ export class StyleTableService {
             enabled: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
             repeat: this.choices.createRepeatButton(frame, () => widgets.row),
             spellIdBox: this.edits.createIdBox(frame, () => widgets.row),
+            lowAtBox: this.edits.createLowAtBox(frame, () => widgets.row),
             row: undefined,
         };
         this.connectSwatch(widgets);

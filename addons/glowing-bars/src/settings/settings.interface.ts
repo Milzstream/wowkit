@@ -2,7 +2,7 @@ import type { SettingsService, SoundKey } from "@wowkit/ui";
 import type { GlowStyle, Rgb } from "@wowkit/wow";
 
 /** The kinds of reminder. Each has a look (color, opacity, message, sound) the player can change for the kind and for a spell. */
-export type ColorKey = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "proc" | "rank" | "reagent";
+export type ColorKey = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "proc" | "rank" | "reagent" | "stock";
 
 /** The settings service of this addon: a SettingsService that knows the shape of its settings. */
 export type AddonSettingsService = SettingsService<AddonSettings>;
@@ -21,9 +21,9 @@ export interface Style {
 }
 
 /** The kinds a spell can be added as by the player: every kind but the old ranks, which are found for every spell. */
-export type CueKind = "buff" | "weapon" | "seal" | "tracking" | "reagent" | "cooldown" | "proc";
+export type CueKind = "buff" | "weapon" | "seal" | "tracking" | "reagent" | "cooldown" | "proc" | "stock";
 
-/** A spell the player added by its ID. */
+/** A spell the player added by its ID; for the low stock an item, by its item ID. */
 export interface CustomCue {
     id: number;
     kind: CueKind;
@@ -65,6 +65,11 @@ export interface AddonSettings {
     cooldownGlowSeconds: number;
     /** A group buff's reagent runs low with this many or fewer in the bags. */
     reagentLow: number;
+    /** The same of the items the player watches, and whether they are watched. */
+    stockLow: number;
+    showStock: boolean;
+    /** The limit of a row of its own ("stock:2512", "reagent:17028"), where it has one. */
+    lowAt: { [entry: string]: number | undefined };
     /** Spells the game says are usable now (Overpower, Revenge, Execute...). */
     showProcs: boolean;
     /** A paladin in a fight with no seal up. */

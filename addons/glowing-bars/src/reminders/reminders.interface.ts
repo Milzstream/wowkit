@@ -23,6 +23,15 @@ export interface PartySuggestion {
     isForPlayer: boolean;
 }
 
+/** An item the player watches, running low. */
+export interface LowStock {
+    /** What its buttons are found by, and its look is kept under. */
+    key: number;
+    itemId: number;
+    name: string;
+    count: number;
+}
+
 export interface WeaponCheck {
     spellId: number | undefined;
     /** Seconds left; 0 = missing. */

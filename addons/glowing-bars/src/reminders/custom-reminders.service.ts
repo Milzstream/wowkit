@@ -40,7 +40,7 @@ export class CustomRemindersService {
     findReagentSpells(): number[] {
         return this.listOnBars("reagent").filter((id) => {
             const reagent = this.reagents.findTooltipReagent(id);
-            return reagent !== undefined && this.reagents.isLow(this.bags.getItemCountByName(reagent));
+            return reagent !== undefined && this.reagents.isLow(this.bags.getItemCountByName(reagent), `spell${string.format("%d", id)}`);
         });
     }
 

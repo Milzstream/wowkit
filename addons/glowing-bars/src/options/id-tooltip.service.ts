@@ -18,6 +18,7 @@ export class IdTooltipService implements OnAddonLoaded {
         this.tooltips.addSpellLines((spellId) =>
             this.isOn() ? string.format(this.locale.getText("TOOLTIP_SPELL_ID"), spellId) : undefined,
         );
+        this.tooltips.addItemLines((itemId) => (this.isOn() ? string.format(this.locale.getText("TOOLTIP_ITEM_ID"), itemId) : undefined));
         this.tooltips.addItemLines((itemId) => {
             if (!this.isOn()) return undefined;
             const useSpellId = this.tooltips.getUseSpellId(itemId);

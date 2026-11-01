@@ -1,7 +1,7 @@
 // The rows of the table of looks: the kinds of reminder (their default look), and the spells of the player's class that
 // can have a look of their own: the buffs, the weapon buffs, the seals, the gathering trackings, the cooldowns, the procs, the group buffs with a reagent, and
 // every spell of the book that has ranks. Plain lists; the window draws them.
-import type { PlayerService, SpellsService } from "@wowkit/wow";
+import { type PlayerService, type SpellsService, getItemButtonKey, readItemLook } from "@wowkit/wow";
 import type { CustomCuesService } from "../glows/custom-cues.service";
 import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { AddonLocale } from "../locale/locale.interface";
@@ -13,7 +13,7 @@ import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { WeaponChoiceService } from "../reminders/weapon/weapon-choice.service";
 import { CUE_KINDS, KIND_ORDER } from "../settings/settings.constants";
-import type { ColorKey } from "../settings/settings.interface";
+import type { ColorKey, CueKind } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 
 /** One row of the table: a kind (no spell), or a spell of a kind. */
@@ -27,6 +27,8 @@ export interface StyleRow {
     listId?: number;
     /** A spell the player added. */
     isCustom?: boolean;
+    /** The low stock: the item the row is about (its `spellId` is what the item's buttons are found by). */
+    itemId?: number;
 }
 
 /** The words that name each kind of reminder. */
@@ -39,6 +41,7 @@ export const KIND_TEXTS: { [kind in ColorKey]: TextKey } = {
     proc: "KIND_PROC",
     rank: "KIND_RANK",
     reagent: "KIND_REAGENT",
+    stock: "KIND_STOCK",
 };
 
 export class StyleRowsService {
@@ -82,6 +85,23 @@ export class StyleRowsService {
         };
     }
 
+    /** What the player added; an item of the low stock goes by what its buttons are found by, and under its own name. */
+    private listAddedRows(): { kind: CueKind; id: number; extra: Partial<StyleRow> }[] {
+        const added: { kind: CueKind; id: number; extra: Partial<StyleRow> }[] = [];
+        for (const kind of CUE_KINDS) {
+            for (const id of this.customCues.listCustom(kind)) {
+                if (kind !== "stock") {
+                    added.push({ kind, id, extra: { isCustom: true } });
+                    continue;
+                }
+                const { name, iconId } = readItemLook(id);
+                const extra = { isCustom: true, itemId: id, label: name ?? string.format("%d", id), iconId };
+                added.push({ kind, id: getItemButtonKey(id), extra });
+            }
+        }
+        return added;
+    }
+
     /** The spells of the class that can have a look of their own, by kind, then by name. A spell is listed once. */
     listSpellRows(): StyleRow[] {
         const rows: StyleRow[] = [];
@@ -113,7 +133,7 @@ export class StyleRowsService {
         for (const kind of ["cooldown", "proc"] as const) {
             for (const id of this.glowCues.listBuiltInIds(kind)) addListed(kind, id);
         }
-        for (const kind of CUE_KINDS) for (const id of this.customCues.listCustom(kind)) add(kind, id, { isCustom: true });
+        for (const { kind, id, extra } of this.listAddedRows()) add(kind, id, extra);
         // A group buff whose ranks take different reagents (Holy Candle, Sacred Candle) has a row for each reagent
         for (const reagent of this.reagents.getReagentsOfClass(this.player.getClassToken())) {
             addListed("reagent", reagent.spells[0], this.reagents.getReagentName(reagent));

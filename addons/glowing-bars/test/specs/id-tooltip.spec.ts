@@ -22,7 +22,7 @@ describe("the spell IDs in the tooltips", () => {
         const world = createPriestWorld();
         world.setOption("showTooltipIds", true);
         expect(world.tooltipLines("spell", FORTITUDE.id)).toEqual([`Spell ID: ${FORTITUDE.id}`]);
-        expect(world.tooltipLines("item", ELIXIR_ITEM)).toEqual([`Use spell ID: ${ELIXIR_SPELL}`]);
+        expect(world.tooltipLines("item", ELIXIR_ITEM)).toEqual([`Item ID: ${ELIXIR_ITEM}`, `Use spell ID: ${ELIXIR_SPELL}`]);
     });
 
     it("stay on for a character who switched them on", () => {
@@ -30,9 +30,9 @@ describe("the spell IDs in the tooltips", () => {
         expect(world.tooltipLines("spell", FORTITUDE.id)).toEqual([`Spell ID: ${FORTITUDE.id}`]);
     });
 
-    it("add nothing to an item with no use, or to a tooltip with no ID", () => {
+    it("add only the ID to an item with no use, and nothing to a tooltip with no ID", () => {
         const world = createPriestWorld({ showTooltipIds: true });
-        expect(world.tooltipLines("item", 17028)).toEqual([]);
+        expect(world.tooltipLines("item", 17028)).toEqual(["Item ID: 17028"]);
         expect(world.tooltipLines("spell", undefined)).toEqual([]);
     });
 

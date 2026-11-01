@@ -8,7 +8,6 @@ import type { AboutSection, ControlsService, OptionsPage, WidgetsService } from 
 import type { BarsSection } from "./bars.section";
 import type { GlowStyleSection } from "./glow-style.section";
 import type { GlowsSection } from "./glows.section";
-import type { ReagentsSection } from "./reagents.section";
 import type { StyleTableService } from "./style-table.service";
 import type { ReminderControlsService } from "./reminder-controls.service";
 import type { WeaponSection } from "./weapon.section";
@@ -22,7 +21,6 @@ export class RemindersPage implements OptionsPage {
         private readonly reminderControls: ReminderControlsService,
         private readonly weaponSection: WeaponSection,
         private readonly glowsSection: GlowsSection,
-        private readonly reagentsSection: ReagentsSection,
         private readonly about: AboutSection,
         private readonly widgets: WidgetsService,
         private readonly table: StyleTableService,
@@ -75,7 +73,6 @@ export class RemindersPage implements OptionsPage {
 
         this.weaponSection.addWeaponSection(category, layout);
         this.glowsSection.addGlowsSection(category, layout);
-        this.reagentsSection.addReagentsSection(category, layout);
 
         // The bars last: eight switches and eight more for the faded bars
         this.barsSection.addBarsSection(category, layout);

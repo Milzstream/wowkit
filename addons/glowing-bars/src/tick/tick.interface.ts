@@ -1,5 +1,5 @@
 import type { OutdatedRank } from "../reminders/outdated-ranks.service";
-import type { PartySuggestion } from "../reminders/reminders.interface";
+import type { PartySuggestion, LowStock } from "../reminders/reminders.interface";
 
 /** Everything the player should be reminded of right now: what stage 1 of a tick finds. */
 export interface Reminders {
@@ -19,6 +19,8 @@ export interface Reminders {
     partySuggestions: PartySuggestion[];
     /** Spells on the bars at a lower rank than the highest learned one. */
     outdatedRanks: OutdatedRank[];
+    /** The items the player watches that run low: they glow if on a button, and say so anyway. */
+    lowStock: LowStock[];
     /** In a town or an inn, where reagents are sold: only there a low reagent's sound and message repeat. */
     isInTown: boolean;
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */

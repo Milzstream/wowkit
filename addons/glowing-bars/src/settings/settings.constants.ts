@@ -23,6 +23,9 @@ export function createDefaultSettings(): AddonSettings {
         showCooldownsAtFightStart: false,
         cooldownGlowSeconds: 3,
         reagentLow: 5,
+        stockLow: 20,
+        showStock: true,
+        lowAt: {},
         showProcs: true,
         showSeals: true,
         showTracking: true,
@@ -57,6 +60,8 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     rank: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "alarm1", repeat: 0 },
     // Its message is the town's: it names the reagents to buy
     reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0 },
+    // A quieter red than the procs'
+    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0 },
 };
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */
@@ -68,17 +73,14 @@ export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 /** The choices of how long a cooldown glows once it is back (seconds; 0 = until it is pressed). */
 export const COOLDOWN_GLOW_CHOICES = [1, 2, 3, 5, 10, 0];
 
-/** The choices of how few of a reagent in the bags is running low. */
-export const REAGENT_LOW_CHOICES = [5, 10, 20, 40];
-
 /** The choices of from how many missing a buff its group version is asked for. */
 export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
 
 /** The kinds a spell can be added as, in the order the add button goes through them. */
-export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reagent", "seal", "tracking"];
+export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reagent", "stock", "seal", "tracking"];
 
 /** The kinds in the order the tables list them. */
-export const KIND_ORDER: ColorKey[] = ["buff", "weapon", "seal", "tracking", "reagent", "cooldown", "proc", "rank"];
+export const KIND_ORDER: ColorKey[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
 
 /** The part of a saved look that can be used: a sound that is no longer in the list, or a color that is no color, is dropped. */
 function repairStyle(style: StyleOverride | undefined): StyleOverride | undefined {
@@ -96,6 +98,11 @@ function repairStyle(style: StyleOverride | undefined): StyleOverride | undefine
     return repaired;
 }
 
+/** A limit of how few is running low: any number from 0. */
+function repairLimit(limit: unknown, byDefault: number): number {
+    return type(limit) === "number" && (limit as number) >= 0 ? (limit as number) : byDefault;
+}
+
 /** Puts right what a saved look got wrong. */
 export function repairSettings(values: AddonSettings): void {
     // A style no longer known (or circling on a round button) is the default again
@@ -109,7 +116,8 @@ export function repairSettings(values: AddonSettings): void {
     );
     if (!COOLDOWN_GLOW_CHOICES.includes(values.cooldownGlowSeconds))
         values.cooldownGlowSeconds = createDefaultSettings().cooldownGlowSeconds;
-    if (!REAGENT_LOW_CHOICES.includes(values.reagentLow)) values.reagentLow = defaults.reagentLow;
+    values.reagentLow = repairLimit(values.reagentLow, defaults.reagentLow);
+    values.stockLow = repairLimit(values.stockLow, defaults.stockLow);
     // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one
     const old = values as { showGreaterForOne?: boolean };
     if (old.showGreaterForOne === true) values.partyGroupMin = 1;

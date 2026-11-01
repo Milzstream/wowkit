@@ -1,6 +1,6 @@
 // The player's own say in the spells: a fixed ID for a spell of the lists (when the client knows it by another one: every
 // question about the spell then goes to that ID), and spells the player added by their ID. Both are the character's.
-import type { CooldownsService, SpellsService } from "@wowkit/wow";
+import { type CooldownsService, type SpellsService, isKnownItem } from "@wowkit/wow";
 import type { TextKey } from "../locale/texts.constants";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { AddonSettingsService, CueKind, CustomCue } from "../settings/settings.interface";
@@ -59,6 +59,15 @@ export class CustomCuesService {
         return true;
     }
 
+    /** Adds an item to watch by its ID. False when the client knows no item by it. */
+    addItem(itemId: number): boolean {
+        if (!isKnownItem(itemId)) return false;
+        const cues = this.settings.get("customCues");
+        if (!cues.some((cue) => cue.id === itemId && cue.kind === "stock"))
+            this.settings.change("customCues", [...cues, { id: itemId, kind: "stock" }]);
+        return true;
+    }
+
     /** Gives an added spell another ID. False when the client knows no spell by it. */
     changeCustom(oldId: number, spellId: number): boolean {
         if (!this.isKnownSpell(spellId)) return false;
@@ -67,10 +76,12 @@ export class CustomCuesService {
         return true;
     }
 
-    removeCustom(spellId: number): void {
+    removeCustom(spellId: number, kind: CueKind | undefined): void {
         this.settings.change(
             "customCues",
-            this.settings.get("customCues").filter((cue) => cue.id !== spellId),
+            this.settings
+                .get("customCues")
+                .filter((cue) => cue.id !== spellId || (kind !== undefined && (kind === "stock") !== (cue.kind === "stock"))),
         );
     }
 }

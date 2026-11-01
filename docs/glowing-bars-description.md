@@ -22,7 +22,8 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Weapon buffs** – shaman imbues, rogue poisons (per hand) and warlock stones, when missing or about to run out.
 *   **Paladin seals** – in a fight with no seal up, the seal you used last glows gold, already a moment before it runs out. Before your first seal, the one of your talent tree.
 *   **Gathering** – a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow. Any tracking counts, so a hunter tracking beasts is left alone.
-*   **Low reagents** – the group buff on your bar glows quietly while its reagent runs low (5 or fewer, or the limit you set), so you remember it in town.
+*   **Low reagents** – the group buff on your bar glows quietly while its reagent runs low (5 or fewer, or the limit you set in the table), so you remember it in town.
+*   **Low stock, if you add it** – add any item by its *Item ID* (arrows, water, candles). When only a few are left, a message says how many. If the item is on your bars, its button glows too.
 *   **Cooldowns that are back** – in a fight, an important cooldown of your class or your race (Recklessness, Rapid Fire, Adrenaline Rush, Innervate, Swift Judgement, Blood Fury, Stoneform, Desperate Prayer…) glows for a few seconds when it is ready again. If you like, the ready ones also glow as a fight starts.
 *   **Procs** – Overpower, Revenge, Execute, Victory Rush, Riposte, Counterattack, Mongoose Bite and Hammer of Wrath glow while you can use them.
 *   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you.
@@ -43,7 +44,7 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 
 In the same table you can **add your own spells by their ID**, as any type, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Spell IDs in tooltips**.
 
-The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow. Only the old ranks and the low reagents (in a town) show a message by default; the glow is the reminder.
+The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow, low stock a quieter red. Only the old ranks, low stock and the low reagents (in a town) show a message by default; the glow is the reminder.
 
 On the Settings page (_Options > AddOns > Glowing Bars_):
 
@@ -51,7 +52,7 @@ On the Settings page (_Options > AddOns > Glowing Bars_):
 *   **Action bars that glow**: turn any of the eight bars off (your UI addon's bars too)
 *   **Faded until they glow**: any of the eight bars stays faint until one of its buttons glows, so a bar in the middle of your screen shows only what's due
 *   **Spell IDs in tooltips** (off by default): every spell's tooltip shows its ID, and an elixir's, potion's, food's or drink's the spell it casts
-*   The weapon buff to keep up, the party and raid buffs with their group version counts, when cooldowns glow, and how few reagents are low
+*   The weapon buff to keep up, the party and raid buffs with their group version counts and when cooldowns glow
 
 All settings are kept per character.
 

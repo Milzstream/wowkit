@@ -26,7 +26,9 @@ Your Rotation.
     Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the
     classes you buffed there.
 - **Reagents**: the group buff on your action bar (Prayer of Fortitude, Gift of the Wild...) glows, quietly, while its
-  reagent runs low (5 or fewer by default, set on the Settings page), also in a town; on arriving in a town or an inn a message on the screen names the reagents.
+  reagent runs low (5 or fewer by default, set in the Low at column of the table), also in a town; on arriving in a town or an inn a message on the screen names the reagents.
+- **Low stock**: add any item by its Item ID (arrows, water, candles) as `Low stock` in the table. At 20 or fewer (set in the Low at column,
+  for all items or for each one) a message on the screen says how many are left, and if the item is on a bar, its button glows too, even at none.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
   Innervate...) or of your race (Blood Fury, Stoneform, Desperate Prayer...) glows when it is ready again after you used
   it, or after it was running as the fight began: for 3 seconds by default (1, 2, 5, 10, or until you press it). If you like, the ready
@@ -47,7 +49,7 @@ Every kind of reminder has the same four settings: the **color** of its glow and
 (1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each can also **repeat** their sound every 5, 10, 30 or 60 seconds while the glow is on,
 the message coming again with it (off by default). The defaults: missing
 buffs blue, weapon buffs orange, ready cooldowns white, procs red, old ranks and low reagents yellow (and a quieter glow
-than the others). By default only the old ranks and the reagents show a message; the buff messages (including the ones that name a
+than the others), low stock a quieter red. By default only the old ranks, the reagents and the low stock show a message; the buff messages (including the ones that name a
 buff on no bar and the party members who miss one) are there to switch on. They are set in a table, and every spell of your class can have a look of its own in the same table.
 It opens with `/gb` or from the Settings page, and shows only the kinds your character has spells of. Its Enabled column
 switches a whole kind or a single spell on and off. There you can also fix the spell ID of a spell of the lists, and add

@@ -1,7 +1,8 @@
 // The notice at the top of the screen: one message with a short line for each kind of reminder whose message the player
 // switched on, in the color of its glow. A line says what kind of reminder it is, not which spell; only a reminder with
 // no button to glow (a buff on no bar, a party member) names what it is about. The same message comes again after a
-// while; sooner where the player chose its sound to repeat, together with the sound.
+// while; sooner where the player chose its sound to repeat, together with the sound. A low stock can last for hours: with
+// no repeat its line comes once, until there are enough of the item again.
 
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
@@ -24,6 +25,8 @@ interface Line {
     text: string;
     /** Seconds between its repeats, the sound's (0: the usual NOTICE_REPEAT). */
     repeat: number;
+    /** Shown once while it stays among the lines. */
+    isOnce?: boolean;
 }
 
 /** The soonest repeat of the lines: the one of a line whose sound repeats, else NOTICE_REPEAT. */
@@ -36,6 +39,8 @@ function findRepeatSeconds(lines: Line[]): number {
 export class NoticesService {
     private lastNoticeKey: string | undefined;
     private lastNoticeAt = 0;
+    /** The keys of the lines that come once and have come. */
+    private told = new LuaSet<string>();
 
     constructor(
         private readonly actionBars: ActionBarsService,
@@ -50,6 +55,7 @@ export class NoticesService {
     showNoticeIfNew(reminders: Reminders): void {
         if (this.actionBars.getSecondsSinceBarsChanged() <= NOTICE_AFTER_BAR_CHANGE) return;
         const lines = this.listLines(reminders);
+        this.forgetTold(lines);
         if (lines.length === 0) {
             // What the message was about is over: it goes out at once, not when its time is up
             if (this.lastNoticeKey !== undefined) this.notice.clearNotice();
@@ -61,7 +67,16 @@ export class NoticesService {
         if (key === this.lastNoticeKey && now - this.lastNoticeAt < findRepeatSeconds(lines)) return;
         this.lastNoticeKey = key;
         this.lastNoticeAt = now;
-        this.notice.showNotice(lines.map((line) => line.text).join("\n"));
+        const shown = lines.filter((line) => line.isOnce !== true || !this.told.has(line.key));
+        for (const line of shown) if (line.isOnce === true) this.told.add(line.key);
+        if (shown.length > 0) this.notice.showNotice(shown.map((line) => line.text).join("\n"));
+    }
+
+    /** A line that is gone can come again. */
+    private forgetTold(lines: Line[]): void {
+        const told = new LuaSet<string>();
+        for (const line of lines) if (this.told.has(line.key)) told.add(line.key);
+        this.told = told;
     }
 
     private listLines(reminders: Reminders): Line[] {
@@ -83,6 +98,14 @@ export class NoticesService {
             reminders.outdatedRanks.map((rank) => rank.id),
             "TEXT_RANK",
         );
+        for (const stock of reminders.lowStock) {
+            const style = this.styles.getStyle("stock", stock.key);
+            const text = this.styles.applyTextColor(
+                style.color,
+                string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
+            );
+            if (style.isTextOn) lines.push({ key: `stock:${stock.itemId}`, text, repeat: style.repeat, isOnce: style.repeat === 0 });
+        }
         for (const spellId of reminders.buffsNotOnBars) {
             const name = this.spells.getSpellName(spellId) ?? "?";
             this.addNamedLine(lines, spellId, `bar:${spellId}`, string.format(this.locale.getText("NOTICE_NOT_ON_BAR"), name));

@@ -3,6 +3,20 @@ import type { ActionBarsService } from "../action-bars.service";
 import { attempt, attemptMulti } from "./protected-call.utils";
 import { getReadable, getReadableId } from "./secret-value.utils";
 
+/** Items are looked up among the buttons of the spells, under numbers no spell has. */
+const ITEM_BUTTON_KEYS = 1000000000;
+
+/** What the buttons holding an item are found by (see ActionBarsService.findButtonsOf). */
+export function getItemButtonKey(itemId: number): number {
+    return ITEM_BUTTON_KEYS + itemId;
+}
+
+/** Does the client know an item by this ID? */
+export function isKnownItem(itemId: number): boolean {
+    const [didRead, id] = attemptMulti(() => C_Item.GetItemInfoInstant(itemId));
+    return didRead && getReadable(id) !== undefined;
+}
+
 /** Does the button hold an item of which the bags have none? Not when the client keeps the count secret. */
 export function isOutOfItem(actionBars: ActionBarsService, button: ActionButton): boolean {
     const itemId = findButtonItem(actionBars, button);

@@ -17,6 +17,7 @@ const KIND_SWITCHES = {
     cooldown: "showCooldowns",
     proc: "showProcs",
     rank: "showRanks",
+    stock: "showStock",
 } as const satisfies { [kind in ColorKey]: string };
 
 export class SwitchesService {
