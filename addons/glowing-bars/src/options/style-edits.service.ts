@@ -131,42 +131,30 @@ export class StyleEditsService {
         addButton.SetText(this.locale.getText("BTN_ADD"));
         addButton.SetScript("OnClick", () => {
             const spellId = tonumber(box.GetText());
-            const added = spellId !== undefined ? this.addSpell(spellId, CUE_KINDS[kindIndex]!) : undefined;
-            if (added !== undefined) {
-                box.SetText("");
-                kindIndex = CUE_KINDS.indexOf(added);
-                showKind();
-            }
+            if (spellId !== undefined && this.addSpell(spellId, CUE_KINDS[kindIndex]!)) box.SetText("");
             box.ClearFocus();
         });
         return frame;
     }
 
-    /** Adds a spell, unless the client knows no spell by the ID or the table has it already; warns of a surely wrong kind. */
-    /** Adds a spell; the kind it was added as, or undefined when it was not (unknown ID, listed already, surely wrong kind). */
-    private addSpell(spellId: number, kind: CueKind): CueKind | undefined {
+    /** Adds a spell as the kind picked, or says why not (unknown ID, listed already, surely wrong kind). */
+    private addSpell(spellId: number, kind: CueKind): boolean {
         if (!this.customCues.isKnownSpell(spellId)) {
             this.showUnknown(spellId);
-            return undefined;
+            return false;
         }
         const name = this.styles.getSpellKey(spellId);
         if (this.isListedElsewhere(spellId)) {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
-            return undefined;
+            return false;
         }
-        const check = this.customCues.checkKind(spellId, kind);
-        if (check.problem === undefined) {
-            this.customCues.addCustom(spellId, kind);
-            return kind;
+        const problem = this.customCues.findKindProblem(spellId, kind);
+        if (problem !== undefined) {
+            this.showProblem(string.format(this.locale.getText(problem), name), ERROR_COLOR);
+            return false;
         }
-        if (check.rightKind === undefined) {
-            this.showProblem(string.format(this.locale.getText(check.problem), name, this.locale.getText("MSG_CHOOSE_KIND")), ERROR_COLOR);
-            return undefined;
-        }
-        this.customCues.addCustom(spellId, check.rightKind);
-        const added = string.format(this.locale.getText("MSG_ADDED_AS"), this.locale.getText(KIND_TEXTS[check.rightKind]));
-        this.showProblem(string.format(this.locale.getText(check.problem), name, added), ERROR_COLOR);
-        return check.rightKind;
+        this.customCues.addCustom(spellId, kind);
+        return true;
     }
 
     /**

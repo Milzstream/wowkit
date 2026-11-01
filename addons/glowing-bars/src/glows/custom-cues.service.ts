@@ -5,12 +5,6 @@ import type { TextKey } from "../locale/texts.constants";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { AddonSettingsService, CueKind, CustomCue } from "../settings/settings.interface";
 
-/** A kind the game says is wrong for a spell, and the one it says is right, when it knows. */
-export interface KindCheck {
-    problem?: TextKey;
-    rightKind?: CueKind;
-}
-
 export class CustomCuesService {
     constructor(
         private readonly spells: SpellsService,
@@ -20,15 +14,13 @@ export class CustomCuesService {
     ) {}
 
     /**
-     * Is the kind surely wrong for the spell, and which one is surely right? A cooldown needs a cooldown, a low reagent a
+     * What is surely wrong with this kind for the spell, if anything? A cooldown needs a cooldown, a low reagent a
      * reagent named in the tooltip; the game tells both. The other kinds it cannot tell apart, so they are taken as given.
      */
-    checkKind(spellId: number, kind: CueKind): KindCheck {
-        const hasCooldown = this.cooldowns.getBaseCooldown(spellId) > 0;
-        const hasReagent = this.reagents.findTooltipReagent(spellId) !== undefined;
-        if (kind === "cooldown" && !hasCooldown) return { problem: "MSG_NO_COOLDOWN", rightKind: hasReagent ? "reagent" : undefined };
-        if (kind === "reagent" && !hasReagent) return { problem: "MSG_NO_REAGENT", rightKind: hasCooldown ? "cooldown" : undefined };
-        return {};
+    findKindProblem(spellId: number, kind: CueKind): TextKey | undefined {
+        if (kind === "cooldown" && this.cooldowns.getBaseCooldown(spellId) <= 0) return "MSG_NO_COOLDOWN";
+        if (kind === "reagent" && this.reagents.findTooltipReagent(spellId) === undefined) return "MSG_NO_REAGENT";
+        return undefined;
     }
 
     /** The ID a spell of the lists is used by: the one the player fixed, else the list's own. */

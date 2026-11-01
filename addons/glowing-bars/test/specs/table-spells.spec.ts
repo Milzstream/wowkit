@@ -135,15 +135,26 @@ describe("the spells of the table, fixed and added by the player", () => {
         expect(world.notice()).toContain("Demon Skin has no cooldown, pick another type.");
     });
 
-    it("adds a spell as the kind the game surely says it is, and says so", () => {
+    it("does not add a spell as another kind than the one picked, even one with a reagent", () => {
         const { box, kind, add } = findAddRow();
+        const picked = kind.text;
         state().spells[29893] = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
         state().reagentTexts[29893] = "Soul Shard";
         box.text = "29893";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([{ id: 29893, kind: "reagent" }]);
-        expect(world.notice()).toContain("Ritual of Souls has no cooldown, added as Low reagent instead.");
-        expect(kind.text).toBe("Low reagent");
+        expect(readSettings().customCues).toEqual([]);
+        expect(world.notice()).toContain("Ritual of Souls has no cooldown, pick another type.");
+        expect(kind.text).toBe(picked);
+        expect(box.text).toBe("29893");
+    });
+
+    it("does not add a spell with a cooldown and no reagent as a low reagent, and says so", () => {
+        const { box, kind, add } = findAddRow();
+        for (let click = 0; click < 10 && kind.text !== "Low reagent"; click++) kind.scripts.OnClick!(kind);
+        box.text = "72";
+        add.scripts.OnClick!(add);
+        expect(readSettings().customCues).toEqual([]);
+        expect(world.notice()).toContain("Shield Bash uses no reagent, pick another type.");
     });
 
     it("takes out an added spell with its X button", () => {
