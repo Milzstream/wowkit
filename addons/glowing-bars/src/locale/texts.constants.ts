@@ -96,7 +96,7 @@ export const TEXTS = {
     HDR_TABLE_ADD: "Add a spell by ID",
     OPT_TOOLTIP_IDS: "Show spell IDs in tooltips",
     TIP_TOOLTIP_IDS:
-        "Adds the ID to every spell tooltip (spellbook, action bars, links), and to the tooltip of an item with a use (an elixir, a potion, food) the ID of the spell it casts. Handy to add a spell by its ID in the table.",
+        "Adds the ID to every spell tooltip (spellbook, action bars, links), and to the tooltip of an item with a use (an elixir, a potion, food, a drink) the ID of the spell it casts. Handy to add a spell by its ID in the table.",
     TOOLTIP_SPELL_ID: "Spell ID: %d",
     TOOLTIP_USE_SPELL_ID: "Use spell ID: %d",
     BTN_ADD: "Add",

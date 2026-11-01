@@ -26,8 +26,9 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Cooldowns that are back** – in a fight, an important cooldown of your class or your race (Recklessness, Rapid Fire, Adrenaline Rush, Innervate, Swift Judgement, Blood Fury, Stoneform, Desperate Prayer…) glows for a few seconds when it is ready again. If you like, the ready ones also glow as a fight starts.
 *   **Procs** – Overpower, Revenge, Execute, Victory Rush, Riposte, Counterattack, Mongoose Bite and Hammer of Wrath glow while you can use them.
 *   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you.
+*   **Elixirs, food and drinks, if you add them** – turn on **Show spell IDs in tooltips** on the Settings page, put the item on your bars, and add the *Use spell ID* from its tooltip in the **/gb** table as a missing buff. Only that item glows, under its own name in the table, and not when you have none left. A food or drink stops glowing once you have its Well Fed buff.
 
-It stays quiet while you are dead, mounted or on a taxi, and (if you like) while you rest in a town.
+It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in towns and inns. Only this one can be turned off, with **Stay quiet in towns and inns** on the Settings page.
 
 ## Make it yours
 
@@ -49,7 +50,7 @@ On the Settings page (_Options > AddOns > Glowing Bars_):
 *   **Glow animation**: circling (Blizzard's own), breathing, or none
 *   **Action bars that glow**: turn any of the eight bars off (your UI addon's bars too)
 *   **Faded until they glow**: any of the eight bars stays faint until one of its buttons glows, so a bar in the middle of your screen shows only what's due
-*   **Spell IDs in tooltips** (off by default): every spell's tooltip shows its ID, and an elixir's, potion's or food's the spell it casts
+*   **Spell IDs in tooltips** (off by default): every spell's tooltip shows its ID, and an elixir's, potion's, food's or drink's the spell it casts
 *   The weapon buff to keep up, the party and raid buffs with their group version counts, when cooldowns glow, and how few reagents are low
 
 All settings are kept per character.

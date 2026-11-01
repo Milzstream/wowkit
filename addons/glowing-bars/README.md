@@ -36,7 +36,7 @@ Your Rotation.
 - **Procs**: a spell glows while the game says it can be used: Overpower, Revenge, Execute, Victory Rush, Riposte,
   Counterattack, Mongoose Bite, Hammer of Wrath.
 - **Old ranks**: a spell on your action bars that is a lower rank than the one you know glows, quietly.
-- Quiet while dead, mounted, on a taxi, or (optionally) resting in town.
+- Quiet while dead, mounted, on a taxi, or (unless switched off) resting in town.
 - The glow runs around the button; on the Settings page it can breathe (stand still, slowly fading out and in) or stand
   still, fading in and out only as it comes and goes.
 - Each of the eight action bars can be switched off, for example to have the glow only on a big bar of cooldowns next to
@@ -54,7 +54,7 @@ It opens with `/gb` or from the Settings page, and shows only the kinds your cha
 switches a whole kind or a single spell on and off. There you can also fix the spell ID of a spell of the lists, and add
 spells of your own by their ID, as any type but an old rank (those are found for every spell), a seal of Forever too; a kind the game says is
 wrong for the spell is refused or put right. To find a spell's ID, switch on the spell IDs in the tooltips on the Settings
-page: every spell tooltip then shows its ID, and an elixir's, potion's or food's the spell it casts. Like the other
+page: every spell tooltip then shows its ID, and an elixir's, potion's, food's or drink's the spell it casts. Added as a missing buff, such an item glows only on its own button, under its own name in the table, and not when none is left; a food or drink stops glowing once you have its Well Fed buff. Like the other
 settings, the looks are kept per character.
 
 Settings (per character): *Options > AddOns > Glowing Bars*: the button that opens the table of looks, the spell IDs in

@@ -1,5 +1,5 @@
 // The spell IDs in the tooltips, for a player who adds a spell by its ID in the table: every spell tooltip (the
-// spellbook, the action bars, links) gets "Spell ID", and an item with a use (an elixir, a potion, food) the spell it
+// spellbook, the action bars, links) gets "Spell ID", and an item with a use (an elixir, a potion, food, a drink) the spell it
 // casts. Off by default; the Settings page switches it on. The game has no way to take a tooltip call back, so a
 // switched-off one adds no line.
 import type { OnAddonLoaded } from "@wowkit/core";
