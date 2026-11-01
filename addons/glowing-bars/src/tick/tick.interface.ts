@@ -19,6 +19,8 @@ export interface Reminders {
     partySuggestions: PartySuggestion[];
     /** Spells on the bars at a lower rank than the highest learned one. */
     outdatedRanks: OutdatedRank[];
+    /** In a town or an inn, where reagents are sold: only there a low reagent's sound and message repeat. */
+    isInTown: boolean;
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */
     reagentSpells: number[];
     /** Important cooldowns that are ready and on a button: their buttons glow. */

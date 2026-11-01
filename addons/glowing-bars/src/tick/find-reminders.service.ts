@@ -66,6 +66,7 @@ export class FindRemindersService {
             readyCooldowns: this.glowCues.findReadyCooldowns(),
             procs: this.glowCues.findProcs(),
             reagentSpells,
+            isInTown: this.player.isResting(),
         };
     }
 
@@ -106,6 +107,7 @@ export class FindRemindersService {
             readyCooldowns: [],
             reagentSpells: [],
             procs: [],
+            isInTown: this.player.isResting(),
         };
     }
 }

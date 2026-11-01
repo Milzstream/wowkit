@@ -134,7 +134,8 @@ export class ShowRemindersService {
                 const style = this.styles.getStyle(kind.category, id);
                 const lastAt = this.soundPlayedAt.get(key);
                 const isNew = !this.previous[index]!.includes(id) || lastAt === undefined;
-                const isDue = style.repeat > 0 && lastAt !== undefined && now - lastAt >= style.repeat;
+                const isRepeating = style.repeat > 0 && (kind.category !== "reagent" || reminders.isInTown);
+                const isDue = isRepeating && lastAt !== undefined && now - lastAt >= style.repeat;
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
                 if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
             }

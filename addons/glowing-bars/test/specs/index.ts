@@ -25,5 +25,6 @@ import "./food-buff-learning.spec";
 import "./gathering.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";
+import "./repeat-kinds.spec";
 import "./buff-groups.spec";
 import "./warlock.spec";

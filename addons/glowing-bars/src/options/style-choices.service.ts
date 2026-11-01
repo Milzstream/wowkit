@@ -1,7 +1,7 @@
 // What a click in the table of looks chooses: the next sound, how often it repeats, and a color from the game's picker.
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { REPEAT_CHOICES, REPEAT_KINDS } from "../settings/settings.constants";
+import { REPEAT_CHOICES } from "../settings/settings.constants";
 import type { StyleService } from "../settings/style.service";
 import { COLUMN, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
@@ -44,9 +44,19 @@ export class StyleChoicesService {
         return button;
     }
 
-    /** What the repeat button shows: only the kinds whose glow stays on until the player acts have one. */
+    /** The message of a low reagent says where it shows; the other kinds' need no words. */
+    addMessageTooltip(box: Frame, getRow: () => StyleRow | undefined): void {
+        box.SetScript("OnEnter", () => {
+            if (getRow()?.kind !== "reagent") return;
+            GameTooltip.SetOwner(box, "ANCHOR_RIGHT");
+            GameTooltip.SetText(this.locale.getText("TIP_MESSAGE_REAGENT"), 1, 1, 1, 1, true);
+            GameTooltip.Show();
+        });
+        box.SetScript("OnLeave", () => GameTooltip.Hide());
+    }
+
+    /** What the repeat button shows. */
     fillRepeat(button: Button, row: StyleRow): void {
-        button.SetShown(REPEAT_KINDS.includes(row.kind));
         const seconds = this.styles.getStyle(row.kind, row.spellId).repeat;
         button.SetText(seconds === 0 ? this.locale.getText("REPEAT_OFF") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds));
     }

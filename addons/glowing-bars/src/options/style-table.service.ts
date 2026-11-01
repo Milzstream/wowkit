@@ -43,7 +43,7 @@ interface RowWidgets {
     spellIdBox: EditBox;
     message: CheckButton;
     sound: Button;
-    /** How often the sound repeats while the glow is on; only on the kinds whose glow stays on. */
+    /** How often the sound repeats while the glow is on. */
     repeat: Button;
     reset: Button;
     /** Takes out a spell the player added. */
@@ -313,6 +313,7 @@ export class StyleTableService {
     private connectMessage(widgets: RowWidgets): void {
         widgets.message.SetPoint("LEFT", widgets.frame, "LEFT", findCenteredX(COLUMN.message, 24), 0);
         widgets.message.SetSize(24, 24);
+        this.choices.addMessageTooltip(widgets.message, () => widgets.row);
         widgets.message.SetScript("OnClick", () => this.change(widgets, { isTextOn: widgets.message.GetChecked() }));
     }
 

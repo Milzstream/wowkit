@@ -62,9 +62,6 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */
 export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 
-/** The kinds whose sound can repeat: their glow stays on until the player does something about it. */
-export const REPEAT_KINDS: ColorKey[] = ["buff", "weapon", "tracking", "rank"];
-
 /** The choices of how visible a faded bar's buttons are, in percent. */
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 

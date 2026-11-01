@@ -109,6 +109,8 @@ export const TEXTS = {
     COL_COLOR: "Color",
     COL_OPACITY: "Glow %",
     COL_MESSAGE: "Message",
+    TIP_MESSAGE_REAGENT:
+        "Only in towns and inns: as you arrive, and again with the repeat if you set one. The sound repeats only there too.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",

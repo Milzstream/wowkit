@@ -38,7 +38,7 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 *   **Glow opacity**, 1 to 100 %
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds
-*   **Repeat** (missing buffs, weapon buffs, tracking, old ranks): the sound plays again every 5, 10, 30 or 60 seconds while the glow is on, and the message with it (off by default)
+*   **Repeat**: the sound plays again every 5, 10, 30 or 60 seconds while the glow is on, and the message with it (off by default)
 *   **Enabled**: turn a whole type, or one spell, on or off
 
 In the same table you can **add your own spells by their ID**, as any type, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Spell IDs in tooltips**.
