@@ -10,8 +10,10 @@ import {
     PRAYER_OF_FORTITUDE,
     PRIEST,
     WARRIOR,
+    type World,
     type SpellDefinition,
 } from "@wowkit/test-kit";
+import { findRow, toggleTable } from "./table.helpers";
 
 const RECKLESSNESS: SpellDefinition = { id: 1719, name: "Recklessness", rank: 1, icon: 132109, cooldownSeconds: 300, isHelpful: true };
 
@@ -114,3 +116,52 @@ describe("the repeat of a sound", () => {
         expect(world.sounds.length > first).toBe(true);
     });
 });
+
+describe("the message of a low reagent that repeats in a town", () => {
+    function createPriest(candles: number, savedSettings: Record<string, unknown>) {
+        const world = createWorld((state) => {
+            playAs(state, PRIEST);
+            learnSpell(state, FORTITUDE);
+            learnSpell(state, PRAYER_OF_FORTITUDE);
+            state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+            state.bags[HOLY_CANDLE] = candles;
+            state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            state.isResting = true;
+        }, savedSettings);
+        world.advance(2);
+        return world;
+    }
+
+    it("goes by the repeat and the text set on the reagent's own row", () => {
+        const world = createPriest(0, {
+            styles: { reagent: { isTextOn: false } },
+            spellStyles: { [`reagent:${PRAYER_OF_FORTITUDE.name}`]: { isTextOn: true, repeat: 5 } },
+        });
+        world.state.bags[HOLY_CANDLE] = 3;
+        world.advance(6);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (3)");
+    });
+
+    it("comes also when the reagent ran low after the arrival, where no first message came", () => {
+        const world = createPriest(100, { styles: { reagent: { isTextOn: true, repeat: 5 } } });
+        expect(world.notice()).not.toContain("Reagents running low");
+        world.state.bags[HOLY_CANDLE] = 3;
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (3)");
+    });
+
+    it("comes also when its text was off on arrival and is switched on later", () => {
+        const world = createPriest(0, { styles: { reagent: { isTextOn: false, repeat: 5 } } });
+        expect(world.notice()).not.toContain("Reagents running low");
+        switchMessageOn(world);
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+    });
+});
+
+function switchMessageOn(world: World): void {
+    toggleTable();
+    const message = findRow(world, "Low reagent").message;
+    message.isChecked = true;
+    message.scripts.OnClick!(message);
+}

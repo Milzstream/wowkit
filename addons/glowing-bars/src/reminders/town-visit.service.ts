@@ -5,7 +5,8 @@ import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { ClockService, NoticeService, PlayerService } from "@wowkit/wow";
 import type { AddonLocale } from "../locale/locale.interface";
-import type { AddonSettingsService } from "../settings/settings.interface";
+import type { ReagentStock } from "../reagents/reagent.interface";
+import type { AddonSettingsService, Style } from "../settings/settings.interface";
 
 export class TownVisitService implements OnReady {
     private wasResting = false;
@@ -33,26 +34,38 @@ export class TownVisitService implements OnReady {
         const hasArrived = isRestingNow && !this.wasResting;
         this.wasResting = isRestingNow;
         if (!isRestingNow) this.shownAt = undefined;
-        if (hasArrived) this.showLowReagents();
+        if (hasArrived) this.show(this.listTold());
     }
 
-    /** The message again, every so often where the player chose it to repeat; not in a fight. */
+    /** The message again, every so often where the player chose it to repeat; first now if none came in this visit. Not in a fight. */
     @Interval(1000)
     showAgainInTown(): void {
-        const repeat = this.styles.getStyle("reagent").repeat;
-        if (repeat === 0 || !this.player.isResting() || this.player.isInCombat() || this.shownAt === undefined) return;
-        if (this.clock.getCurrentTime() - this.shownAt >= repeat) this.showLowReagents();
+        if (!this.player.isResting() || this.player.isInCombat()) return;
+        const told = this.listTold();
+        // The soonest of the rows that repeat
+        let repeat = 0;
+        for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
+        if (repeat === 0) return;
+        const isDue = this.shownAt === undefined || this.clock.getCurrentTime() - this.shownAt >= repeat;
+        if (isDue) this.show(told);
     }
 
-    private showLowReagents(): void {
-        const style = this.styles.getStyle("reagent");
-        if (this.settings.get("isMuted") || !this.settings.get("showReagents") || !style.isTextOn) return;
+    /** The reagents running low whose message is on, by the look of their own row. */
+    private listTold(): { stock: ReagentStock; style: Style }[] {
+        if (this.settings.get("isMuted") || !this.settings.get("showReagents")) return [];
         const reagentOn = this.settings.get("reagentOn");
-        const low = this.reagents.findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false);
-        if (low.length === 0) return;
-        const names = low.map((stock) => `${stock.name} (${stock.count})`).join(", ");
+        return this.reagents
+            .findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false)
+            .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
+            .filter((entry) => entry.style.isTextOn);
+    }
+
+    private show(told: { stock: ReagentStock; style: Style }[]): void {
+        const first = told[0];
+        if (first === undefined) return;
+        const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");
         const message = string.format(this.locale.getText("NOTICE_REAGENTS_LOW"), names);
         this.shownAt = this.clock.getCurrentTime();
-        this.notice.showNotice(this.styles.applyTextColor(style.color, message));
+        this.notice.showNotice(this.styles.applyTextColor(first.style.color, message));
     }
 }

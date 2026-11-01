@@ -68,7 +68,8 @@ export class ReagentsService {
                     this.spells.isLearned(spellId) && this.findReagentFor(spellId) !== undefined && !this.isOutranked(spellId, index),
             );
             const count = this.getReagentCount(reagent);
-            if (usedBy !== undefined && this.isLow(count)) low.push({ reagent, name: this.getReagentName(reagent), count });
+            if (usedBy !== undefined && this.isLow(count))
+                low.push({ reagent, spellId: usedBy, name: this.getReagentName(reagent), count });
         });
         return low;
     }
