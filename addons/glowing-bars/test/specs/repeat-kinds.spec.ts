@@ -202,3 +202,49 @@ describe("the tooltip of a low reagent's row", () => {
         expect(readTip(createOpenTable(), "Missing buff", "hover")).toBe("");
     });
 });
+
+describe("the town message of a reagent spell the player added", () => {
+    const RITUAL = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
+
+    function createWarlock(savedSettings: Record<string, unknown> = {}) {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, RITUAL);
+                state.reagentTexts[RITUAL.id] = "Soul Shard";
+                state.itemIds["Soul Shard"] = 6265;
+                state.bags[6265] = 2;
+                state.isResting = true;
+            },
+            { customCues: [{ id: RITUAL.id, kind: "reagent" }], ...savedSettings },
+        );
+        world.advance(2);
+        return world;
+    }
+
+    it("names its reagent on arriving, on a bar or not", () => {
+        expect(createWarlock().notice()).toContain("Reagents running low: Soul Shard (2)");
+    });
+
+    it("leaves it out when its row is switched off", () => {
+        expect(createWarlock({ glowOn: { [`${RITUAL.id}`]: false } }).notice()).not.toContain("Soul Shard");
+    });
+
+    it("names a reagent of the addon's list only once", () => {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, FORTITUDE);
+                learnSpell(state, PRAYER_OF_FORTITUDE);
+                state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+                state.itemIds["Holy Candle"] = HOLY_CANDLE;
+                state.bags[HOLY_CANDLE] = 1;
+                state.isResting = true;
+            },
+            { customCues: [{ id: PRAYER_OF_FORTITUDE.id, kind: "reagent" }] },
+        );
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (1)");
+        expect(world.notice()).not.toContain("Holy Candle (1), Holy Candle");
+    });
+});

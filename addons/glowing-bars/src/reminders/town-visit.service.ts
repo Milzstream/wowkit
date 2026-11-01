@@ -5,7 +5,8 @@ import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { ClockService, NoticeService, PlayerService } from "@wowkit/wow";
 import type { AddonLocale } from "../locale/locale.interface";
-import type { ReagentStock } from "../reagents/reagent.interface";
+import type { LowReagent } from "../reagents/reagent.interface";
+import type { CustomRemindersService } from "./custom-reminders.service";
 import type { AddonSettingsService, Style } from "../settings/settings.interface";
 
 export class TownVisitService implements OnReady {
@@ -16,6 +17,7 @@ export class TownVisitService implements OnReady {
     constructor(
         private readonly player: PlayerService,
         private readonly reagents: ReagentsService,
+        private readonly customReminders: CustomRemindersService,
         private readonly settings: AddonSettingsService,
         private readonly notice: NoticeService,
         private readonly locale: AddonLocale,
@@ -51,16 +53,17 @@ export class TownVisitService implements OnReady {
     }
 
     /** The reagents running low whose message is on, by the look of their own row. */
-    private listTold(): { stock: ReagentStock; style: Style }[] {
+    private listTold(): { stock: LowReagent; style: Style }[] {
         if (this.settings.get("isMuted") || !this.settings.get("showReagents")) return [];
         const reagentOn = this.settings.get("reagentOn");
-        return this.reagents
-            .findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false)
+        const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false);
+        const added = this.customReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
+        return [...listed, ...added]
             .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
             .filter((entry) => entry.style.isTextOn);
     }
 
-    private show(told: { stock: ReagentStock; style: Style }[]): void {
+    private show(told: { stock: LowReagent; style: Style }[]): void {
         const first = told[0];
         if (first === undefined) return;
         const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");

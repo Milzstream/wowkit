@@ -2,6 +2,7 @@
 // them than the spell, so each is reminded of in the simplest way that fits its kind: a buff when the player has no aura
 // of its name (a food or drink: see FedBuffsService), a weapon buff when the main hand has no temporary enchant at all, a reagent when the item the spell's
 // tooltip names as its reagent runs low.
+import type { LowReagent } from "../reagents/reagent.interface";
 import { type ActionBarsService, type BagsService, type SpellsService, type WeaponEnchantsService, isOutOfItem } from "@wowkit/wow";
 import type { BuffStateService } from "../character/buff-state.service";
 import type { CustomCuesService } from "../glows/custom-cues.service";
@@ -42,6 +43,21 @@ export class CustomRemindersService {
             const reagent = this.reagents.findTooltipReagent(id);
             return reagent !== undefined && this.reagents.isLow(this.bags.getItemCountByName(reagent), `spell${string.format("%d", id)}`);
         });
+    }
+
+    /** The reagents of the added spells that are learned and switched on, running low, on a bar or not; each reagent once. */
+    findLowReagents(): LowReagent[] {
+        const low: LowReagent[] = [];
+        const glowOn = this.settings.get("glowOn");
+        for (const id of this.customCues.listCustom("reagent")) {
+            const spellId = this.spells.resolve(id);
+            const name = this.reagents.findTooltipReagent(id);
+            if (spellId === undefined || name === undefined || glowOn[string.format("%d", id)] === false) continue;
+            const count = this.bags.getItemCountByName(name);
+            const isLow = this.reagents.isLow(count, `spell${string.format("%d", id)}`);
+            if (isLow && !low.some((other) => other.name === name)) low.push({ spellId, name, count });
+        }
+        return low;
     }
 
     /** The added spells of a kind that are switched on, learned and on a button that has not run out, as the IDs the buttons hold. */

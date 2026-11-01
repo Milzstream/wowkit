@@ -8,10 +8,14 @@ export interface Reagent {
 }
 
 /** A reagent and how many of it the player has. */
-export interface ReagentStock {
-    reagent: Reagent;
-    /** The group buff of the player that uses it; the look of its row goes by this. */
+/** A reagent running low. */
+export interface LowReagent {
+    /** The spell of the player that uses it; the look of its row goes by this. */
     spellId: number;
     name: string;
     count: number;
+}
+
+export interface ReagentStock extends LowReagent {
+    reagent: Reagent;
 }
