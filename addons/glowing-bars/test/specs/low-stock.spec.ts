@@ -173,3 +173,33 @@ describe("the message of a low stock", () => {
         expect(world.notice()).toContain("Running low: Rough Arrow (3)");
     });
 });
+
+describe("two items running low one after the other", () => {
+    const WATER = 1179;
+
+    it("show together while the first is still up, and neither comes again", () => {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                state.itemNames[ARROW] = "Rough Arrow";
+                state.itemNames[WATER] = "Ice Cold Milk";
+                state.bags[ARROW] = 5;
+                state.bags[WATER] = 100;
+            },
+            {
+                customCues: [
+                    { id: ARROW, kind: "stock" },
+                    { id: WATER, kind: "stock" },
+                ],
+            },
+        );
+        world.advance(2);
+        world.state.bags[WATER] = 3;
+        world.fire("BAG_UPDATE_DELAYED");
+        world.advance(1);
+        expect(world.notice()).toContain("Rough Arrow (5)");
+        expect(world.notice()).toContain("Ice Cold Milk (3)");
+        world.advance(40);
+        expect(world.notice()).not.toContain("Running low");
+    });
+});

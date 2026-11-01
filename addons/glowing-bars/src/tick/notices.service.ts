@@ -1,46 +1,34 @@
 // The notice at the top of the screen: one message with a short line for each kind of reminder whose message the player
 // switched on, in the color of its glow. A line says what kind of reminder it is, not which spell; only a reminder with
-// no button to glow (a buff on no bar, a party member) names what it is about. The same message comes again after a
-// while; sooner where the player chose its sound to repeat, together with the sound. A low stock can last for hours: with
-// no repeat its line comes once, until there are enough of the item again.
+// no button to glow (a buff on no bar, a party member) names what it is about. A line comes once, as what it is about
+// starts, and again only where the player chose it to repeat, together with the sound.
 
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import type { ColorKey } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
-import type { ActionBarsService, ClockService, NoticeService, Rgb, SpellsService } from "@wowkit/wow";
+import { NOTICE_SECONDS, type ActionBarsService, type ClockService, type NoticeService, type Rgb, type SpellsService } from "@wowkit/wow";
 import type { Reminders } from "./tick.interface";
 
-/** The same message is shown again only after this long, unless one of its lines repeats sooner. */
-const NOTICE_REPEAT = 30;
 /** A party message names this many members at most; past them, it counts them (a raid). */
 const NAMES_MAX = 5;
 /** After the bars changed they are mapped again; until then the old map would call every spell missing. */
 const NOTICE_AFTER_BAR_CHANGE = 1.5;
 
 interface Line {
-    /** Identifies the content: the same key means the same line. */
-    key: string;
+    /** What it is about: it comes again only when one of these is new, or with its repeat. */
+    parts: string[];
     /** Already in its color. */
     text: string;
-    /** Seconds between its repeats, the sound's (0: the usual NOTICE_REPEAT). */
+    /** Seconds between its repeats, the sound's (0: it comes once). */
     repeat: number;
-    /** Shown once while it stays among the lines. */
-    isOnce?: boolean;
-}
-
-/** The soonest repeat of the lines: the one of a line whose sound repeats, else NOTICE_REPEAT. */
-function findRepeatSeconds(lines: Line[]): number {
-    let seconds = NOTICE_REPEAT;
-    for (const line of lines) if (line.repeat > 0) seconds = math.min(seconds, line.repeat);
-    return seconds;
 }
 
 export class NoticesService {
-    private lastNoticeKey: string | undefined;
-    private lastNoticeAt = 0;
-    /** The keys of the lines that come once and have come. */
-    private told = new LuaSet<string>();
+    /** The text showing now. */
+    private lastText = "";
+    /** When each part of a line last came; a part that is over is forgotten, so it comes again when it is back. */
+    private shownAt = new LuaMap<string, number>();
 
     constructor(
         private readonly actionBars: ActionBarsService,
@@ -51,32 +39,45 @@ export class NoticesService {
         private readonly styles: StyleService,
     ) {}
 
-    /** Shows the notice when its content is new, or when it has been a while since it was shown. */
+    /** Shows the lines that are due, with those that are still up: the notice takes one text. */
     showNoticeIfNew(reminders: Reminders): void {
         if (this.actionBars.getSecondsSinceBarsChanged() <= NOTICE_AFTER_BAR_CHANGE) return;
-        const lines = this.listLines(reminders);
-        this.forgetTold(lines);
-        if (lines.length === 0) {
-            // What the message was about is over: it goes out at once, not when its time is up
-            if (this.lastNoticeKey !== undefined) this.notice.clearNotice();
-            this.lastNoticeKey = undefined;
-            return;
-        }
-        const key = lines.map((line) => line.key).join(";");
         const now = this.clock.getCurrentTime();
-        if (key === this.lastNoticeKey && now - this.lastNoticeAt < findRepeatSeconds(lines)) return;
-        this.lastNoticeKey = key;
-        this.lastNoticeAt = now;
-        const shown = lines.filter((line) => line.isOnce !== true || !this.told.has(line.key));
-        for (const line of shown) if (line.isOnce === true) this.told.add(line.key);
-        if (shown.length > 0) this.notice.showNotice(shown.map((line) => line.text).join("\n"));
+        const lines = this.listLines(reminders);
+        this.forgetOver(lines);
+        const due = lines.filter((line) => this.isDue(line, now));
+        const text = lines
+            .filter((line) => due.includes(line) || this.isStillUp(line, now))
+            .map((line) => line.text)
+            .join("\n");
+        for (const line of due) for (const part of line.parts) this.shownAt.set(part, now);
+        if (due.length === 0 && text === this.lastText) return;
+        this.lastText = text;
+        // What the message was about is over: it goes out at once, not when its time is up
+        if (text === "") this.notice.clearNotice();
+        else this.notice.showNotice(text);
     }
 
-    /** A line that is gone can come again. */
-    private forgetTold(lines: Line[]): void {
-        const told = new LuaSet<string>();
-        for (const line of lines) if (this.told.has(line.key)) told.add(line.key);
-        this.told = told;
+    private isDue(line: Line, now: number): boolean {
+        return line.parts.some((part) => {
+            const at = this.shownAt.get(part);
+            return at === undefined || (line.repeat > 0 && now - at >= line.repeat);
+        });
+    }
+
+    private isStillUp(line: Line, now: number): boolean {
+        return line.parts.some((part) => now - (this.shownAt.get(part) ?? 0) < NOTICE_SECONDS);
+    }
+
+    private forgetOver(lines: Line[]): void {
+        const shownAt = new LuaMap<string, number>();
+        for (const line of lines) {
+            for (const part of line.parts) {
+                const at = this.shownAt.get(part);
+                if (at !== undefined) shownAt.set(part, at);
+            }
+        }
+        this.shownAt = shownAt;
     }
 
     private listLines(reminders: Reminders): Line[] {
@@ -104,11 +105,11 @@ export class NoticesService {
                 style.color,
                 string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
             );
-            if (style.isTextOn) lines.push({ key: `stock:${stock.itemId}`, text, repeat: style.repeat, isOnce: style.repeat === 0 });
+            if (style.isTextOn) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
         }
         for (const spellId of reminders.buffsNotOnBars) {
             const name = this.spells.getSpellName(spellId) ?? "?";
-            this.addNamedLine(lines, spellId, `bar:${spellId}`, string.format(this.locale.getText("NOTICE_NOT_ON_BAR"), name));
+            this.addNamedLine(lines, spellId, [`bar:${spellId}`], string.format(this.locale.getText("NOTICE_NOT_ON_BAR"), name));
         }
         for (const suggestion of reminders.partySuggestions) {
             const names = suggestion.names.join(", ");
@@ -118,7 +119,8 @@ export class NoticesService {
                 count > NAMES_MAX
                     ? string.format(this.locale.getText("NOTICE_PARTY_COUNT"), spellName, count)
                     : string.format(this.locale.getText("NOTICE_PARTY"), spellName, names);
-            this.addNamedLine(lines, suggestion.spellId, `party:${suggestion.spellId}:${names}`, text);
+            const parts = suggestion.names.map((name) => `party:${suggestion.spellId}:${name}`);
+            this.addNamedLine(lines, suggestion.spellId, parts, text);
         }
         return lines;
     }
@@ -140,13 +142,13 @@ export class NoticesService {
         }
         for (const group of groups) {
             const lineText = this.styles.applyTextColor(group.color, this.locale.getText(text));
-            lines.push({ key: `${kind}:${group.ids.join(",")}`, text: lineText, repeat: group.repeat });
+            lines.push({ parts: group.ids.map((id) => `${kind}:${id}`), text: lineText, repeat: group.repeat });
         }
     }
 
     /** A line that names what it is about, in the buff color of the spell. */
-    private addNamedLine(lines: Line[], spellId: number, key: string, text: string): void {
+    private addNamedLine(lines: Line[], spellId: number, parts: string[], text: string): void {
         const style = this.styles.getStyle("buff", spellId);
-        if (style.isTextOn) lines.push({ key, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
+        if (style.isTextOn) lines.push({ parts, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
     }
 }

@@ -99,7 +99,7 @@ describe("the sound of the message", () => {
         const world = createWorld((state) => setUpPriest(state, false));
         // the message at login played the default
         expect(world.sounds.length).toBe(1);
-        // the same message is shown again after 30 seconds, without a sound
+        // no sound comes later on
         world.advance(35);
         expect(world.sounds).toEqual([18871]);
     });

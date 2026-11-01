@@ -5,7 +5,7 @@
 // addons showing a message at the same time stack their blocks instead of drawing over each other.
 import { attempt } from "./utils/protected-call.utils";
 
-const NOTICE_SECONDS = 10;
+export const NOTICE_SECONDS = 10;
 
 /** The lines one addon shows, and the number of its latest message (an older timer must not remove a newer one). */
 interface OwnedNotice {
