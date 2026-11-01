@@ -3,7 +3,7 @@ import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import { REPEAT_CHOICES } from "../settings/settings.constants";
 import type { StyleService } from "../settings/style.service";
-import { COLUMN, findCenteredX } from "./style-table.constants";
+import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
 
 export class StyleChoicesService {
@@ -44,15 +44,19 @@ export class StyleChoicesService {
         return button;
     }
 
-    /** The message of a low reagent says where it shows; the other kinds' need no words. */
-    addMessageTooltip(box: Frame, getRow: () => StyleRow | undefined): void {
-        box.SetScript("OnEnter", () => {
+    /** The name and type of a low reagent's row say where it works; the other kinds need no words. */
+    addKindTooltip(frame: Frame, getRow: () => StyleRow | undefined): void {
+        const hover = CreateFrame("Frame", undefined, frame);
+        hover.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x, 0);
+        hover.SetSize(COLUMN.kind.x + COLUMN.kind.width - COLUMN.name.x, ROW_HEIGHT);
+        hover.EnableMouse(true);
+        hover.SetScript("OnEnter", () => {
             if (getRow()?.kind !== "reagent") return;
-            GameTooltip.SetOwner(box, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText("TIP_MESSAGE_REAGENT"), 1, 1, 1, 1, true);
+            GameTooltip.SetOwner(hover, "ANCHOR_RIGHT");
+            GameTooltip.SetText(this.locale.getText("TIP_KIND_REAGENT"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
+        hover.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 
     /** What the repeat button shows. */

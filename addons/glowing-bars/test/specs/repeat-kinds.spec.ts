@@ -13,7 +13,7 @@ import {
     type World,
     type SpellDefinition,
 } from "@wowkit/test-kit";
-import { findRow, toggleTable } from "./table.helpers";
+import { findLabel, findRow, toggleTable } from "./table.helpers";
 
 const RECKLESSNESS: SpellDefinition = { id: 1719, name: "Recklessness", rank: 1, icon: 132109, cooldownSeconds: 300, isHelpful: true };
 
@@ -165,3 +165,40 @@ function switchMessageOn(world: World): void {
     message.isChecked = true;
     message.scripts.OnClick!(message);
 }
+
+describe("the tooltip of a low reagent's row", () => {
+    function readTip(world: World, label: string, part: "hover" | "message"): string | undefined {
+        const row = findLabel(world, label)!.parent;
+        const parts = world.frames.filter((frame) => frame.parent === row);
+        const frame = part === "hover" ? parts.find((other) => other.frameType === "Frame")! : findRow(world, label).message;
+        const tooltip = world.findFrame((other) => other.name === "GameTooltip")!;
+        tooltip.text = "";
+        frame.scripts.OnEnter?.(frame);
+        return tooltip.text;
+    }
+
+    function createOpenTable(): World {
+        const world = createWorld((state) => {
+            playAs(state, PRIEST);
+            learnSpell(state, FORTITUDE);
+            learnSpell(state, PRAYER_OF_FORTITUDE);
+            state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+            state.bags[HOLY_CANDLE] = 100;
+        });
+        world.advance(1);
+        toggleTable();
+        return world;
+    }
+
+    it("is on its name and type, and says where it works", () => {
+        expect(readTip(createOpenTable(), "Low reagent", "hover")).toContain("only in a town or an inn");
+    });
+
+    it("is not on the message box any more", () => {
+        expect(readTip(createOpenTable(), "Low reagent", "message")).toBe("");
+    });
+
+    it("is not on a row of another kind", () => {
+        expect(readTip(createOpenTable(), "Missing buff", "hover")).toBe("");
+    });
+});

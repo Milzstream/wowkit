@@ -239,6 +239,7 @@ export class StyleTableService {
         this.connectReset(widgets);
         this.edits.connectRemove(widgets.remove, () => widgets.row);
         this.edits.connectEnabled(widgets.enabled, () => widgets.row);
+        this.choices.addKindTooltip(frame, () => widgets.row);
         return widgets;
     }
 
@@ -313,7 +314,6 @@ export class StyleTableService {
     private connectMessage(widgets: RowWidgets): void {
         widgets.message.SetPoint("LEFT", widgets.frame, "LEFT", findCenteredX(COLUMN.message, 24), 0);
         widgets.message.SetSize(24, 24);
-        this.choices.addMessageTooltip(widgets.message, () => widgets.row);
         widgets.message.SetScript("OnClick", () => this.change(widgets, { isTextOn: widgets.message.GetChecked() }));
     }
 
