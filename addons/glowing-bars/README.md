@@ -27,7 +27,7 @@ Your Rotation.
     classes you buffed there.
 - **Reagents**: the group buff on your action bar (Prayer of Fortitude, Gift of the Wild...) glows, quietly, while its
   reagent runs low (5 or fewer by default, set in the Low at column of the table), also in a town; on arriving in a town or an inn a message on the screen names the reagents.
-- **Low stock**: add any item by its Item ID (arrows, water, candles) as `Low stock` in the table. At 20 or fewer (set in the Low at column,
+- **Low stock**: add any item by its Item ID (arrows, drinks, candles) as `Low stock` in the table. At 20 or fewer (set in the Low at column,
   for all items or for each one) a message on the screen says how many are left, and if the item is on a bar, its button glows too, even at none.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
   Innervate...) or of your race (Blood Fury, Stoneform, Desperate Prayer...) glows when it is ready again after you used
