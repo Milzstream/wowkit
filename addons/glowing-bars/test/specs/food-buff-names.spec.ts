@@ -1,4 +1,4 @@
-import { createWorld, describe, expect, it, playAs, PRIEST, type World } from "@wowkit/test-kit";
+import { createWorld, describe, expect, it, playAs, PRIEST, type FakeFrame, type World } from "@wowkit/test-kit";
 import { toggleTable } from "./table.helpers";
 
 describe("a second food of one name, added in the table", () => {
@@ -68,5 +68,96 @@ describe("a second food of one name, added in the table", () => {
         const world = createWorldWithFirst();
         addById(world, FIRST);
         expect(world.notice()).toContain("Nutritious Food is already in the list.");
+    });
+});
+
+describe("the look of two foods of one name", () => {
+    const FIRST = 1248377;
+    const SECOND = 1248401;
+
+    function createWorldWithBoth(savedSettings: Record<string, unknown> = {}): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                state.spells[FIRST] = { id: FIRST, name: "Nutritious Food", rank: 1, icon: 1 };
+                state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
+            },
+            {
+                customCues: [
+                    { id: FIRST, kind: "buff" },
+                    { id: SECOND, kind: "buff" },
+                ],
+                ...savedSettings,
+            },
+        );
+        world.advance(1);
+        toggleTable();
+        return world;
+    }
+
+    /** The message box of the row with this ID. */
+    function findMessageBox(world: World, id: number): FakeFrame {
+        const idBox = world.frames.find((frame) => frame.frameType === "EditBox" && frame.isShown && frame.text === `${id}`)!;
+        return world.frames.filter((frame) => frame.parent === idBox.parent && frame.frameType === "CheckButton")[0]!;
+    }
+
+    it("is kept for each of them when one row is changed", () => {
+        const world = createWorldWithBoth();
+        const message = findMessageBox(world, FIRST);
+        message.isChecked = true;
+        message.scripts.OnClick!(message);
+        expect(world.getSavedSettings()?.spellStyles).toEqual({ [`buff:${FIRST}`]: { isTextOn: true } });
+        expect(findMessageBox(world, FIRST).isChecked).toBe(true);
+        expect(findMessageBox(world, SECOND).isChecked).toBe(false);
+    });
+});
+
+describe("the glow of two foods of one name, each with a color of its own", () => {
+    const FIRST = 1248377;
+    const SECOND = 1248401;
+    const FIRST_ITEM = 200001;
+    const SECOND_ITEM = 200002;
+
+    function createWorldOnBars(looks: Record<string, unknown>): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                state.spells[FIRST] = { id: FIRST, name: "Nutritious Food", rank: 1, icon: 1 };
+                state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
+                state.itemUseSpells[FIRST_ITEM] = FIRST;
+                state.itemUseSpells[SECOND_ITEM] = SECOND;
+                state.barItems[1] = FIRST_ITEM;
+                state.barItems[2] = SECOND_ITEM;
+                state.bags[FIRST_ITEM] = 5;
+                state.bags[SECOND_ITEM] = 5;
+            },
+            {
+                customCues: [
+                    { id: FIRST, kind: "buff" },
+                    { id: SECOND, kind: "buff" },
+                ],
+                spellStyles: looks,
+            },
+        );
+        world.advance(1);
+        return world;
+    }
+
+    it("shows one glow on each button, not both on both", () => {
+        const world = createWorldOnBars({ [`buff:${FIRST}`]: { color: [1, 0, 0] }, [`buff:${SECOND}`]: { color: [0, 1, 0] } });
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.glowsOn(2)).toBe(1);
+    });
+
+    it("shows one glow on each button with the same color too", () => {
+        const world = createWorldOnBars({});
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.glowsOn(2)).toBe(1);
+    });
+
+    it("keeps the glow of the other food when only one color is changed", () => {
+        const world = createWorldOnBars({ [`buff:${FIRST}`]: { color: [1, 0, 0] } });
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.glowsOn(2)).toBe(1);
     });
 });

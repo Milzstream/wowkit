@@ -192,6 +192,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     const fedBuffs = addon.register(
         new FedBuffsService(customCues, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
     );
+    texts.styles.useOwnLooks((spellId) => fedBuffs.isFedSpell(spellId));
     const { spells, actionBars, weaponEnchants, bags } = game;
     const custom = addon.register(
         new CustomRemindersService(customCues, spells, actionBars, buffs.state, weaponEnchants, bags, settings, reagents, fedBuffs),
@@ -208,10 +209,9 @@ type Reminders = ReturnType<typeof makeReminders>;
 /** The tick: find what is due, show it, look again sooner when something changed; and what happens to the player. */
 function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buffs: Buffs, reminders: Reminders) {
     const { settings, locale, messages, styles } = texts;
-    const lowStock = addon.register(new LowStockService(reminders.customCues, game.bags, reminders.limits, settings));
     const finder = addon.register(
         new FindRemindersService(
-            lowStock,
+            addon.register(new LowStockService(reminders.customCues, game.bags, reminders.limits, settings)),
             game.actionBars,
             buffs.idle,
             game.player,

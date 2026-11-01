@@ -9,10 +9,18 @@ import type { AddonSettingsService, ColorKey, Style, StyleOverride } from "./set
 const PARTS: (keyof Style)[] = ["color", "opacity", "isTextOn", "sound", "repeat"];
 
 export class StyleService {
+    /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
+    private hasOwnLook: (this: void, spellId: number) => boolean = () => false;
+
     constructor(
         private readonly spells: SpellsService,
         private readonly settings: AddonSettingsService,
     ) {}
+
+    /** Spells that share a name but are different things (foods, drinks) each keep a look of their own. */
+    useOwnLooks(hasOwnLook: (this: void, spellId: number) => boolean): void {
+        this.hasOwnLook = hasOwnLook;
+    }
 
     /** The look of a kind of reminder, or of one spell of it: the spell's own, else the kind's, else the default. */
     getStyle(kind: ColorKey, spellId?: number): Style {
@@ -91,7 +99,7 @@ export class StyleService {
 
     /** The key of a spell's look: its kind and its name ("rank:Smite"). */
     private getStyleKey(kind: ColorKey, spellId: number): string {
-        return `${kind}:${this.getSpellKey(spellId)}`;
+        return `${kind}:${this.hasOwnLook(spellId) ? string.format("%d", spellId) : this.getSpellKey(spellId)}`;
     }
 
     private isSameValue(a: unknown, b: unknown): boolean {

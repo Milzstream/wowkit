@@ -74,8 +74,8 @@ export class ShowRemindersService {
     private shownGlowKey: string | undefined;
     /** The weapon buffs due and the low stock: their items glow also when used up, as what is to be made or bought. */
     private usedUpShown: number[] = [];
-    /** The buffs due: a food's button glows only for a buff of its own spell. */
-    private buffSpells: number[] = [];
+    /** The spells of each glow, by its look. */
+    private groupSpells = new LuaMap<string, number[]>();
 
     constructor(
         private readonly glow: GlowService,
@@ -158,7 +158,8 @@ export class ShowRemindersService {
 
     private updateGlows(reminders: Reminders): void {
         const groups = this.listGroups(reminders);
-        this.buffSpells = reminders.buffsToCast;
+        this.groupSpells = new LuaMap<string, number[]>();
+        for (const group of groups) this.groupSpells.set(group.key, group.spells);
         const weaponSpells = reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : [];
         this.usedUpShown = [...weaponSpells, ...reminders.customWeaponSpells, ...reminders.lowStock.map((stock) => stock.key)];
         const glowKey = groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";");
@@ -169,7 +170,8 @@ export class ShowRemindersService {
         for (const group of groups) {
             let glow = this.glows.get(group.key);
             if (glow === undefined) {
-                glow = this.glow.createButtonGlow(group.key, (button) => this.isBarShown(button));
+                const key = group.key;
+                glow = this.glow.createButtonGlow(key, (button) => this.isBarShown(button, key));
                 this.glows.set(group.key, glow);
             }
             glow.show(group.spells, group.color);
@@ -180,10 +182,13 @@ export class ShowRemindersService {
     }
 
     /** A button glows unless it holds an item that has run out, or its bar is switched off (a button of no numbered bar always may). */
-    private isBarShown(button: ActionButton): boolean {
+    private isBarShown(button: ActionButton, groupKey: string): boolean {
         const isUsedUpShown = this.usedUpShown.some((id) => this.actionBars.findButtonsOf(id).includes(button));
         if (!isUsedUpShown && isOutOfItem(this.actionBars, button)) return false;
-        if (!isUsedUpShown && !this.fedBuffs.isButtonWanted(button, this.buffSpells)) return false;
+        // Foods of one name are found on each other's buttons: a button glows only in the look of its own food
+        const spells = this.groupSpells.get(groupKey) ?? [];
+        const isOwnUsedUp = spells.some((id) => this.usedUpShown.includes(id) && this.actionBars.findButtonsOf(id).includes(button));
+        if (!isOwnUsedUp && !this.fedBuffs.isButtonWanted(button, spells)) return false;
         const bar = this.actionBars.getBarNumber(button);
         return bar === undefined || this.settings.get("barOff")[string.format("%d", bar)] !== true;
     }
