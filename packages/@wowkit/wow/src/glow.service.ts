@@ -1,6 +1,7 @@
 // A glow on action buttons: Blizzard's spell-alert ("proc") animation, tinted with a color, in one of three styles (see
 // GlowStyle). The round buttons of Forever's gamepad bars get the client's own round highlight instead, breathing or
-// still: the square alert does not fit them. Every breathing glow breathes in step.
+// still: the square alert does not fit them; so do the buttons another addon registered as round. Every breathing glow
+// breathes in step.
 //
 // A glow on a button of the gamepad bars is a frame of our own beside it, never its child: the gamepad bars' code goes
 // through the children of its buttons, and a frame an addon made there taints it (the game then blocks its
@@ -228,9 +229,9 @@ export class GlowService {
         return this.sizes.get(button) ?? [36, 36, 1];
     }
 
-    /** A button of the gamepad bars (Forever): they say their shape, round or square. */
+    /** A button of the gamepad bars (Forever): they say their shape, round or square. Another addon's may too, but it is no such button. */
     private isGamepadButton(button: ActionButton): boolean {
-        return (button as { activeButtonShape?: unknown }).activeButtonShape !== undefined;
+        return (button as { activeButtonShape?: unknown }).activeButtonShape !== undefined && !this.actionBars.isRegistered(button);
     }
 
     /** The glows beside a gamepad button hide with it, and show again with it while they are lit. */
@@ -356,9 +357,9 @@ export class GlowService {
         return { frame, texture };
     }
 
-    /** A round button of the gamepad bars (Forever): they say their shape themselves. */
+    /** A round button: one another addon registered as round, or a round one of the gamepad bars (Forever). */
     private isRoundButton(button: ActionButton): boolean {
-        return (button as { activeButtonShape?: unknown }).activeButtonShape === "Circle";
+        return this.actionBars.getButtonShape(button) === "Circle";
     }
 
     /** The client's round halo and highlight around the button (the art of the gamepad bars), pulsing. */

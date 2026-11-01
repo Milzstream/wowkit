@@ -64,7 +64,8 @@ EllesmereUI's bars 9 and 10 and ElvUI's bars of no Blizzard bar glow, but have n
 `bar` being the Action Bar (1 to 8) the button counts as, for its switch and its fading, or `nil` for none. The button
 keeps its action slot where Blizzard's do (`action`, as buttons made from `ActionBarButtonTemplate` or
 LibActionButton-1.0 have it). A stance button has no slot: `GlowingBars.RegisterStanceButton(button, stance)` says
-which stance (1 the first form, or a paladin's first aura) it stands for. List `GlowingBars` in `## OptionalDeps`, so
+which stance (1 the first form, or a paladin's first aura) it stands for. A round button (a gamepad addon's) passes
+`"Circle"` as a third argument to either, and gets a round glow instead of the square one. List `GlowingBars` in `## OptionalDeps`, so
 the API is there when your addon loads:
 
 ```lua
