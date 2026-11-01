@@ -20,6 +20,8 @@ import "./bars.spec";
 import "./elvui.spec";
 import "./daylightui.spec";
 import "./public-api.spec";
+import "./food-buff.spec";
+import "./food-buff-learning.spec";
 import "./gathering.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";

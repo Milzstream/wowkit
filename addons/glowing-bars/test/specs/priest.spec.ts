@@ -117,25 +117,17 @@ describe("a priest", () => {
     });
 });
 
-describe("a priest who eats", () => {
-    /** A priest with Fortitude missing on the first button, and the buff of eating on (named as the client names it). */
-    function createEatingPriest(foodName: string, isFoodNamedByClient: boolean): World {
-        return createWorld((state) => {
-            playAs(state, PRIEST);
-            learnSpell(state, FORTITUDE);
-            state.bars[1] = FORTITUDE.id;
-            // The client's name of the food buff (spell 433): "Comida" on a Spanish client
-            if (isFoodNamedByClient) state.spells[433] = { id: 433, name: foodName, rank: 1, icon: 1 };
-            state.auras.push({ name: foodName, spellId: 433, expirationTime: 1000 + 30 });
-        });
-    }
-
-    it("stays quiet", () => {
-        expect(createEatingPriest("Food", false).glowsOn(1)).toBe(0);
-    });
-
-    it("stays quiet on a Spanish client too, where the buff of eating is not called Food", () => {
-        expect(createEatingPriest("Comida", true).glowsOn(1)).toBe(0);
+describe("a priest who eats or drinks", () => {
+    it("still sees its missing buff glow", () => {
+        for (const name of ["Food", "Drink", "Nutritious Food", "Nutritious Drink"]) {
+            const world = createWorld((state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, FORTITUDE);
+                state.bars[1] = FORTITUDE.id;
+                state.auras.push({ name, spellId: 433, expirationTime: 1000 + 30 });
+            });
+            expect(world.glowsOn(1)).toBe(1);
+        }
     });
 });
 

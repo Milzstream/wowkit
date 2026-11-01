@@ -39,6 +39,8 @@ export function createDefaultSettings(): AddonSettings {
         rankOff: {},
         glowOn: {},
         lastBuffs: {},
+        fedBuffs: {},
+        fedItems: {},
     };
 }
 

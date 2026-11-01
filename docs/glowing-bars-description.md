@@ -27,7 +27,7 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Procs** – Overpower, Revenge, Execute, Victory Rush, Riposte, Counterattack, Mongoose Bite and Hammer of Wrath glow while you can use them.
 *   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you.
 
-It stays quiet while you are dead, mounted, on a taxi or eating, and (if you like) while you rest in a town.
+It stays quiet while you are dead, mounted or on a taxi, and (if you like) while you rest in a town.
 
 ## Make it yours
 

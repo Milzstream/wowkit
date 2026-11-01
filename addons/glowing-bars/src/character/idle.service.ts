@@ -4,9 +4,9 @@ import type { PlayerService } from "@wowkit/wow";
 export class IdleService {
     constructor(private readonly player: PlayerService) {}
 
-    /** Nothing is shown while dead, on a taxi, mounted, eating, or (when asked) resting in town. */
+    /** Nothing is shown while dead, on a taxi, mounted, or (when asked) resting in town. */
     shouldStayIdle(shouldStayQuietWhenResting: boolean): boolean {
-        if (this.player.isDead() || this.player.isOnTaxi() || this.player.isMounted() || this.player.isEating()) return true;
+        if (this.player.isDead() || this.player.isOnTaxi() || this.player.isMounted()) return true;
         // A town or an inn: nobody fights there
         return shouldStayQuietWhenResting && !this.player.isInCombat() && this.player.isResting();
     }

@@ -91,6 +91,10 @@ export interface AddonSettings {
     glowOn: { [spellId: string]: boolean | undefined };
     /** The buff of a group (one aura, one armor) the player cast last, by the group's first spell ID: the one that glows. */
     lastBuffs: { [group: string]: number | undefined };
+    /** The Well Fed each food or drink the player added gives, as learned when it was used (spell ID -> the aura's spell ID). */
+    fedBuffs: { [spell: string]: number | undefined };
+    /** The item of each food or drink the player added, as seen on a button (spell ID -> item ID). */
+    fedItems: { [spell: string]: number | undefined };
     /** The spells whose old rank is not reminded of, by name; only set where the player switched one off. */
     rankOff: { [spellName: string]: boolean | undefined };
     /** Per-reagent switches (by item ID); only set where the player switched one off. */

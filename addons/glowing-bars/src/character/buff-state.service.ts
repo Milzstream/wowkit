@@ -62,6 +62,14 @@ export class BuffStateService {
         return false;
     }
 
+    /** The auras of the buff's name on the player (their IDs may differ); undefined while the client hides auras. */
+    findAuras(spellId: number): AuraEntry[] | undefined {
+        const scan = this.auras.scanAuras("player");
+        if (scan.isUnreadable || scan.auras.some((aura) => aura.isHidden || aura.name === undefined)) return undefined;
+        const wantKey = buildNameKey(this.getBuffName(spellId) ?? "");
+        return scan.auras.filter((aura) => buildNameKey(aura.name!) === wantKey);
+    }
+
     /** The player cast a spell: if it is a buff on the player, it is up now. */
     noteSelfBuff(spellId: number | undefined): void {
         if (spellId === undefined || !isReadable(spellId)) return;
@@ -129,7 +137,7 @@ export class BuffStateService {
 
     /** The name the client gives the buff (the rank the player knows first). */
     private getBuffName(spellId: number): string | undefined {
-        return this.spells.getSpellName(this.spells.resolve(spellId) ?? spellId) ?? this.spells.getSpellName(spellId);
+        return this.spells.getSpellName(this.spells.resolve(spellId) ?? spellId) ?? this.spells.getSpellLabel(spellId);
     }
 
     /** Looks for the buff in the list of the player's auras: by name, by ID, then by its buff category. */

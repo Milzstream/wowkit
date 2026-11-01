@@ -65,6 +65,7 @@ import { ReagentsService } from "./reagents/reagents.service";
 import { BuffReminderService } from "./reminders/buff-reminder.service";
 import { ClassBuffsService } from "./reminders/class-buffs.service";
 import { CustomRemindersService } from "./reminders/custom-reminders.service";
+import { FedBuffsService } from "./reminders/fed-buffs.service";
 import { OutdatedRanksService } from "./reminders/outdated-ranks.service";
 import { SealReminderService } from "./reminders/seal-reminder.service";
 import { TrackingReminderService } from "./reminders/tracking-reminder.service";
@@ -189,21 +190,16 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     // Its own block of the shared notice: the tick clearing its lines must not take the town message with them
     const townNotice = addon.register(new NoticeService(`${addonName}-town`));
     addon.register(new TownVisitService(game.player, reagents, settings, townNotice, texts.locale, texts.styles));
+    const fedBuffs = addon.register(
+        new FedBuffsService(customCues, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
+    );
+    const { spells, actionBars, weaponEnchants, bags } = game;
     const custom = addon.register(
-        new CustomRemindersService(
-            customCues,
-            game.spells,
-            game.actionBars,
-            buffs.state,
-            game.weaponEnchants,
-            game.bags,
-            settings,
-            reagents,
-        ),
+        new CustomRemindersService(customCues, spells, actionBars, buffs.state, weaponEnchants, bags, settings, reagents, fedBuffs),
     );
     const seal = addon.register(new SealReminderService(game.spells, game.actionBars, buffs.state, game.player, settings, customCues));
     const tracking = addon.register(new TrackingReminderService(game.spells, game.actionBars, buffs.state, settings, customCues));
-    return { buff, reagents, party, weaponChoice, weapon, outdatedRanks, glowCues, customCues, custom, seal, tracking };
+    return { buff, reagents, party, weaponChoice, weapon, outdatedRanks, glowCues, customCues, custom, fedBuffs, seal, tracking };
 }
 type Reminders = ReturnType<typeof makeReminders>;
 
@@ -229,8 +225,9 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
         ),
     );
     const notices = addon.register(new NoticesService(game.actionBars, game.clock, game.notice, game.spells, locale, styles));
+    const { fedBuffs } = reminders;
     const shower = addon.register(
-        new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock),
+        new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock, fedBuffs),
     );
     const tick = addon.register(new TickService(finder, shower));
     const refresh = addon.register(new RefreshService(tick, shower, buffs.state, game.clock, game.barRefresh));
@@ -257,6 +254,7 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
             reminders.customCues,
             reminders.seal,
             reminders.tracking,
+            reminders.fedBuffs,
         ),
     );
     const choices = addon.register(new StyleChoicesService(locale, styles, messages));

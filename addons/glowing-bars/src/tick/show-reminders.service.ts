@@ -6,8 +6,17 @@
 import type { MessagesService, SoundKey } from "@wowkit/ui";
 import type { StyleService } from "../settings/style.service";
 import type { AddonSettingsService, ColorKey } from "../settings/settings.interface";
-import type { ActionBarsService, BarFadeService, ClockService, GlowService, ButtonGlow, Rgb } from "@wowkit/wow";
+import {
+    type ActionBarsService,
+    type BarFadeService,
+    type ClockService,
+    type GlowService,
+    type ButtonGlow,
+    type Rgb,
+    isOutOfItem,
+} from "@wowkit/wow";
 import type { NoticesService } from "./notices.service";
+import type { FedBuffsService } from "../reminders/fed-buffs.service";
 import type { Reminders } from "./tick.interface";
 
 /** One kind of reminder: the setting that switches it on, and the spells of the reminders that make it glow. */
@@ -53,6 +62,10 @@ export class ShowRemindersService {
     private soundPlayedAt = new LuaMap<string, number>();
     /** The glows of the previous tick as one text; undefined makes the next tick set the glows again. */
     private shownGlowKey: string | undefined;
+    /** The weapon buffs due: their items glow also when used up, as the weapon reminder asks for what can be made. */
+    private weaponSpells: number[] = [];
+    /** The buffs due: a food's button glows only for a buff of its own spell. */
+    private buffSpells: number[] = [];
 
     constructor(
         private readonly glow: GlowService,
@@ -63,6 +76,7 @@ export class ShowRemindersService {
         private readonly actionBars: ActionBarsService,
         private readonly barFade: BarFadeService,
         private readonly clock: ClockService,
+        private readonly fedBuffs: FedBuffsService,
     ) {}
 
     showReminders(reminders: Reminders): void {
@@ -133,6 +147,8 @@ export class ShowRemindersService {
 
     private updateGlows(reminders: Reminders): void {
         const groups = this.listGroups(reminders);
+        this.buffSpells = reminders.buffsToCast;
+        this.weaponSpells = [...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []), ...reminders.customWeaponSpells];
         const glowKey = groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";");
         if (glowKey === this.shownGlowKey) return;
         this.glow.setStyles(this.settings.get("glowStyle"), this.settings.get("roundGlowStyle"));
@@ -151,8 +167,11 @@ export class ShowRemindersService {
         this.shownGlowKey = glowKey;
     }
 
-    /** A button glows unless its bar is switched off (a button of no numbered bar always may). */
+    /** A button glows unless it holds an item that has run out, or its bar is switched off (a button of no numbered bar always may). */
     private isBarShown(button: ActionButton): boolean {
+        const isWeaponBuff = this.weaponSpells.some((id) => this.actionBars.findButtonsOf(id).includes(button));
+        if (!isWeaponBuff && isOutOfItem(this.actionBars, button)) return false;
+        if (!this.fedBuffs.isButtonWanted(button, this.buffSpells)) return false;
         const bar = this.actionBars.getBarNumber(button);
         return bar === undefined || this.settings.get("barOff")[string.format("%d", bar)] !== true;
     }

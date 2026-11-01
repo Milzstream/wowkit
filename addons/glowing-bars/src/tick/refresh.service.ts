@@ -31,6 +31,12 @@ export class RefreshService {
         });
     }
 
+    /** An item on a button may have run out, or come back. */
+    @OnGameEvent("BAG_UPDATE_DELAYED")
+    requestTickForBags(): void {
+        this.requestTick();
+    }
+
     /** A tick that reads the auras again instead of reusing a recent read. */
     @OnGameEvent(
         "PLAYER_UPDATE_RESTING",

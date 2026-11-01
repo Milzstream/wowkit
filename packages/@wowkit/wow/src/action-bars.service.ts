@@ -342,7 +342,7 @@ export class ActionBarsService implements OnFirstLogin {
      * `action` (a druid form or warrior stance pages the main bar, e.g. bear form to 73-84), while
      * its "action" attribute is the base slot 1-12, so the attribute comes last.
      */
-    private getActionSlot(button: ActionButton): number | undefined {
+    getActionSlot(button: ActionButton): number | undefined {
         const getValidSlot = (slot: unknown) => (slot !== undefined && slot !== 0 ? (slot as number) : undefined);
         return (
             getValidSlot(button.GetPagedID ? attempt(() => button.GetPagedID!()) : undefined) ??

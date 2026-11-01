@@ -14,6 +14,7 @@ export * from "./party.service";
 export * from "./player.service";
 export * from "./utils/protected-call.utils";
 export * from "./utils/global.utils";
+export * from "./utils/item-button.utils";
 export * from "./utils/secret-value.utils";
 export * from "./utils/spell-name.utils";
 export * from "./saved-variables.service";

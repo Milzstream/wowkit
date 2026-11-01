@@ -8,6 +8,7 @@ import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { ClassBuffsService } from "../reminders/class-buffs.service";
+import type { FedBuffsService } from "../reminders/fed-buffs.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { WeaponChoiceService } from "../reminders/weapon/weapon-choice.service";
@@ -53,6 +54,7 @@ export class StyleRowsService {
         private readonly customCues: CustomCuesService,
         private readonly sealReminder: SealReminderService,
         private readonly trackingReminder: TrackingReminderService,
+        private readonly fedBuffs: FedBuffsService,
     ) {}
 
     /** The default look of each kind of reminder this character has spells of (a warrior has no weapon buff to remind of). */
@@ -65,6 +67,16 @@ export class StyleRowsService {
         }));
     }
 
+    /** How a row shows a spell. A food or drink the player added goes by its item: the spell's name is the same for all of them. */
+    private readLook(spellId: number, name: string, isCustom: boolean): { key: string; label: string; iconId: number | undefined } {
+        const item = isCustom ? this.fedBuffs.findItemLook(spellId) : undefined;
+        return {
+            key: item?.name ?? name,
+            label: item?.name ?? this.spells.getSpellLabel(spellId) ?? name,
+            iconId: item?.iconId ?? this.spells.getSpellInfo(spellId)?.iconID,
+        };
+    }
+
     /** The spells of the class that can have a look of their own, by kind, then by name. A spell is listed once. */
     listSpellRows(): StyleRow[] {
         const rows: StyleRow[] = [];
@@ -73,16 +85,16 @@ export class StyleRowsService {
         const add = (kind: ColorKey, spellId: number | undefined, extra: Partial<StyleRow> = {}, suffix?: string) => {
             if (spellId === undefined) return;
             const name = this.styles.getSpellKey(spellId);
+            const look = this.readLook(spellId, name, extra.isCustom === true);
             // A spell the player added has a row of its own even when a list has it as another kind: it glows on its own too
-            const key = extra.isCustom === true ? `${kind}:${name}` : suffix !== undefined ? `${name}|${suffix}` : name;
+            const key = extra.isCustom === true ? `${kind}:${look.key}` : suffix !== undefined ? `${name}|${suffix}` : name;
             if (keys.has(key)) return;
             keys.add(key);
-            const label = this.spells.getSpellLabel(spellId) ?? name;
             rows.push({
                 kind,
                 spellId,
-                label: suffix !== undefined ? `${label} (${suffix})` : label,
-                iconId: this.spells.getSpellInfo(spellId)?.iconID,
+                label: suffix !== undefined ? `${look.label} (${suffix})` : look.label,
+                iconId: look.iconId,
                 ...extra,
             });
         };

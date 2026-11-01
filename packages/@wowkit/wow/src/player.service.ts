@@ -14,7 +14,7 @@ export interface WorldPosition {
 }
 
 export class PlayerService {
-    /** The lowercase names of the eating and drinking buffs (every food gives "Food", every drink "Drink", in the client's language). */
+    /** The lowercase names of the eating and drinking buffs, in the client's language. */
     private eatingNames: LuaSet<string> | undefined;
 
     isInCombat(): boolean {
@@ -211,6 +211,8 @@ export class PlayerService {
         for (const [spellId, english] of [
             [Consumable.Food, "food"],
             [Consumable.Drink, "drink"],
+            [Consumable.NutritiousFood, "nutritious food"],
+            [Consumable.NutritiousDrink, "nutritious drink"],
         ] as const) {
             // The English name too, for a client that does not name the spell
             names.add(english);

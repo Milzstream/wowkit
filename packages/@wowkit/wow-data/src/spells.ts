@@ -471,14 +471,24 @@ export const Cure = {
     RemoveCurse: 2782,
 };
 
-/** The buffs of eating and drinking: every food gives the buff "Food", every drink "Drink". */
+/**
+ * The buffs of eating and drinking: a food gives the buff "Food", a drink "Drink", Forever's better ones "Nutritious Food"
+ * and "Nutritious Drink" (each food has an ID of its own, the name is the one to go by); a good food or a Nutritious Drink, after it, "Well Fed".
+ */
 export const Consumable = {
     Food: 433,
     Drink: 430,
+    NutritiousFood: 1248377,
+    NutritiousDrink: 1249906,
+    WellFed: 19705,
 };
 
 /** The English spellbook names of IDs the client may not name (the first one is the one shown): a facade falls back on them. */
 export const SPELL_NAME_HINT: { [spellId: number]: string | string[] | undefined } = {
+    [Consumable.Food]: "Food",
+    [Consumable.NutritiousFood]: "Nutritious Food",
+    [Consumable.NutritiousDrink]: "Nutritious Drink",
+    [Consumable.WellFed]: "Well Fed",
     [Shaman.WaterShield]: "Water Shield",
     [Priest.PrayerOfFortitude[0]!]: "Prayer of Fortitude",
     [Priest.PrayerOfFortitude[1]!]: "Prayer of Fortitude",

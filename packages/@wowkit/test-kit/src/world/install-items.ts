@@ -22,7 +22,8 @@ export function installItems(state: ClientState, sounds: number[]): void {
         GetItemSpell: (item) => $multi(undefined, state.itemUseSpells[item as number]),
         // By ID, or by a name the test gave an item ID
         GetItemCount: (item) => state.bags[(type(item) === "string" ? state.itemIds[item as string] : (item as number)) ?? 0] ?? 0,
-        GetItemNameByID: () => undefined,
+        GetItemNameByID: (item) => state.itemNames[item as number],
+        GetItemIconByID: () => undefined,
     });
 
     defineNamespace<typeof C_Sound>("C_Sound", {
