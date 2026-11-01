@@ -102,6 +102,7 @@ export const TEXTS = {
     BTN_ADD: "Add",
     MSG_UNKNOWN_SPELL: "No spell found with ID %d.",
     MSG_ALREADY_LISTED: "%s is already in the list.",
+    MSG_FOOD_IS_BUFF: "%s is a food or drink, add it as Missing buff.",
     MSG_NO_COOLDOWN: "%s has no cooldown, pick another type.",
     MSG_NO_REAGENT: "%s uses no reagent, pick another type.",
     COL_COLOR: "Color",

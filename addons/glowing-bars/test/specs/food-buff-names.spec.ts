@@ -47,6 +47,23 @@ describe("a second food of one name, added in the table", () => {
         expect(countIdBoxes(world, SECOND)).toBe(1);
     });
 
+    it("is refused as anything but a buff", () => {
+        const world = createWorldWithFirst();
+        const box = world.frames.find(
+            (frame) =>
+                frame.frameType === "EditBox" &&
+                !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
+        )!;
+        const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
+        for (const kind of ["Ready cooldown", "Low reagent", "Proc"]) {
+            for (let click = 0; click < 10 && buttons[0]!.text !== kind; click++) buttons[0]!.scripts.OnClick!(buttons[0]!);
+            box.text = `${SECOND}`;
+            buttons[1]!.scripts.OnClick!(buttons[1]!);
+            expect(world.notice()).toContain("Nutritious Food is a food or drink, add it as Missing buff.");
+        }
+        expect(world.getSavedSettings()?.customCues).toEqual([{ id: FIRST, kind: "buff" }]);
+    });
+
     it("is refused when its very ID is in the list", () => {
         const world = createWorldWithFirst();
         addById(world, FIRST);

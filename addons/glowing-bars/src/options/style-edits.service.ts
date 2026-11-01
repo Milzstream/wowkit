@@ -194,7 +194,8 @@ export class StyleEditsService {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return false;
         }
-        const problem = this.customCues.findKindProblem(spellId, kind);
+        const isWrongForFood = this.rows.isSharingName(spellId) && kind !== "buff";
+        const problem = isWrongForFood ? "MSG_FOOD_IS_BUFF" : this.customCues.findKindProblem(spellId, kind);
         if (problem !== undefined) {
             this.showProblem(string.format(this.locale.getText(problem), name), ERROR_COLOR);
             return false;
