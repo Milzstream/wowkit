@@ -86,6 +86,18 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
         expect(world.glowsOn(2)).toBe(0);
     });
 
+    it("glows for 1 second once Recklessness is back, when the player chose the shortest", () => {
+        world.setOption("cooldownGlowSeconds", "1");
+        world.state.isInCombat = true;
+        world.state.cooldowns[RECKLESSNESS.id] = { start: 0, duration: 99999 };
+        world.advance(0.5);
+        world.state.cooldowns[RECKLESSNESS.id] = undefined;
+        world.advance(0.6);
+        expect(world.glowsOn(2)).toBe(1);
+        world.advance(1);
+        expect(world.glowsOn(2)).toBe(0);
+    });
+
     it("glows until it is pressed when the player chose so", () => {
         world.setOption("cooldownGlowSeconds", "0");
         world.state.isInCombat = true;
@@ -213,5 +225,12 @@ describe("a warrior who added Recklessness as a cooldown and as a proc", () => {
             ],
         });
         expect(world.proxySettings["GlowingBars_isMuted"]).toBeDefined();
+    });
+});
+
+describe("a warrior who saved the shortest glow of a cooldown", () => {
+    it("keeps it after a reload: 1 second is one of the choices", () => {
+        const world = createWorld(setUpWarrior, { cooldownGlowSeconds: 1 });
+        expect(world.getSavedSettings()?.cooldownGlowSeconds).toBe(1);
     });
 });

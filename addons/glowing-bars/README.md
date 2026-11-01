@@ -29,7 +29,7 @@ Your Rotation.
   reagent runs low (5 or fewer by default, set on the Settings page), also in a town; on arriving in a town or an inn a message on the screen names the reagents.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
   Innervate...) or of your race (Blood Fury, Stoneform, Desperate Prayer...) glows when it is ready again after you used
-  it, or after it was running as the fight began: for 3 seconds by default (2, 5, 10, or until you press it). If you like, the ready
+  it, or after it was running as the fight began: for 3 seconds by default (1, 2, 5, 10, or until you press it). If you like, the ready
   ones glow as a fight starts too, a reminder to use them. Out of
   combat they glow only if you ask. The list is a default you can switch off spell by spell. When the client hides a
   cooldown in combat, the addon remembers the one it saw or started with a cast.

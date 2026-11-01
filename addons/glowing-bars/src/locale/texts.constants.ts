@@ -56,6 +56,7 @@ export const TEXTS = {
         "When a fight starts, every ready cooldown glows too, as a reminder to use it (Berserking, Recklessness...).",
     OPT_COOLDOWN_SECONDS: "Glow time when ready",
     TIP_COOLDOWN_SECONDS: "How long a cooldown glows in combat once it's ready again.",
+    OPT_SECOND: "%d second",
     OPT_SECONDS: "%d seconds",
     OPT_UNTIL_PRESSED: "Until pressed",
 

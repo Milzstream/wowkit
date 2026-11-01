@@ -67,7 +67,7 @@ export const REPEAT_KINDS: ColorKey[] = ["buff", "weapon", "tracking", "rank"];
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 /** The choices of how long a cooldown glows once it is back (seconds; 0 = until it is pressed). */
-export const COOLDOWN_GLOW_CHOICES = [2, 3, 5, 10, 0];
+export const COOLDOWN_GLOW_CHOICES = [1, 2, 3, 5, 10, 0];
 
 /** The choices of how few of a reagent in the bags is running low. */
 export const REAGENT_LOW_CHOICES = [5, 10, 20, 40];

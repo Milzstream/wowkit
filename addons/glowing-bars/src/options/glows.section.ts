@@ -39,7 +39,9 @@ export class GlowsSection {
             () =>
                 COOLDOWN_GLOW_CHOICES.map((seconds): [string, string] => [
                     string.format("%d", seconds),
-                    seconds === 0 ? this.locale.getText("OPT_UNTIL_PRESSED") : string.format(this.locale.getText("OPT_SECONDS"), seconds),
+                    seconds === 0
+                        ? this.locale.getText("OPT_UNTIL_PRESSED")
+                        : string.format(this.locale.getText(seconds === 1 ? "OPT_SECOND" : "OPT_SECONDS"), seconds),
                 ]),
             true,
         );
