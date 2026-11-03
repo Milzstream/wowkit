@@ -19,6 +19,8 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
     private readonly schedule = new GlowSchedule();
     /** Was the player in a town at the last tick: arriving, an Alert in town starts over. */
     private wasInTown = false;
+    /** Was the player in combat at the last tick: as a fight starts, a ready cooldown starts over. */
+    private wasInCombat = false;
 
     constructor(
         private readonly finder: FindRemindersService,
@@ -58,11 +60,15 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
         const isInTown = now.town;
         const hasArrivedInTown = isInTown && !this.wasInTown;
         this.wasInTown = isInTown;
+        const hasFightStarted = now.combat && !this.wasInCombat;
+        this.wasInCombat = now.combat;
         this.schedule.startTick();
         return {
-            ...filterReminders(byWhen, (kind, id) =>
-                this.schedule.isShowing(`${kind}:${id}`, this.styles.getStyle(kind, id), time, isInTown, hasArrivedInTown),
-            ),
+            ...filterReminders(byWhen, (kind, id) => {
+                const style = this.styles.getStyle(kind, id);
+                const isStartingOver = (style.when === "townText" && hasArrivedInTown) || (kind === "cooldown" && hasFightStarted);
+                return this.schedule.isShowing(`${kind}:${id}`, style, time, isInTown, isStartingOver);
+            }),
             isInTown,
         };
     }
