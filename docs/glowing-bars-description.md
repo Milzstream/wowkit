@@ -33,7 +33,7 @@ It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in 
 
 ## Make it yours
 
-Type **/gb** to open the table. Every reminder type has the same settings, and every spell of your class can have its own:
+Type **/gb** to open the table. It opens in a **Basic** view with the columns most people need; the **Advanced** button at the top shows all of them. Every reminder type has the same settings, and every spell of your class can have its own:
 
 *   **Color** of the glow and of the message
 *   **Glow %**, 1 to 100
