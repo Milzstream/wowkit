@@ -2,7 +2,8 @@
 // long, and a color from the game's picker.
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { GLOW_SECONDS_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { ANIMATION_CHOICES, GLOW_SECONDS_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { STYLE_TEXTS } from "./glow-style.section";
 import type { ColorKey, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
@@ -17,6 +18,7 @@ export interface ChoiceButtons {
     repeat: Button;
     when: Button;
     glowTime: Button;
+    animation: Button;
 }
 
 /** The words of each When. */
@@ -54,6 +56,7 @@ export class StyleChoicesService {
             repeat: this.createRepeatButton(frame, getRow),
             when: this.createWhenButton(frame, getRow),
             glowTime: this.createGlowTimeButton(frame, getRow),
+            animation: this.createAnimationButton(frame, getRow),
         };
     }
 
@@ -61,7 +64,9 @@ export class StyleChoicesService {
     fillChoices(buttons: ChoiceButtons, row: StyleRow): void {
         this.fillRepeat(buttons.repeat, row);
         this.fillWhen(buttons.when, row);
-        const seconds = this.styles.getStyle(row.kind, row.spellId).glowSeconds;
+        const style = this.styles.getStyle(row.kind, row.spellId);
+        buttons.animation.SetText(this.locale.getText(STYLE_TEXTS[style.animation]));
+        const seconds = style.glowSeconds;
         buttons.glowTime.SetText(
             seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds),
         );
@@ -129,6 +134,24 @@ export class StyleChoicesService {
             this.styles.changeStyle(row.kind, row.spellId, { glowSeconds: chosen });
         });
         this.addTooltip(button, () => "TIP_GLOW_TIME");
+        return button;
+    }
+
+    /** The animation button of a row: left click the next choice, right click the one before. */
+    private createAnimationButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
+        const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
+        button.SetSize(82, 24);
+        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.animation, 82), 0);
+        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
+        button.SetScript("OnClick", (_button, mouseButton) => {
+            const row = getRow();
+            if (row === undefined) return;
+            const index = math.max(0, ANIMATION_CHOICES.indexOf(this.styles.getStyle(row.kind, row.spellId).animation));
+            const step = mouseButton === "RightButton" ? -1 : 1;
+            const chosen = ANIMATION_CHOICES[(index + step + ANIMATION_CHOICES.length) % ANIMATION_CHOICES.length]!;
+            this.styles.changeStyle(row.kind, row.spellId, { animation: chosen });
+        });
+        this.addTooltip(button, () => "TIP_ANIMATION");
         return button;
     }
 

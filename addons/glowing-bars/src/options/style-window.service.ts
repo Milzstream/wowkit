@@ -113,6 +113,7 @@ export class StyleWindowService {
             [COLUMN.repeat, "COL_REPEAT", true],
             [COLUMN.when, "COL_WHEN", true],
             [COLUMN.glowTime, "COL_GLOW_TIME", true],
+            [COLUMN.animation, "COL_ANIMATION", true],
             [COLUMN.lowAt, "COL_LOW_AT", true],
             [COLUMN.enabled, "COL_ON", true],
         ];
@@ -122,6 +123,21 @@ export class StyleWindowService {
             header.SetWidth(column.width);
             header.SetJustifyH(isCentered ? "CENTER" : "LEFT");
             header.SetText(this.locale.getText(text));
+            if (column === COLUMN.animation) this.addHeaderTooltip(window, column, "TIP_ANIMATION");
         }
+    }
+
+    /** A header that explains its column as the mouse comes over it (the round buttons, for the animations). */
+    private addHeaderTooltip(window: Frame, column: Column, tip: TextKey): void {
+        const hover = CreateFrame("Frame", undefined, window);
+        hover.SetPoint("TOPLEFT", window, "TOPLEFT", TABLE_LEFT + column.x, -38);
+        hover.SetSize(column.width, 18);
+        hover.EnableMouse(true);
+        hover.SetScript("OnEnter", () => {
+            GameTooltip.SetOwner(hover, "ANCHOR_TOP");
+            GameTooltip.SetText(this.locale.getText(tip), 1, 1, 1, 1, true);
+            GameTooltip.Show();
+        });
+        hover.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 }

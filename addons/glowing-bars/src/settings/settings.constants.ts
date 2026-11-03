@@ -1,4 +1,5 @@
 import { isSoundKey } from "@wowkit/ui";
+import type { GlowStyle } from "@wowkit/wow";
 import type { AddonSettings, ColorKey, CueKind, Style, StyleOverride, When } from "./settings.interface";
 
 /** The global the TOC saves per character (## SavedVariablesPerCharacter). */
@@ -8,7 +9,6 @@ export function createDefaultSettings(): AddonSettings {
     return {
         isMuted: false,
         hideResting: true,
-        glowStyle: "circling",
         roundGlowStyle: "breathing",
         showBuff: true,
         showWeapon: true,
@@ -47,19 +47,100 @@ export function createDefaultSettings(): AddonSettings {
 
 /** The look of each kind of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
 export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
-    buff: { color: [0.2, 0.55, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
-    weapon: { color: [1, 0.55, 0.1], opacity: 100, isTextOn: false, sound: "alarm2", repeat: 0, when: "always", glowSeconds: 0 },
+    buff: {
+        color: [0.2, 0.55, 1],
+        opacity: 100,
+        isTextOn: false,
+        sound: "none",
+        repeat: 0,
+        when: "always",
+        glowSeconds: 0,
+        animation: "circling",
+    },
+    weapon: {
+        color: [1, 0.55, 0.1],
+        opacity: 100,
+        isTextOn: false,
+        sound: "alarm2",
+        repeat: 0,
+        when: "always",
+        glowSeconds: 0,
+        animation: "circling",
+    },
     // The paladin's gold
-    seal: { color: [1, 0.85, 0.2], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat", glowSeconds: 0 },
+    seal: {
+        color: [1, 0.85, 0.2],
+        opacity: 100,
+        isTextOn: false,
+        sound: "none",
+        repeat: 0,
+        when: "combat",
+        glowSeconds: 0,
+        animation: "circling",
+    },
     // #1AA6BF, a deep turquoise: a lighter cyan glows almost white
-    tracking: { color: [0.1, 0.65, 0.75], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
-    cooldown: { color: [1, 1, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat", glowSeconds: 3 },
-    proc: { color: [1, 0.12, 0.08], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
-    rank: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "alarm1", repeat: 0, when: "always", glowSeconds: 0 },
+    tracking: {
+        color: [0.1, 0.65, 0.75],
+        opacity: 100,
+        isTextOn: false,
+        sound: "none",
+        repeat: 0,
+        when: "always",
+        glowSeconds: 0,
+        animation: "circling",
+    },
+    cooldown: {
+        color: [1, 1, 1],
+        opacity: 100,
+        isTextOn: false,
+        sound: "none",
+        repeat: 0,
+        when: "combat",
+        glowSeconds: 3,
+        animation: "circling",
+    },
+    proc: {
+        color: [1, 0.12, 0.08],
+        opacity: 100,
+        isTextOn: false,
+        sound: "none",
+        repeat: 0,
+        when: "always",
+        glowSeconds: 0,
+        animation: "circling",
+    },
+    rank: {
+        color: [1, 0.85, 0.2],
+        opacity: 50,
+        isTextOn: true,
+        sound: "alarm1",
+        repeat: 0,
+        when: "always",
+        glowSeconds: 0,
+        animation: "circling",
+    },
     // Its message is the town's: it names the reagents to buy
-    reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText", glowSeconds: 0 },
+    reagent: {
+        color: [1, 0.85, 0.2],
+        opacity: 50,
+        isTextOn: true,
+        sound: "none",
+        repeat: 0,
+        when: "townText",
+        glowSeconds: 0,
+        animation: "circling",
+    },
     // A quieter red than the procs'
-    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText", glowSeconds: 0 },
+    stock: {
+        color: [1, 0.12, 0.08],
+        opacity: 50,
+        isTextOn: true,
+        sound: "none",
+        repeat: 0,
+        when: "townText",
+        glowSeconds: 0,
+        animation: "circling",
+    },
 };
 
 /**
@@ -77,6 +158,9 @@ export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 /** The choices of how visible a faded bar's buttons are, in percent. */
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
+/** The choices of how a glow moves. */
+export const ANIMATION_CHOICES: GlowStyle[] = ["circling", "breathing", "still"];
+
 /** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
 export const GLOW_SECONDS_CHOICES = [0, 1, 2, 3, 5, 10];
 
@@ -89,8 +173,8 @@ export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reag
 /** The kinds in the order the tables list them. */
 export const KIND_ORDER: ColorKey[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
 
-/** A saved number that is one of the choices; undefined for any other. */
-function pickChoice(value: number | undefined, choices: number[]): number | undefined {
+/** A saved value that is one of the choices; undefined for any other. */
+function pickChoice<T>(value: T | undefined, choices: T[]): T | undefined {
     return value !== undefined && choices.includes(value) ? value : undefined;
 }
 
@@ -108,6 +192,7 @@ function repairStyle(style: StyleOverride | undefined, kind: ColorKey | undefine
     if (type(style.isTextOn) === "boolean") repaired.isTextOn = style.isTextOn;
     repaired.repeat = pickChoice(style.repeat, REPEAT_CHOICES);
     repaired.glowSeconds = pickChoice(style.glowSeconds, GLOW_SECONDS_CHOICES);
+    repaired.animation = pickChoice(style.animation, ANIMATION_CHOICES);
     const opacity = tonumber(style.opacity);
     if (opacity !== undefined) repaired.opacity = math.max(1, math.min(100, math.floor(opacity + 0.5)));
     const color = style.color;
@@ -126,7 +211,6 @@ function repairLimit(limit: unknown, byDefault: number): number {
 export function repairSettings(values: AddonSettings): void {
     // A style no longer known (or circling on a round button) is the default again
     const defaults = createDefaultSettings();
-    if (!["circling", "breathing", "still"].includes(values.glowStyle)) values.glowStyle = defaults.glowStyle;
     if (!["breathing", "still"].includes(values.roundGlowStyle)) values.roundGlowStyle = defaults.roundGlowStyle;
     if (!FADED_OPACITY_CHOICES.includes(values.fadedOpacity)) values.fadedOpacity = defaults.fadedOpacity;
     // An added spell that is not a number and a kind is dropped

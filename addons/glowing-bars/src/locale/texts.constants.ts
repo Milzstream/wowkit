@@ -57,12 +57,9 @@ export const TEXTS = {
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
     BTN_OPEN: "Open",
-    OPT_GLOW_STYLE: "Glow animation",
-    TIP_GLOW_STYLE:
-        "Circling: the glow runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes.",
-    OPT_ROUND_GLOW_STYLE: "Round gamepad buttons animation (alpha)",
+    OPT_ROUND_GLOW_STYLE: "Circling on round buttons",
     TIP_ROUND_GLOW_STYLE:
-        "The glow of the round buttons of the gamepad bars: breathing, or still. Gamepad support is new; please report what you see.",
+        "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling, a round button breathes instead, or stands still.",
     OPT_STYLE_CIRCLING: "Circling",
     OPT_STYLE_BREATHING: "Breathing",
     OPT_STYLE_STILL: "None",
@@ -115,6 +112,9 @@ export const TEXTS = {
     REPEAT_SECONDS: "%d s",
     TIP_REPEAT:
         "Every so many seconds, the glow, the message and the sound come again, for the glow time (with Until done the glow stays, and the sound and the message come again). Off shows them once, as the reminder starts. Click for the next choice, right-click for the one before.",
+    COL_ANIMATION: "Animation",
+    TIP_ANIMATION:
+        "How the glow moves. Circling: it runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes. Round buttons cannot circle: there Circling does what the Settings page says (Breathing by default). Click for the next choice, right-click for the one before.",
     COL_GLOW_TIME: "Glow time",
     GLOW_UNTIL_DONE: "Until done",
     TIP_GLOW_TIME:

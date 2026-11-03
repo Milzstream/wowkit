@@ -11,6 +11,7 @@ import {
     type BarFadeService,
     type ClockService,
     type GlowService,
+    type GlowStyle,
     type ButtonGlow,
     type Rgb,
     isOutOfItem,
@@ -54,17 +55,18 @@ const KINDS: GlowKind[] = [
     { category: "stock", isOnSetting: "showStock", findSpells: (reminders) => reminders.lowStock.map((stock) => stock.key) },
 ];
 
-/** The spells that glow in one color and opacity: one glow shows them. */
+/** The spells that glow in one color, opacity and animation: one glow shows them. */
 interface GlowGroup {
     /** The look as text: the glow of the group is kept under it. */
     key: string;
     color: Rgb;
     opacity: number;
+    animation: GlowStyle;
     spells: number[];
 }
 
 export class ShowRemindersService {
-    /** The glows made so far, by the look they give (color and opacity); one that is not needed any more is cleared, not dropped. */
+    /** The glows made so far, by the look they give (color, opacity and animation); one that is not needed any more is cleared, not dropped. */
     private readonly glows = new LuaMap<string, ButtonGlow>();
     /** The spells of each kind in the previous tick, to tell what is new. */
     private previous: number[][] = KINDS.map(() => []);
@@ -122,7 +124,6 @@ export class ShowRemindersService {
             key !== "barOff" &&
             key !== "idOverrides" &&
             key !== "customCues" &&
-            key !== "glowStyle" &&
             key !== "roundGlowStyle" &&
             !KINDS.some((kind) => kind.isOnSetting === key)
         )
@@ -174,14 +175,14 @@ export class ShowRemindersService {
         this.usedUpShown = [...weaponSpells, ...reminders.customWeaponSpells, ...reminders.lowStock.map((stock) => stock.key)];
         const glowKey = groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";");
         if (glowKey === this.shownGlowKey) return;
-        this.glow.setStyles(this.settings.get("glowStyle"), this.settings.get("roundGlowStyle"));
+        this.glow.setRoundStyle(this.settings.get("roundGlowStyle"));
         // A look that no spell has now: its glow goes out
         for (const [key, glow] of this.glows) if (!groups.some((group) => group.key === key)) glow.clear();
         for (const group of groups) {
             let glow = this.glows.get(group.key);
             if (glow === undefined) {
                 const key = group.key;
-                glow = this.glow.createButtonGlow(key, (button) => this.isBarShown(button, key));
+                glow = this.glow.createButtonGlow(key, group.animation, (button) => this.isBarShown(button, key));
                 this.glows.set(group.key, glow);
             }
             glow.show(group.spells, group.color);
@@ -209,9 +210,10 @@ export class ShowRemindersService {
         for (const kind of KINDS) {
             for (const id of kind.findSpells(reminders)) {
                 const style = this.styles.getStyle(kind.category, id);
-                const key = `${style.color.join(",")}|${style.opacity}`;
+                const key = `${style.color.join(",")}|${style.opacity}|${style.animation}`;
                 const group = groups.find((candidate) => candidate.key === key);
-                if (group === undefined) groups.push({ key, color: style.color, opacity: style.opacity, spells: [id] });
+                const { color, opacity, animation } = style;
+                if (group === undefined) groups.push({ key, color, opacity, animation, spells: [id] });
                 else if (!group.spells.includes(id)) group.spells.push(id);
             }
         }

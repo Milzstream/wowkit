@@ -61,6 +61,8 @@ interface Overlay {
     /** The ring of a round button; its halo is drawn around it. */
     isRing?: boolean;
     halo?: Texture;
+    /** How it moves: the style of its glow (on a round button, circling is the round buttons' style). */
+    style: GlowStyle;
 }
 
 export interface ButtonGlow {
@@ -86,23 +88,22 @@ export class GlowService {
     private readonly tracked = new LuaSet<ActionButton>();
     /** The breathing of the glows that show (round, or square and breathing): they restart together, in step. */
     private readonly pulses = new LuaSet<AnimationGroup>();
-    /** The style of the square glows, and of the round ones. A glow lit after a change shows the new way. */
-    private squareStyle: GlowStyle = "circling";
+    /** What a circling glow does on a round button, where it cannot circle: breathe, or stand still. */
     private roundStyle: GlowStyle = "breathing";
 
     constructor(private readonly actionBars: ActionBarsService) {}
 
-    /** The styles of the glows lit from now on: of the square buttons, and of the round ones (not circling: breathing). */
-    setStyles(squareStyle: GlowStyle, roundStyle: GlowStyle): void {
-        this.squareStyle = squareStyle;
+    /** What a circling glow does on a round button from now on: breathe, or stand still. */
+    setRoundStyle(roundStyle: GlowStyle): void {
         this.roundStyle = roundStyle;
     }
 
     /**
-     * One glow on the buttons of some spells; each kind (the buff, the weapon buff) keeps its own overlays.
-     * `isButtonShown` leaves buttons out (a bar the player does not want to glow); it is asked each time the glow is shown.
+     * One glow on the buttons of some spells, moving in `style`; each kind (the buff, the weapon buff) keeps its own
+     * overlays. `isButtonShown` leaves buttons out (a bar the player does not want to glow); it is asked each time the glow
+     * is shown.
      */
-    createButtonGlow(kind: string, isButtonShown?: (this: void, button: ActionButton) => boolean): ButtonGlow {
+    createButtonGlow(kind: string, style: GlowStyle, isButtonShown?: (this: void, button: ActionButton) => boolean): ButtonGlow {
         const glowing = new LuaSet<ActionButton>();
         let last: string | undefined;
         const clearGlow = () => {
@@ -133,7 +134,7 @@ export class GlowService {
                 clearGlow();
                 for (const button of buttons) {
                     if (!glowing.has(button)) {
-                        this.showOverlay(this.getOverlay(button, kind, color), button);
+                        this.showOverlay(this.getOverlay(button, kind, color, style), button);
                         glowing.add(button);
                     }
                 }
@@ -155,7 +156,7 @@ export class GlowService {
     /** Puts a glow out; a still one fades out first. */
     private hideOverlay(entry: Overlay): void {
         entry.isWanted = false;
-        if (this.squareStyle === "still" && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
+        if (entry.style === "still" && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
         else entry.frame.Hide();
     }
 
@@ -184,7 +185,7 @@ export class GlowService {
         return true;
     }
 
-    private getOverlay(button: ActionButton, kind: string, [r, g, b]: Rgb): Overlay {
+    private getOverlay(button: ActionButton, kind: string, [r, g, b]: Rgb, style: GlowStyle): Overlay {
         let byKind = this.overlays.get(button);
         if (!byKind) {
             byKind = new LuaMap();
@@ -192,7 +193,7 @@ export class GlowService {
         }
         let entry = byKind.get(kind);
         if (!entry) {
-            entry = this.createOverlay(button);
+            entry = this.createOverlay(button, style);
             byKind.set(kind, entry);
         }
         this.applySize(entry, button);
@@ -252,9 +253,9 @@ export class GlowService {
      * The alert as it shows: the animation from its start, or the loop of the glow stopped on its first picture, without the
      * flash it starts with. The loop is stopped a frame after it starts: before, its flipbook shows the whole sheet.
      */
-    private startAlert(alert: SpellAlertFrame, fades: Pick<Overlay, "fadeIn" | "breathe">): void {
+    private startAlert(alert: SpellAlertFrame, fades: Pick<Overlay, "fadeIn" | "breathe" | "style">): void {
         alert.ProcLoop!.Stop();
-        const isCircling = this.squareStyle === "circling";
+        const isCircling = fades.style === "circling";
         alert.ProcStartFlipbook?.SetShown(isCircling);
         if (isCircling) {
             // The whole flipbook again, hidden until the loop shows it (as the template has it)
@@ -264,7 +265,7 @@ export class GlowService {
             return;
         }
         this.showLoopPicture(alert, () => {
-            if (this.squareStyle === "still") {
+            if (fades.style === "still") {
                 fades.fadeIn?.Play();
             } else if (fades.breathe !== undefined) {
                 this.pulses.add(fades.breathe);
@@ -305,19 +306,19 @@ export class GlowService {
         return group;
     }
 
-    private createOverlay(button: ActionButton): Overlay {
-        if (!this.isGamepadButton(button)) return this.createOverlayIn(button, button);
+    private createOverlay(button: ActionButton, style: GlowStyle): Overlay {
+        if (!this.isGamepadButton(button)) return this.createOverlayIn(button, button, style);
         this.trackButton(button);
-        const overlay = this.createOverlayIn(UIParent, button);
+        const overlay = this.createOverlayIn(UIParent, button, style);
         overlay.isBeside = true;
         overlay.frame.SetFrameStrata(button.GetFrameStrata());
         return overlay;
     }
 
     /** The glow of the button, made in `parent`: the button itself, or the screen for a button of the gamepad bars. */
-    private createOverlayIn(parent: Frame, button: ActionButton): Overlay {
+    private createOverlayIn(parent: Frame, button: ActionButton, style: GlowStyle): Overlay {
         const level = button.GetFrameLevel() + 6;
-        if (this.isRoundButton(button)) return this.createRing(parent, button, level);
+        if (this.isRoundButton(button)) return this.createRing(parent, button, level, style);
         // Blizzard's own spell-alert glow, but our own instance, never the one the action bar manager
         // drives, so real procs are unaffected
         const [didSucceed, created] = tryCall(() => CreateFrame("Frame", undefined, parent, "ActionButtonSpellAlertTemplate"));
@@ -327,6 +328,7 @@ export class GlowService {
             alert.SetFrameLevel(level);
             alert.SetPoint("CENTER", button, "CENTER", 0, 0);
             const fades = {
+                style,
                 fadeIn: this.createFade(alert, 0, 1, STILL_FADE_SECONDS),
                 fadeOut: this.createFade(alert, 1, 0, STILL_FADE_SECONDS),
                 breathe: this.createFade(alert, 1, RING_PULSE_ALPHA, RING_PULSE_SECONDS),
@@ -354,7 +356,7 @@ export class GlowService {
         texture.SetTexture(GLOW_FALLBACK);
         texture.SetBlendMode("ADD");
         frame.Hide();
-        return { frame, texture };
+        return { frame, texture, style };
     }
 
     /** A round button: one another addon registered as round, or a round one of the gamepad bars (Forever). */
@@ -362,8 +364,11 @@ export class GlowService {
         return this.actionBars.getButtonShape(button) === "Circle";
     }
 
-    /** The client's round halo and highlight around the button (the art of the gamepad bars), pulsing. */
-    private createRing(parent: Frame, button: ActionButton, level: number): Overlay {
+    /**
+     * The client's round halo and highlight around the button (the art of the gamepad bars), breathing or still; a circling
+     * glow does what the round buttons' style says, asked as it shows.
+     */
+    private createRing(parent: Frame, button: ActionButton, level: number, style: GlowStyle): Overlay {
         const frame = CreateFrame("Frame", undefined, parent);
         frame.SetFrameStrata("MEDIUM");
         frame.SetFrameLevel(level);
@@ -384,7 +389,7 @@ export class GlowService {
             fade.SetDuration(RING_PULSE_SECONDS);
             pulse.SetLooping("BOUNCE");
             frame.SetScript("OnShow", () => {
-                if (this.roundStyle !== "breathing") return;
+                if ((style === "circling" ? this.roundStyle : style) !== "breathing") return;
                 this.pulses.add(pulse);
                 this.syncPulses();
             });
@@ -394,7 +399,7 @@ export class GlowService {
             });
         }
         frame.Hide();
-        return { frame, texture, halo, isRing: true };
+        return { frame, texture, halo, isRing: true, style };
     }
 
     /** Every breathing glow that shows breathes from the start again, in step with the one that just lit. */

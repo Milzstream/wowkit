@@ -40,6 +40,7 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds
 *   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)
+*   **Animation**: circling (Blizzard's own), breathing, or none
 *   **Repeat**: every 5, 10, 30 or 60 seconds the glow, the message and the sound come again, for the glow time (off by default)
 *   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock also in town, or with their message only in town
 *   **Enabled**: turn a whole type, or one spell, on or off
@@ -50,7 +51,7 @@ The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, 
 
 On the Settings page (_Options > AddOns > Glowing Bars_):
 
-*   **Glow animation**: circling (Blizzard's own), breathing, or none
+*   **Circling on round buttons**: breathing or none, where a glow cannot run around the button
 *   **Action bars that glow**: turn any of the eight bars off (your UI addon's bars too)
 *   **Faded until they glow**: any of the eight bars stays faint until one of its buttons glows, so a bar in the middle of your screen shows only what's due
 *   **Spell and item IDs in tooltips** (off by default): spell tooltips show the Spell ID and item tooltips the Item ID; an elixir, potion, food or drink also shows the ID of the spell it casts

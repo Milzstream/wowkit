@@ -13,6 +13,7 @@ import {
     type SpellDefinition,
     type World,
 } from "@wowkit/test-kit";
+import { findLabel, toggleTable } from "./table.helpers";
 
 /** Action Bar 7 starts at this action slot. */
 const BAR_7_FIRST_SLOT = 157;
@@ -108,7 +109,7 @@ describe("a priest who chose how the glow moves", () => {
     }
 
     it("sees the missing buff glow standing still: Blizzard's glow, without the flash it starts with", () => {
-        const world = createWorld(setUp, { glowStyle: "still" });
+        const world = createWorld(setUp, { styles: { buff: { animation: "still" } } });
         world.advance(1);
         const alert = findAlert(world);
         expect(alert.isShown).toBe(true);
@@ -117,7 +118,7 @@ describe("a priest who chose how the glow moves", () => {
     });
 
     it("sees the glow breathing as Blizzard's glow standing still, without the flash", () => {
-        const world = createWorld(setUp, { glowStyle: "breathing" });
+        const world = createWorld(setUp, { styles: { buff: { animation: "breathing" } } });
         world.advance(1);
         const alert = findAlert(world);
         expect(alert.ProcStartFlipbook!.isShown).toBe(false);
@@ -130,11 +131,35 @@ describe("a priest who chose how the glow moves", () => {
         expect(findAlert(world).ProcStartFlipbook!.isShown).toBe(true);
     });
 
-    it("has a switch for it on the Settings page", () => {
+    it("is chosen in the Animation column of the table, for one spell too", () => {
         const world = createWorld(setUp);
-        world.setOption("glowStyle", "still");
         world.advance(1);
-        expect(findAlert(world).ProcStartFlipbook!.isShown).toBe(false);
+        toggleTable();
+        const row = findLabel(world, FORTITUDE.name)!.parent;
+        const button = world.frames.find(
+            (frame) => frame.parent === row && frame.frameType === "Button" && frame.text === "Circling" && frame.width === 82,
+        )!;
+        button.scripts.OnClick!(button, "LeftButton");
+        expect(button.text).toBe("Breathing");
+        button.scripts.OnClick!(button, "LeftButton");
+        expect(button.text).toBe("None");
+        world.advance(1);
+        const buttonFrame = world.findFrame((frame) => frame.name === "ActionButton1");
+        const shown = world.frames.find(
+            (frame) => frame.parent === buttonFrame && frame.template === "ActionButtonSpellAlertTemplate" && frame.isShown,
+        )!;
+        expect(shown.ProcStartFlipbook!.isShown).toBe(false);
+        const kindRow = findLabel(world, "Missing buff")!.parent;
+        expect(world.frames.some((frame) => frame.parent === kindRow && frame.text === "Circling")).toBe(true);
+    });
+
+    it("keeps, on the Settings page, only what a circling glow does on a round button: breathing by default", () => {
+        const world = createWorld(setUp);
+        expect(world.getSavedSettings()?.roundGlowStyle).toBe("breathing");
+        world.setOption("roundGlowStyle", "still");
+        expect(world.getSavedSettings()?.roundGlowStyle).toBe("still");
+        const [hasGlowStyle] = pcall(() => world.setOption("glowStyle", "still"));
+        expect(hasGlowStyle).toBe(false);
     });
 });
 

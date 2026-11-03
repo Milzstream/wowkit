@@ -1,5 +1,5 @@
-// How the glows move: around the button (Blizzard's animation), breathing, or still; and, apart, the round buttons of
-// Forever's gamepad bars, whose support is young (alpha).
+// What a circling glow does on a round button (Forever's gamepad bars, another addon's round buttons), where it cannot
+// circle: breathe, or stand still. How each glow moves is the table's (its Animation column).
 
 import type { GlowStyle } from "@wowkit/wow";
 import type { AddonLocale } from "../locale/locale.interface";
@@ -7,8 +7,8 @@ import type { TextKey } from "../locale/texts.constants";
 import type { AddonSettings, AddonSettingsService } from "../settings/settings.interface";
 import type { ControlsService } from "@wowkit/ui";
 
-/** The words of each style. */
-const STYLE_TEXTS: { [style in GlowStyle]: TextKey } = {
+/** The words of each style (the table's Animation column says them too). */
+export const STYLE_TEXTS: { [style in GlowStyle]: TextKey } = {
     circling: "OPT_STYLE_CIRCLING",
     breathing: "OPT_STYLE_BREATHING",
     still: "OPT_STYLE_STILL",
@@ -22,23 +22,14 @@ export class GlowStyleSection {
     ) {}
 
     addGlowStyleSection(category: SettingsCategory): void {
-        this.addStyleDropdown(category, "glowStyle", "OPT_GLOW_STYLE", "TIP_GLOW_STYLE", ["circling", "breathing", "still"]);
         // A round button has no animation around it
-        this.addStyleDropdown(category, "roundGlowStyle", "OPT_ROUND_GLOW_STYLE", "TIP_ROUND_GLOW_STYLE", ["breathing", "still"]);
-    }
-
-    private addStyleDropdown(
-        category: SettingsCategory,
-        key: "glowStyle" | "roundGlowStyle",
-        label: TextKey,
-        tip: TextKey,
-        styles: GlowStyle[],
-    ): void {
+        const styles: GlowStyle[] = ["breathing", "still"];
+        const key = "roundGlowStyle";
         this.controls.addDropdown(
             category,
             key,
-            this.locale.getText(label),
-            this.locale.getText(tip),
+            this.locale.getText("OPT_ROUND_GLOW_STYLE"),
+            this.locale.getText("TIP_ROUND_GLOW_STYLE"),
             this.settings.getDefault(key),
             () => this.settings.get(key),
             (value) =>
