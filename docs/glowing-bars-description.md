@@ -29,7 +29,7 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you.
 *   **Elixirs, food and drinks, if you add them** – turn on **Show spell and item IDs in tooltips** on the Settings page, put the item on your bars, and add the *Use spell ID* from its tooltip in the **/gb** table as a missing buff. Only that item glows, under its own name in the table, and not when you have none left. A food or drink stops glowing once you have its Well Fed buff.
 
-It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in towns and inns. Only this one can be turned off, with **Stay quiet in towns and inns** on the Settings page.
+It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in towns and inns, except for low reagents and low stock. To turn off the town rule, untick **Stay quiet in towns and inns** on the Settings page.
 
 ## Make it yours
 
@@ -45,7 +45,7 @@ Type **/gb** to open the table. It opens in a **Basic** view with the columns mo
 *   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock can also keep their message and sound to towns and inns
 *   **Enabled**: turn a whole type, or one spell, on or off
 
-In the same table you can **add your own spells by their ID**, as any type, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Show spell and item IDs in tooltips**.
+In the same table you can **add your own spells and items by their ID**, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Show spell and item IDs in tooltips**.
 
 The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow, low stock a quieter red. Only the old ranks, low stock and the low reagents (in a town) show a message by default; the glow is the reminder.
 
@@ -55,7 +55,7 @@ On the Settings page (_Options > AddOns > Glowing Bars_):
 *   **Action bars that glow**: turn any of the eight bars off (your UI addon's bars too)
 *   **Faded until they glow**: any of the eight bars stays faint until one of its buttons glows, so a bar in the middle of your screen shows only what's due
 *   **Spell and item IDs in tooltips** (off by default): spell tooltips show the Spell ID and item tooltips the Item ID; an elixir, potion, food or drink also shows the ID of the spell it casts
-*   The weapon buff to keep up, the party and raid buffs with their group version counts and when cooldowns glow
+*   The weapon buff to keep up, the party and raid buffs with their group version counts, and whether the ready cooldowns also glow as a fight starts
 
 All settings are kept per character.
 
