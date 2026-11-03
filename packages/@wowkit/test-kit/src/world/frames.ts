@@ -21,6 +21,7 @@ export interface FakeFrame {
     anchor?: FakeFrame;
     /** The width the addon set (36, the size of an action button, until it sets one). */
     width: number;
+    scale: number;
     /** A check button's state. */
     isChecked: boolean;
     scripts: { [script: string]: Script | undefined };
@@ -43,6 +44,7 @@ export interface FakeFrame {
     GetName(): string | undefined;
     GetFrameLevel(): number;
     SetWidth(width: number): void;
+    SetScale(scale: number): void;
     SetPoint(point: string, relativeTo?: unknown): void;
     IsVisible(): boolean;
     HookScript(script: string, handler: Script): void;
@@ -94,6 +96,7 @@ function createFakeFrame(init: FrameInit): FakeFrame {
         isIgnoringParentAlpha: false,
         text: undefined,
         width: 36,
+        scale: 1,
         isChecked: false,
         scripts: {},
         events: {},
@@ -132,6 +135,9 @@ function createFakeFrame(init: FrameInit): FakeFrame {
         },
         GetFrameLevel() {
             return 1;
+        },
+        SetScale(scale) {
+            this.scale = scale;
         },
         SetWidth(width) {
             this.width = width;

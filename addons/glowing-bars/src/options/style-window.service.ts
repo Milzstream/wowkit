@@ -13,8 +13,17 @@ import {
     type Column,
 } from "./style-table.constants";
 
+/** What the window leaves free of the screen's width when it has to shrink. */
+const SCREEN_MARGIN = 40;
+
 export class StyleWindowService {
     constructor(private readonly locale: AddonLocale) {}
+
+    /** Sets the width of the window, and shrinks it as a whole on a screen too narrow for it (a large UI scale). */
+    setWidthToFit(window: Frame, width: number): void {
+        window.SetWidth(width);
+        window.SetScale(math.min(1, (UIParent.GetWidth() - SCREEN_MARGIN) / width));
+    }
 
     /** The frame, and the frame inside its scroll area that the rows go in. */
     createWindow(): { window: Frame; content: Frame } {

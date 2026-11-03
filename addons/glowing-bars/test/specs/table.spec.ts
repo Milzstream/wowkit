@@ -55,6 +55,27 @@ describe("the table of looks", () => {
         expect(findLabel(world, "Recklessness")!.parent!.alpha).toBe(0.4);
     });
 
+    it("keeps its size on a screen it fits on", () => {
+        world.findFrame((frame) => frame.name === "UIParent")!.width = 2000;
+        toggleTable();
+        toggleTable();
+        expect(world.findFrame((frame) => frame.name === "GlowingBarsLooks")!.scale).toBe(1);
+    });
+
+    it("shrinks to fit a screen too narrow for it, and grows back on a wider one", () => {
+        const screen = world.findFrame((frame) => frame.name === "UIParent")!;
+        const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
+        screen.width = 800;
+        toggleTable();
+        toggleTable();
+        expect(window.scale < 1).toBe(true);
+        expect(window.width * window.scale <= 800).toBe(true);
+        screen.width = 2000;
+        toggleTable();
+        toggleTable();
+        expect(window.scale).toBe(1);
+    });
+
     it("leaves out the Reset and X column while no row shows one of its buttons", () => {
         const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
         const narrow = window.width;

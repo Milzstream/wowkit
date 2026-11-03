@@ -125,7 +125,7 @@ export class StyleTableService {
     private applyTableWidth(content: Frame, rows: StyleRow[]): void {
         const hasActions = rows.some((row) => row.isAdded === true || this.styles.isOverridden(row.reminderType, row.spellId));
         this.tableWidth = hasActions ? TABLE_WIDTH : TABLE_WIDTH_WITHOUT_ACTIONS;
-        this.window?.SetWidth(findWindowWidth(this.tableWidth));
+        if (this.window !== undefined) this.windows.setWidthToFit(this.window, findWindowWidth(this.tableWidth));
         content.SetWidth(this.tableWidth);
     }
 
