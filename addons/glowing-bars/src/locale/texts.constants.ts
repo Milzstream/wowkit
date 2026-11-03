@@ -108,7 +108,7 @@ export const TEXTS = {
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     TIP_KIND_REAGENT:
-        "Its glow, message and repeat follow its When column. By default (Alert in town) it glows anywhere, and its message and repeat come only in a town or an inn (cities and inns).",
+        "Its glow, message and repeat follow its When column. By default (Alert in town) it glows anywhere, and its message and repeat come only in a town or an inn.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
@@ -129,7 +129,7 @@ export const TEXTS = {
     TIP_WHEN:
         "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
     TIP_WHEN_TOWN:
-        "When the reminder may show: always, only in combat, only out of combat, only while a living enemy is targeted, or only in a town or an inn (cities and inns). Alert in town: the button glows anywhere and the sound plays once as it starts, but the message on the screen, and the repeat of the sound, come only in a town or an inn. Click for the next choice, right-click for the one before.",
+        "When the reminder may show: always, only in combat, only out of combat, only while a living enemy is targeted, or only in a town or an inn. Alert in town: the button glows anywhere and the sound plays once as it starts, but the message on the screen, and the repeat of the sound, come only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
     KIND_BUFF: "Missing buff",
     KIND_WEAPON: "Weapon buff",

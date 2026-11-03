@@ -14,6 +14,8 @@ import { readWhenState } from "../tick/when-state";
 export class TownVisitService implements OnReady {
     /** When the message last showed; undefined while it has not since the reagents it names could be told (a new visit). */
     private shownAt: number | undefined;
+    /** The reagents the message has named; one that runs low after it brings the message again. */
+    private named = new LuaSet<string>();
 
     constructor(
         private readonly player: PlayerService,
@@ -40,12 +42,14 @@ export class TownVisitService implements OnReady {
         const told = this.listTold();
         if (told.length === 0) {
             this.shownAt = undefined;
+            this.named = new LuaSet();
             return;
         }
+        const hasNew = told.some(({ stock }) => !this.named.has(stock.name));
         // The soonest of the rows that repeat
         let repeat = 0;
         for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
-        const isDue = this.shownAt === undefined || (repeat > 0 && this.clock.getCurrentTime() - this.shownAt >= repeat);
+        const isDue = this.shownAt === undefined || hasNew || (repeat > 0 && this.clock.getCurrentTime() - this.shownAt >= repeat);
         if (isDue) this.show(told);
     }
 
@@ -67,6 +71,8 @@ export class TownVisitService implements OnReady {
         const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");
         const message = string.format(this.locale.getText("NOTICE_REAGENTS_LOW"), names);
         this.shownAt = this.clock.getCurrentTime();
+        this.named = new LuaSet();
+        for (const { stock } of told) this.named.add(stock.name);
         this.notice.showNotice(this.styles.applyTextColor(first.style.color, message));
     }
 }

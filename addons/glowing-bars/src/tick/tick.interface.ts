@@ -9,7 +9,7 @@ export interface Reminders {
     weaponSpell?: number;
     /** Weapon buffs the player added, when the main-hand weapon has no temporary enchant: their buttons glow. */
     customWeaponSpells: number[];
-    /** A paladin in a fight with no seal up: the seal to put on. */
+    /** A paladin with no seal up: the seal to put on. */
     seals: number[];
     /** A miner or a herbalist with no tracking on: the gathering trackings to put on. */
     trackings: number[];
@@ -19,7 +19,7 @@ export interface Reminders {
     partySuggestions: PartySuggestion[];
     /** Spells on the bars at a lower rank than the highest learned one. */
     outdatedRanks: OutdatedRank[];
-    /** The items the player watches that run low: they glow if on a button, and say so anyway. */
+    /** The items the player watches that run low: they glow if on a button, and say so on a bar or not. */
     lowStock: LowStock[];
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */
     reagentSpells: number[];

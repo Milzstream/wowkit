@@ -196,15 +196,22 @@ describe("a low stock", () => {
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
     });
 
-    it("glows anywhere by default, and tells only in a town (Alert in town)", () => {
+    it("glows and tells anywhere by default, on a bar or not", () => {
         const world = createArcher(12, {}, true, false);
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
+        expect(createArcher(12, {}, false, false).notice()).toContain("Running low: Rough Arrow (12)");
+    });
+
+    it("that alerts in town glows anywhere, and tells only in a town", () => {
+        const world = createArcher(12, { styles: { stock: { when: "townText" } } }, true, false);
         expect(world.glowsOn(1)).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
     });
 
-    it("has every choice of the When column, Alert in town by default", () => {
+    it("has every choice of the When column, Always by default", () => {
         const world = createArcher(12);
         toggleTable();
         const button = findWhenButton(world, "Low stock");
@@ -213,7 +220,7 @@ describe("a low stock", () => {
             seen.push(button.text!);
             button.scripts.OnClick!(button, "LeftButton");
         }
-        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
+        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Alert in town"]);
     });
 });
 
@@ -225,7 +232,7 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
     }
 
     it("plays the low stock's sound and shows its message once more, and no more while there", () => {
-        const world = createArcher(12, { styles: { stock: { sound: "raidwarning" } } }, true, false);
+        const world = createArcher(12, { styles: { stock: { sound: "raidwarning", when: "townText" } } }, true, false);
         expect(world.sounds.length).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);

@@ -260,3 +260,35 @@ describe("the town message of a reagent spell the player added", () => {
         expect(world.notice()).not.toContain("Holy Candle (1), Holy Candle");
     });
 });
+
+describe("a reagent that runs low after the town message came", () => {
+    const RITUAL = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
+
+    it("brings the message again, once, naming it too", () => {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, FORTITUDE);
+                learnSpell(state, PRAYER_OF_FORTITUDE);
+                learnSpell(state, RITUAL);
+                state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+                state.reagentTexts[RITUAL.id] = "Soul Shard";
+                state.itemIds["Soul Shard"] = 6265;
+                state.bags[HOLY_CANDLE] = 1;
+                state.bags[6265] = 100;
+                state.isResting = true;
+            },
+            { customCues: [{ id: RITUAL.id, kind: "reagent" }] },
+        );
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (1)");
+        expect(world.notice()).not.toContain("Soul Shard");
+        world.state.bags[6265] = 2;
+        world.advance(2);
+        expect(world.notice()).toContain("Holy Candle (1), Soul Shard (2)");
+        world.advance(11);
+        expect(world.notice()).not.toContain("Soul Shard");
+        world.advance(60);
+        expect(world.notice()).not.toContain("Soul Shard");
+    });
+});
