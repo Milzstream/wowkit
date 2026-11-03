@@ -148,3 +148,44 @@ describe("settings already under the new names", () => {
         expect((second.styles as Record<string, Saved>).missingBuff?.glowPercent).toBe(40);
     });
 });
+
+describe("old settings that make no sense", () => {
+    const BROKEN: Saved = {
+        styles: { buff: "oops", proc: { opacity: 60 } },
+        spellStyles: { "cooldown:Recklessness": 5, "buff:Inner Fire": { opacity: 30 }, nameless: { opacity: 20 } },
+        reagentLow: "many",
+        stockLow: 50,
+        lowAt: { "stock:2512": "lots", "stock:2516": 9, nameless: 3 },
+        customCues: ["oops", { id: 2512, kind: "stock" }],
+        rankOff: "oops",
+        barOff: 5,
+        glowOn: "oops",
+    };
+
+    it("are left out, and the good ones next to them are kept", () => {
+        const { settings } = load(BROKEN);
+        const styles = settings.styles as Record<string, Saved | undefined>;
+        const spellStyles = settings.spellStyles as Record<string, Saved | undefined>;
+        expect(styles.proc?.glowPercent).toBe(60);
+        expect(styles.missingBuff).toBeUndefined();
+        expect(spellStyles["missingBuff:Inner Fire"]?.glowPercent).toBe(30);
+        expect(spellStyles["readyCooldown:Recklessness"]).toBeUndefined();
+        expect(settings.reagentBelow).toBe(10);
+        expect(settings.stockBelow).toBe(51);
+        expect((settings.belowLimits as Record<string, number>)["lowStock:2516"]).toBe(10);
+        expect((settings.belowLimits as Record<string, number | undefined>)["lowStock:2512"]).toBeUndefined();
+        expect(settings.addedSpells).toEqual([{ id: 2512, reminderType: "lowStock" }]);
+        expect(settings.enabledRanks).toEqual({});
+        expect(settings.barsThatGlow).toEqual({});
+        expect(settings.enabledSpells).toEqual({});
+    });
+
+    it("leave a working addon, even with whole tables that are no tables", () => {
+        const { world, settings } = load({ styles: "oops", spellStyles: 5, lowAt: "oops", customCues: 7 });
+        expect(settings.styles).toEqual({});
+        expect(settings.spellStyles).toEqual({});
+        expect(settings.addedSpells).toEqual([]);
+        SlashCmdList["GLOWINGBARS"]!("", undefined as never);
+        expect(world.findFrame((frame) => frame.name === "GlowingBarsLooks")?.isShown).toBe(true);
+    });
+});

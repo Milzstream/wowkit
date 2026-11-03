@@ -45,6 +45,11 @@ const OLD_REAGENT_LOW = 5;
 const OLD_STOCK_LOW = 20;
 const OLD_COOLDOWN_GLOW_SECONDS = 3;
 
+/** A saved value that should be a table and may not be: nothing but this addon writes them, but a file can be damaged. */
+function readTable(value: unknown): SavedTable {
+    return type(value) === "table" ? (value as SavedTable) : {};
+}
+
 /** The look of a type or a spell, with the names of today. */
 function convertStyle(style: SavedTable): SavedTable {
     const converted: SavedTable = { ...style };
@@ -57,12 +62,13 @@ function convertStyle(style: SavedTable): SavedTable {
 
 function convertStyles(values: SavedTable): void {
     const styles: SavedTable = {};
-    for (const [key, style] of pairs(values.styles as SavedTable)) {
-        styles[RENAMED_TYPES[key as string] ?? (key as string)] = convertStyle(style as SavedTable);
+    for (const [key, style] of pairs(readTable(values.styles))) {
+        if (type(style) === "table") styles[RENAMED_TYPES[key as string] ?? (key as string)] = convertStyle(style as SavedTable);
     }
     values.styles = styles;
     const spellStyles: SavedTable = {};
-    for (const [key, style] of pairs(values.spellStyles as SavedTable)) {
+    for (const [key, style] of pairs(readTable(values.spellStyles))) {
+        if (type(key) !== "string" || type(style) !== "table") continue;
         const [oldType, name] = string.match(key as string, "^(%a+):(.*)$");
         const newType = RENAMED_TYPES[oldType as string];
         spellStyles[newType !== undefined ? `${newType}:${name as string}` : (key as string)] = convertStyle(style as SavedTable);
@@ -72,14 +78,16 @@ function convertStyles(values: SavedTable): void {
 
 /** What was "this many or fewer" is "below this" now: one more says the same. */
 function convertLimits(values: SavedTable): void {
-    if (values.reagentLow !== undefined && values.reagentLow !== OLD_REAGENT_LOW) values.reagentBelow = (values.reagentLow as number) + 1;
-    if (values.stockLow !== undefined && values.stockLow !== OLD_STOCK_LOW) values.stockBelow = (values.stockLow as number) + 1;
+    if (type(values.reagentLow) === "number" && values.reagentLow !== OLD_REAGENT_LOW)
+        values.reagentBelow = (values.reagentLow as number) + 1;
+    if (type(values.stockLow) === "number" && values.stockLow !== OLD_STOCK_LOW) values.stockBelow = (values.stockLow as number) + 1;
     values.reagentLow = undefined;
     values.stockLow = undefined;
     if (values.lowAt === undefined) return;
     const belowLimits: SavedTable = {};
-    for (const [key, limit] of pairs(values.lowAt as SavedTable)) {
-        const [oldType, entry] = string.match(key as string, "^(%a+):(.*)$");
+    for (const [key, limit] of pairs(readTable(values.lowAt))) {
+        const [oldType, entry] = type(key) === "string" ? string.match(key as string, "^(%a+):(.*)$") : [];
+        if (oldType === undefined || type(limit) !== "number") continue;
         belowLimits[`${RENAMED_TYPES[oldType as string] ?? (oldType as string)}:${entry as string}`] = (limit as number) + 1;
     }
     values.belowLimits = belowLimits;
@@ -90,17 +98,20 @@ function convertLimits(values: SavedTable): void {
 function convertSwitchedOff(values: SavedTable, oldName: string, newName: string): void {
     if (values[oldName] === undefined) return;
     const enabled: SavedTable = {};
-    for (const [key, isOff] of pairs(values[oldName] as SavedTable)) if (isOff === true) enabled[key as string] = false;
+    for (const [key, isOff] of pairs(readTable(values[oldName]))) if (isOff === true) enabled[key as string] = false;
     values[newName] = enabled;
     values[oldName] = undefined;
 }
 
 function convertAddedSpells(values: SavedTable): void {
     if (values.customCues === undefined) return;
-    values.addedSpells = (values.customCues as { id: number; kind: string }[]).map((cue) => ({
-        id: cue.id,
-        reminderType: RENAMED_TYPES[cue.kind] ?? cue.kind,
-    }));
+    const cues = readTable(values.customCues) as unknown as { id: number; kind: string }[];
+    values.addedSpells = cues
+        .filter((cue) => type(cue) === "table")
+        .map((cue) => ({
+            id: cue.id,
+            reminderType: RENAMED_TYPES[cue.kind] ?? cue.kind,
+        }));
     values.customCues = undefined;
 }
 
@@ -132,6 +143,7 @@ export function convertOldSettings(settings: AddonSettings): void {
         values[newName] = values[oldName];
         values[oldName] = undefined;
     }
+    for (const name of ["fadedBars", "enabledSpells", "enabledBuffs", "enabledReagents"]) values[name] = readTable(values[name]);
     if (values.roundGlowStyle !== undefined) values.roundAnimation = values.roundGlowStyle === "still" ? "none" : values.roundGlowStyle;
     values.roundGlowStyle = undefined;
     convertStyles(values);

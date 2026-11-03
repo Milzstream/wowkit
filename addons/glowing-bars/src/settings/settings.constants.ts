@@ -1,6 +1,6 @@
 import { isSoundKey } from "@wowkit/ui";
+import { tryCall, type GlowAnimation } from "@wowkit/wow";
 import { convertOldSettings } from "./settings-migration";
-import type { GlowAnimation } from "@wowkit/wow";
 import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, When } from "./settings.interface";
 
 /** The global the TOC saves per character (## SavedVariablesPerCharacter). */
@@ -227,7 +227,8 @@ function repairLimit(limit: unknown, byDefault: number): number {
 
 /** Puts right what a saved look got wrong. */
 export function repairSettings(values: AddonSettings): void {
-    convertOldSettings(values);
+    // Whatever goes wrong with old settings, the addon still loads: what was not converted is the default
+    tryCall(() => convertOldSettings(values));
     // A style no longer known (or circling on a round button) is the default again
     const defaults = createDefaultSettings();
     if (!["breathing", "none"].includes(values.roundAnimation)) values.roundAnimation = defaults.roundAnimation;
