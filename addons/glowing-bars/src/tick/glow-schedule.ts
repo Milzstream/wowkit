@@ -16,12 +16,12 @@ export class GlowSchedule {
         this.seen = new LuaSet<string>();
     }
 
-    /** Does the due reminder show now? `hasArrivedInTown`: an Alert in town starts over. */
-    isShowing(key: string, style: Style, now: number, isInTown: boolean, hasArrivedInTown: boolean): boolean {
+    /** Does the due reminder show now? `isStartingOver`: its time starts again, as if it had just become due. */
+    isShowing(key: string, style: Style, now: number, isInTown: boolean, isStartingOver: boolean): boolean {
         this.seen.add(key);
         const isTownAlert = style.when === "townAlert";
         let since = this.dueSince.get(key);
-        if (since === undefined || (isTownAlert && hasArrivedInTown)) {
+        if (since === undefined || isStartingOver) {
             since = now;
             this.dueSince.set(key, since);
         }

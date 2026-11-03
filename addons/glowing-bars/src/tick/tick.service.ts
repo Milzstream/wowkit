@@ -19,6 +19,8 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
     private readonly schedule = new GlowSchedule();
     /** Was the player in a town at the last tick: arriving, an Alert in town starts over. */
     private wasInTown = false;
+    /** Was the player in combat at the last tick: as a fight starts, a ready cooldown starts over. */
+    private wasInCombat = false;
 
     constructor(
         private readonly finder: FindRemindersService,
@@ -52,17 +54,21 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
      * out, glow, message and sound alike.
      */
     private filterShowing(reminders: Reminders): Reminders {
-        const now = readWhenState(this.player, false);
+        const now = readWhenState(this.player);
         const byWhen = filterReminders(reminders, (reminderType, id) => now[this.styles.getStyle(reminderType, id).when]);
         const time = this.clock.getCurrentTime();
-        const isInTown = now.town;
+        const isInTown = this.player.isResting();
         const hasArrivedInTown = isInTown && !this.wasInTown;
         this.wasInTown = isInTown;
+        const hasFightStarted = now.combat && !this.wasInCombat;
+        this.wasInCombat = now.combat;
         this.schedule.startTick();
         return {
-            ...filterReminders(byWhen, (reminderType, id) =>
-                this.schedule.isShowing(`${reminderType}:${id}`, this.styles.getStyle(reminderType, id), time, isInTown, hasArrivedInTown),
-            ),
+            ...filterReminders(byWhen, (reminderType, id) => {
+                const style = this.styles.getStyle(reminderType, id);
+                const isStartingOver = (style.when === "townAlert" && hasArrivedInTown) || (reminderType === "cooldown" && hasFightStarted);
+                return this.schedule.isShowing(`${reminderType}:${id}`, style, time, isInTown, isStartingOver);
+            }),
             isInTown,
         };
     }

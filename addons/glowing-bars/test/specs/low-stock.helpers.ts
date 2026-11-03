@@ -4,8 +4,7 @@ import { createWorld, playAs, PRIEST, type World } from "@wowkit/test-kit";
 export const ARROW = 2512;
 export const ARROW_KEY = 1000000000 + ARROW;
 
-/** In a town by default, where its message comes (Alert in town). */
-export function createArcher(count: number, savedSettings: Record<string, unknown> = {}, isOnBars = true, isInTown = true): World {
+export function createArcher(count: number, savedSettings: Record<string, unknown> = {}, isOnBars = true, isInTown = false): World {
     const world = createWorld(
         (state) => {
             playAs(state, PRIEST);

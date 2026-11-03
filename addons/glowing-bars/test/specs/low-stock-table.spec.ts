@@ -136,7 +136,7 @@ describe("the tooltip of Low at", () => {
     it("says what the number does on a row", () => {
         const world = createArcher(100);
         toggleTable();
-        expect(readLowAtTip(world, "Rough Arrow")).toBe("Reminds you when you have this many or fewer.");
+        expect(readLowAtTip(world, "Rough Arrow")).toBe("Reminds you when you have fewer than this.");
     });
 
     it("says on the type's row that it is for all its rows", () => {

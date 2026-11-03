@@ -27,8 +27,7 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     combat: "WHEN_COMBAT",
     noCombat: "WHEN_NO_COMBAT",
     target: "WHEN_TARGET",
-    town: "WHEN_TOWN",
-    townAlert: "WHEN_TOWN_ALERT",
+    townAlert: "WHEN_TOWN_TEXT",
 };
 
 export class StyleChoicesService {

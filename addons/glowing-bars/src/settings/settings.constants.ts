@@ -20,7 +20,7 @@ export function createDefaultSettings(): AddonSettings {
         showReagents: true,
         showCooldowns: true,
         showCooldownsAtFightStart: false,
-        reagentLow: 5,
+        reagentLow: 10,
         stockLow: 20,
         showStock: true,
         lowAt: {},
@@ -137,19 +137,16 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         isMessageOn: true,
         sound: "none",
         repeat: 0,
-        when: "townAlert",
+        when: "always",
         glowSeconds: 0,
         animation: "circling",
     },
 };
 
-/**
- * When a reminder of the type may show: by combat or a target; the low reagents and the low stock, bought in a town, also
- * in a town only, or with only their message there.
- */
+/** When a reminder of the reminderType may show: by combat or a target; the low reagents and the low stock also with their alert in a town. */
 export function listWhenChoices(reminderType: ReminderType): When[] {
     const choices: When[] = ["always", "combat", "noCombat", "target"];
-    return reminderType === "reagent" || reminderType === "stock" ? [...choices, "town", "townAlert"] : choices;
+    return reminderType === "reagent" || reminderType === "stock" ? [...choices, "townAlert"] : choices;
 }
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */

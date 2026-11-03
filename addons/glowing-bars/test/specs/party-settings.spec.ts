@@ -159,7 +159,7 @@ describe("a paladin in a raid", () => {
         learnSpell(state, BLESSING_OF_KINGS);
         learnSpell(state, GREATER_BLESSING_OF_KINGS);
         state.reagentTexts[GREATER_BLESSING_OF_KINGS.id] = "Symbol of Kings";
-        state.bags[SYMBOL_OF_KINGS] = 10;
+        state.bags[SYMBOL_OF_KINGS] = 100;
         state.bars[1] = BLESSING_OF_KINGS.id;
         state.bars[2] = GREATER_BLESSING_OF_KINGS.id;
         state.isInRaid = true;

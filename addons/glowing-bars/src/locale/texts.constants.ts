@@ -57,7 +57,7 @@ export const TEXTS = {
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
     BTN_OPEN: "Open",
-    OPT_ROUND_ANIMATION: "Circling on round buttons",
+    OPT_ROUND_ANIMATION: "Circling on round buttons (alpha)",
     TIP_ROUND_ANIMATION:
         "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling, a round button breathes instead, or stands still.",
     ANIMATION_CIRCLING: "Circling",
@@ -98,14 +98,14 @@ export const TEXTS = {
     COL_COLOR: "Color",
     COL_OPACITY: "Glow %",
     COL_MESSAGE: "Message",
-    COL_LOW_AT: "Low at",
-    TIP_LOW_AT: "Reminds you when you have this many or fewer.",
+    COL_LOW_AT: "Below",
+    TIP_LOW_AT: "Reminds you when you have fewer than this.",
     TIP_LOW_AT_TYPE:
-        "Reminds you when you have this many or fewer. Used for every row of this type, unless you set a different number on the row.",
+        "Reminds you when you have fewer than this. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     TIP_TYPE_REAGENT:
-        "Its glow, message and repeat follow its When column. By default (Alert in town) it glows anywhere, and its message and repeat come only in a town or an inn (cities and inns).",
+        "By default (Alert in town) it glows anywhere, and its message and sound come only in a town or an inn. You can change this in its When column.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
@@ -124,12 +124,11 @@ export const TEXTS = {
     WHEN_COMBAT: "In combat",
     WHEN_NO_COMBAT: "Out of combat",
     WHEN_TARGET: "Enemy targeted",
-    WHEN_TOWN: "In town",
-    WHEN_TOWN_ALERT: "Alert in town",
+    WHEN_TOWN_TEXT: "Alert in town",
     TIP_WHEN:
         "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
     TIP_WHEN_TOWN:
-        "When the reminder may show: always, only in combat, only out of combat, only while a living enemy is targeted, or only in a town or an inn (cities and inns). Alert in town: the button glows anywhere and the sound plays once as it starts, but the message on the screen, and the repeat of the sound, come only in a town or an inn. Click for the next choice, right-click for the one before.",
+        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
     TYPE_BUFF: "Missing buff",
     TYPE_WEAPON: "Weapon buff",
@@ -150,7 +149,7 @@ export const TEXTS = {
     NOTICE_NOT_ON_BAR: "Missing buff (not on your action bars): %s",
     NOTICE_PARTY: "%s missing on: %s",
     NOTICE_PARTY_COUNT: "%s missing on %d members",
-    NOTICE_REAGENTS_LOW: "Reagents running low: %s",
+    NOTICE_REAGENTS_LOW: "Running low: %s",
     NOTICE_STOCK_LOW: "Running low: %s (%d)",
 
     BLOCKED_ACTION: "The game blocked an action from this addon (%s). Please report it.",

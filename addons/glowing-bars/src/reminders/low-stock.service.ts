@@ -23,7 +23,7 @@ export class LowStockService {
             const key = getItemButtonKey(itemId);
             if (enabledSpells[string.format("%d", key)] === false) continue;
             const count = this.bags.getItemCount(itemId);
-            if (count <= this.limits.getLimit("stock", string.format("%d", itemId))) {
+            if (count < this.limits.getLimit("stock", string.format("%d", itemId))) {
                 low.push({ key, itemId, name: this.bags.getItemName(itemId) ?? string.format("%d", itemId), count });
             }
         }

@@ -17,6 +17,7 @@ import type { WeaponReminderService } from "../reminders/weapon/weapon-reminder.
 import type { AddonSettingsService } from "../settings/settings.interface";
 import type { IdleService } from "../character/idle.service";
 import type { ActionBarsService, PlayerService, SpellsService } from "@wowkit/wow";
+import type { LowReagent } from "../reagents/reagent.interface";
 import type { Reminders } from "./tick.interface";
 
 export class FindRemindersService {
@@ -47,8 +48,10 @@ export class FindRemindersService {
 
         // The reagents are bought in a town, so their hint stays there; the rest keeps quiet when asked
         const reagentSpells = this.findReagentSpells();
+        const lowReagents = this.findLowReagents();
         const lowStock = this.lowStock.findLowStock();
-        if (this.idle.shouldStayIdle(this.settings.get("hideResting"))) return { ...this.createEmptyReminders(), reagentSpells, lowStock };
+        if (this.idle.shouldStayIdle(this.settings.get("hideResting")))
+            return { ...this.createEmptyReminders(), reagentSpells, lowReagents, lowStock };
 
         const showBuff = this.settings.get("showBuff");
         const missingBuffs: MissingBuffs = showBuff ? this.buffReminder.findMissingBuffs() : { glow: [], notOnBars: [] };
@@ -69,6 +72,7 @@ export class FindRemindersService {
             readyCooldowns: this.glowCues.findReadyCooldowns(),
             procs: this.glowCues.findProcs(),
             reagentSpells,
+            lowReagents,
             lowStock,
         };
     }
@@ -84,6 +88,15 @@ export class FindRemindersService {
             .findSpellsWithLowReagent((reagent) => enabledReagents[String(reagent.itemId)] !== false)
             .filter((id) => this.actionBars.isOnBars(id));
         return [...listed, ...this.addedReminders.findReagentSpells()];
+    }
+
+    /** The reagents running low that are switched on: those of the list, then those of the spells the player added. */
+    private findLowReagents(): LowReagent[] {
+        if (!this.settings.get("showReagents")) return [];
+        const enabledReagents = this.settings.get("enabledReagents");
+        const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => enabledReagents[String(reagent.itemId)] !== false);
+        const added = this.addedReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
+        return [...listed, ...added];
     }
 
     /**
@@ -112,6 +125,7 @@ export class FindRemindersService {
             outdatedRanks: [],
             readyCooldowns: [],
             reagentSpells: [],
+            lowReagents: [],
             lowStock: [],
             procs: [],
         };
