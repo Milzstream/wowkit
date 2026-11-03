@@ -72,17 +72,19 @@ export const TEXTS = {
     COL_TYPE: "Type",
     COL_SPELL_ITEM_ID: "Spell / Item ID",
     COL_ENABLED: "Enabled",
-    TIP_ENABLED_TYPE: "Turns this reminder type on or off. While it's off, none of its spells glow and their rows are grayed out.",
-    TIP_ID_EDIT:
-        "The spell ID the addon looks for. Change it if the game uses a different ID for this spell, e.g. after a patch the addon hasn't caught up with yet.",
-    TIP_ADD_ID:
-        "Add a spell the addon doesn't know yet by its ID, e.g. a new or changed spell of Forever. Pick its type with the button next to it. To see a spell's ID in its tooltip, turn on \"Show spell and item IDs in tooltips\" in the Settings (Options > AddOns > Glowing Bars).",
-    TIP_ADD_ITEM:
-        'Add an item to watch by its ID, e.g. arrows or drinks. To see an item\'s ID in its tooltip, turn on "Show spell and item IDs in tooltips" in the Settings (Options > AddOns > Glowing Bars).',
-    TIP_ID_RANK: "Old ranks are checked using the spells on your action bars and in your spellbook, so this ID can't be changed.",
-    TIP_ENABLED_SPELL: "Turns the reminder for this spell on or off.",
-    TIP_ENABLED_ITEM: "Turns the reminder for this item on or off.",
-    TIP_ENABLED_TYPE_ITEM: "Turns this reminder type on or off. While it's off, none of its items glow and their rows are grayed out.",
+    TIP_TYPE: "The type of the reminder. Its row under Defaults sets the look of all its rows, unless you change a row.",
+    TIP_ID: "The ID the addon looks for. Change it if the game uses a different ID, e.g. after a patch the addon hasn't caught up with yet. The ID of an item or an old rank can't be changed.",
+    TIP_COLOR: "The color of the glow and the message. Click to choose another.",
+    TIP_GLOW_PERCENT: "How strong the glow is, 1 to 100. Type a number.",
+    TIP_MESSAGE: "Shows a short message at the top of the screen.",
+    TIP_WHEN:
+        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Low reagent and Low stock also have Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn. Click for the next choice, right-click for the one before.",
+    TIP_BELOW:
+        "Reminds you when you have fewer than this. The number on a row under Defaults is used for every row of that type, unless you set a different number on the row.",
+    TIP_ENABLED:
+        "Turns the reminder on or off. On a row under Defaults, it turns the whole type on or off: while it's off, none of its rows work and they are grayed out.",
+    TIP_ADD:
+        'Low stock needs an Item ID, every other type a Spell ID. To see them, turn on "Show spell and item IDs in tooltips" in the Settings.',
     HDR_TABLE_ADD: "Add spell/item by ID",
     OPT_TOOLTIP_IDS: "Show spell and item IDs in tooltips",
     TIP_TOOLTIP_IDS:
@@ -100,14 +102,9 @@ export const TEXTS = {
     COL_GLOW_PERCENT: "Glow %",
     COL_MESSAGE: "Message",
     COL_BELOW: "Below",
-    TIP_BELOW: "Reminds you when you have fewer than this.",
-    TIP_BELOW_TYPE:
-        "Reminds you when you have fewer than this. Used for every row of this type, unless you set a different number on the row.",
-    TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
-    TIP_TYPE_LOW_REAGENT:
-        "By default (Alert in town) it glows anywhere, and its message and sound come only in a town or an inn. You can change this in its When column.",
     COL_SOUND: "Sound",
+    TIP_SOUND: "The sound that plays when the reminder starts. Click for the next choice, right-click for the one before.",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
     REPEAT_SECONDS: "%d s",
@@ -122,6 +119,8 @@ export const TEXTS = {
         "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown... Click for the next choice, right-click for the one before.",
     COL_WHEN: "When",
     COL_ACTIONS: "Actions",
+    TIP_ACTIONS:
+        "Reset: undoes your changes on this row. X: removes a spell or item you added. Each one only shows on the rows where it can be used.",
     BTN_ADVANCED: "Advanced",
     BTN_BASIC: "Basic",
     WHEN_ALWAYS: "Always",
@@ -129,10 +128,6 @@ export const TEXTS = {
     WHEN_OUT_OF_COMBAT: "Out of combat",
     WHEN_ENEMY_TARGETED: "Enemy targeted",
     WHEN_TOWN_ALERT: "Alert in town",
-    TIP_WHEN:
-        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
-    TIP_WHEN_TOWN_ALERT:
-        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
     TYPE_MISSING_BUFF: "Missing buff",
     TYPE_WEAPON_BUFF: "Weapon buff",

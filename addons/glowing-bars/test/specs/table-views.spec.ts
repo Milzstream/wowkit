@@ -75,6 +75,34 @@ describe("the views of the table", () => {
         expect(isHeaderShown(world, "When")).toBe(false);
     });
 
+    function readHeaderTips(world: World): string[] {
+        const window = findWindow(world);
+        const hovers = world.frames.filter((frame) => frame.parent === window && frame.frameType === "Frame" && frame.isShown);
+        return hovers.map((hover) => {
+            hover.scripts.OnEnter?.(hover);
+            return world.findFrame((frame) => frame.name === "GameTooltip")?.text ?? "";
+        });
+    }
+
+    it("explains its columns as the mouse comes over their headers: only the ones of the view", () => {
+        const basic = readHeaderTips(createOpenTable());
+        const advanced = readHeaderTips(createOpenTable({ isTableAdvanced: true }));
+        expect(basic.length).toBe(7);
+        expect(advanced.length).toBe(13);
+        for (const tips of [basic, advanced]) {
+            expect(tips.some((tip) => tip.includes("Reset: undoes your changes on this row."))).toBe(true);
+            expect(tips.some((tip) => tip.includes("right-click for the one before"))).toBe(true);
+        }
+    });
+
+    it("has no tooltip on the controls of a row", () => {
+        const world = createOpenTable({ isTableAdvanced: true });
+        const row = findLabel(world, "Recklessness")!.parent;
+        const controls = world.frames.filter((frame) => frame.parent === row);
+        expect(controls.length > 5).toBe(true);
+        expect(controls.filter((control) => control.scripts.OnEnter !== undefined).length).toBe(0);
+    });
+
     it("keeps applying what was set in a column that is hidden", () => {
         const world = createOpenTable({ styles: { readyCooldown: { when: "always" } } });
         expect(isHeaderShown(world, "When")).toBe(false);

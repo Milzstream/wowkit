@@ -123,6 +123,13 @@ describe("the table of looks", () => {
         expect(world.sounds).toEqual([8959]);
     });
 
+    it("takes the sound before on a right click", () => {
+        const row = findRow(world, "Recklessness");
+        row.sound.scripts.OnClick!(row.sound, "LeftButton");
+        row.sound.scripts.OnClick!(row.sound, "RightButton");
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.sound).toBeUndefined();
+    });
+
     it("takes the color the game's picker gives", () => {
         const row = findRow(world, "Recklessness");
         row.swatch.scripts.OnClick!(row.swatch);

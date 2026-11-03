@@ -244,7 +244,6 @@ export class StyleTableService {
         this.connectReset(widgets);
         this.edits.connectRemove(widgets.remove, () => widgets.row);
         this.edits.connectEnabled(widgets.enabled, () => widgets.row);
-        this.choices.addTypeTooltip(frame, () => widgets.row);
         return widgets;
     }
 

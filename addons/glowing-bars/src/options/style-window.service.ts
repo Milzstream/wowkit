@@ -18,6 +18,23 @@ import {
 /** What the window leaves free of the screen's width when it has to shrink. */
 const SCREEN_MARGIN = 40;
 
+/** The headers that explain their column as the mouse comes over them. */
+const HEADER_TIPS: { [name in keyof typeof COLUMN]?: TextKey } = {
+    type: "TIP_TYPE",
+    id: "TIP_ID",
+    color: "TIP_COLOR",
+    glowPercent: "TIP_GLOW_PERCENT",
+    message: "TIP_MESSAGE",
+    sound: "TIP_SOUND",
+    repeat: "TIP_REPEAT",
+    when: "TIP_WHEN",
+    glowTime: "TIP_GLOW_TIME",
+    animation: "TIP_ANIMATION",
+    belowLimits: "TIP_BELOW",
+    enabled: "TIP_ENABLED",
+    actions: "TIP_ACTIONS",
+};
+
 export class StyleWindowService {
     /** The column headers, and what each one's column is called. */
     private readonly headers: { header: FontString; hover?: Frame; column: keyof typeof COLUMN }[] = [];
@@ -40,14 +57,16 @@ export class StyleWindowService {
             const shown = columns[column];
             header.SetShown(shown !== undefined);
             hover?.SetShown(shown !== undefined);
-            if (shown !== undefined) this.applyHeaderPosition(window, header, shown);
+            if (shown !== undefined) this.applyHeaderPosition(window, header, hover, shown);
         }
         this.viewButton?.SetText(this.locale.getText(this.isAdvanced() ? "BTN_BASIC" : "BTN_ADVANCED"));
     }
 
-    private applyHeaderPosition(window: Frame, header: FontString, column: Column): void {
+    private applyHeaderPosition(window: Frame, header: FontString, hover: Frame | undefined, column: Column): void {
         header.ClearAllPoints();
         header.SetPoint("TOPLEFT", window, "TOPLEFT", TABLE_LEFT + column.x, -42);
+        hover?.ClearAllPoints();
+        hover?.SetPoint("TOPLEFT", window, "TOPLEFT", TABLE_LEFT + column.x, -38);
     }
 
     /** Sets the width of the window, and shrinks it as a whole on a screen too narrow for it (a large UI scale). */
@@ -176,7 +195,8 @@ export class StyleWindowService {
             header.SetWidth(column.width);
             header.SetJustifyH(isCentered ? "CENTER" : "LEFT");
             header.SetText(this.locale.getText(text));
-            const hover = name === "animation" ? this.addHeaderTooltip(window, column, "TIP_ANIMATION") : undefined;
+            const tip = HEADER_TIPS[name];
+            const hover = tip !== undefined ? this.addHeaderTooltip(window, column, tip) : undefined;
             this.headers.push({ header, hover, column: name });
         }
     }

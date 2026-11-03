@@ -6,7 +6,7 @@ import type { EnabledService } from "../settings/enabled.service";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import { ADDABLE_TYPES } from "../settings/settings.constants";
-import { COLUMN, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.constants";
+import { COLUMN, HEADER_HEIGHT, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.constants";
 import { TYPE_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
@@ -40,14 +40,6 @@ export class StyleEditsService {
             const row = getRow();
             if (row !== undefined) this.switches.setEnabled(row, box.GetChecked());
         });
-        box.SetScript("OnEnter", () => {
-            const row = getRow();
-            if (row === undefined) return;
-            const isStock = row.reminderType === "lowStock";
-            if (row.spellId === undefined) this.showTooltip(box, isStock ? "TIP_ENABLED_TYPE_ITEM" : "TIP_ENABLED_TYPE");
-            else this.showTooltip(box, isStock ? "TIP_ENABLED_ITEM" : "TIP_ENABLED_SPELL");
-        });
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 
     /** The X button of a spell the player added: it takes the spell out. */
@@ -92,13 +84,6 @@ export class StyleEditsService {
             restore();
             box.ClearFocus();
         });
-        // What the ID is for, or why an old rank's cannot be changed
-        box.SetScript("OnEnter", () => {
-            const row = getRow();
-            if (row !== undefined)
-                this.showTooltip(box, row.itemId !== undefined ? "TIP_ID_ITEM" : this.isIdEditable(row) ? "TIP_ID_EDIT" : "TIP_ID_RANK");
-        });
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
         return box;
     }
 
@@ -124,8 +109,6 @@ export class StyleEditsService {
             }
             if (row !== undefined) this.fillBelowBox(box, row);
         });
-        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_BELOW_TYPE" : "TIP_BELOW"));
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
         return box;
     }
 
@@ -154,10 +137,15 @@ export class StyleEditsService {
     createAddRow(content: Frame): Frame {
         const frame = CreateFrame("Frame", undefined, content);
         frame.SetSize(TABLE_WIDTH, ROW_HEIGHT);
+        // Over the heading of the row: it says what to enter
+        const hover = CreateFrame("Frame", undefined, frame);
+        hover.SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 0, 0);
+        hover.SetSize(200, HEADER_HEIGHT);
+        hover.EnableMouse(true);
+        hover.SetScript("OnEnter", () => this.showTooltip(hover, "TIP_ADD"));
+        hover.SetScript("OnLeave", () => GameTooltip.Hide());
         const box = this.createNumberBox(frame, COLUMN.name.x, 90, 7);
         let typeIndex = 0;
-        box.SetScript("OnEnter", () => this.showTooltip(box, ADDABLE_TYPES[typeIndex] === "lowStock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
-        box.SetScript("OnLeave", () => GameTooltip.Hide());
         const typeButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         typeButton.SetSize(136, 24);
         typeButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
