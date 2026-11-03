@@ -65,26 +65,26 @@ describe("the table of looks", () => {
     it("shrinks to fit a screen too narrow for it, and grows back on a wider one", () => {
         const screen = world.findFrame((frame) => frame.name === "UIParent")!;
         const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
-        screen.width = 800;
+        screen.width = 500;
         toggleTable();
         toggleTable();
         expect(window.scale < 1).toBe(true);
-        expect(window.width * window.scale <= 800).toBe(true);
+        expect(window.width * window.scale <= 500).toBe(true);
         screen.width = 2000;
         toggleTable();
         toggleTable();
         expect(window.scale).toBe(1);
     });
 
-    it("leaves out the Reset and X column while no row shows one of its buttons", () => {
+    it("keeps its width when a row gets or loses its Reset button", () => {
         const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
-        const narrow = window.width;
+        const width = window.width;
         const row = findRow(world, "Recklessness");
         row.glowPercent.text = "40";
         row.glowPercent.scripts.OnEditFocusLost!(row.glowPercent);
-        expect(window.width).toBe(narrow + 72);
+        expect(window.width).toBe(width);
         findRow(world, "Recklessness").reset.scripts.OnClick!(findRow(world, "Recklessness").reset);
-        expect(window.width).toBe(narrow);
+        expect(window.width).toBe(width);
     });
 
     it("closes with /gb again", () => {

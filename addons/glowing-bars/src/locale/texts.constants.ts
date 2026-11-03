@@ -121,6 +121,9 @@ export const TEXTS = {
     TIP_GLOW_TIME:
         "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown... Click for the next choice, right-click for the one before.",
     COL_WHEN: "When",
+    COL_ACTIONS: "Actions",
+    BTN_ADVANCED: "Advanced",
+    BTN_BASIC: "Basic",
     WHEN_ALWAYS: "Always",
     WHEN_IN_COMBAT: "In combat",
     WHEN_OUT_OF_COMBAT: "Out of combat",

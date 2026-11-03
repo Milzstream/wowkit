@@ -252,11 +252,14 @@ describe("the old rank of a spell, switched off in the table", () => {
 describe("a buff of the list whose ID the player fixed", () => {
     it("is looked for by the new ID: its button glows", () => {
         const INNER_FIRE_HERE: SpellDefinition = { id: 999588, name: "Inner Fire", rank: 1, icon: 135926, isHelpful: true };
-        const world = createWorld((state) => {
-            playAs(state, PRIEST);
-            learnSpell(state, INNER_FIRE_HERE);
-            state.bars[3] = INNER_FIRE_HERE.id;
-        });
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, INNER_FIRE_HERE);
+                state.bars[3] = INNER_FIRE_HERE.id;
+            },
+            { isTableAdvanced: true },
+        );
         world.advance(1);
         expect(world.glowsOn(3)).toBe(0);
         SlashCmdList["GLOWINGBARS"]!("", undefined as never);

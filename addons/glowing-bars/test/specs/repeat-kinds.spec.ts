@@ -19,10 +19,13 @@ const RECKLESSNESS: SpellDefinition = { id: 1719, name: "Recklessness", rank: 1,
 
 describe("the repeat of a sound", () => {
     it("has its button on every row of the table", () => {
-        const world = createWorld((state) => {
-            playAs(state, PRIEST);
-            learnSpell(state, FORTITUDE);
-        });
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, FORTITUDE);
+            },
+            { isTableAdvanced: true },
+        );
         SlashCmdList["GLOWINGBARS"]!("", undefined as never);
         const buttons = world.frames.filter((frame) => frame.frameType === "Button" && frame.text === "Off");
         expect(buttons.length > 0).toBe(true);

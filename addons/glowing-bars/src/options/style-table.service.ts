@@ -11,6 +11,7 @@ import type { StyleService } from "../settings/style.service";
 import {
     BRONZE_TEXT,
     COLUMN,
+    findColumns,
     findCenteredX,
     type Column,
     HEADER_HEIGHT,
@@ -20,9 +21,9 @@ import {
     STRIPE_ALPHA,
     STRIPE_COLOR,
     TABLE_WIDTH,
-    TABLE_WIDTH_WITHOUT_ACTIONS,
     findWindowWidth,
 } from "./style-table.constants";
+import { applyRowView } from "./style-row-layout";
 import type { StyleWindowService } from "./style-window.service";
 import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
 import type { StyleEditsService } from "./style-edits.service";
@@ -62,7 +63,7 @@ export class StyleTableService {
     private readonly headers: FontString[] = [];
     private usedWidgets = 0;
     private usedHeaders = 0;
-    /** How wide the rows are now: the Reset and X column only while a row shows one of its buttons. */
+    /** How wide the rows are now: as wide as the columns of the view. */
     private tableWidth = TABLE_WIDTH;
     /** The row at the end that adds a spell; made with the first rows. */
     private addRow: Frame | undefined;
@@ -112,7 +113,7 @@ export class StyleTableService {
         this.usedHeaders = 0;
         const spellRows = this.rows.listSpellRows();
         const typeRows = this.rows.listTypeRows(spellRows);
-        this.applyTableWidth(content, [...typeRows, ...spellRows]);
+        this.applyTableWidth(content);
         let y = this.drawSection(content, "HDR_TABLE_DEFAULTS", typeRows, 0);
         y = this.drawSection(content, "HDR_TABLE_SPELLS", spellRows, y);
         y = this.drawAddRow(content, y);
@@ -121,10 +122,10 @@ export class StyleTableService {
         content.SetHeight(math.max(10, y));
     }
 
-    /** The window is as wide as the columns in use: without the Reset and X column while no row shows one of its buttons. */
-    private applyTableWidth(content: Frame, rows: StyleRow[]): void {
-        const hasActions = rows.some((row) => row.isAdded === true || this.styles.isOverridden(row.reminderType, row.spellId));
-        this.tableWidth = hasActions ? TABLE_WIDTH : TABLE_WIDTH_WITHOUT_ACTIONS;
+    /** The window is as wide as the columns of the view. */
+    private applyTableWidth(content: Frame): void {
+        const { actions } = findColumns(this.windows.isAdvanced());
+        this.tableWidth = actions.x + actions.width;
         if (this.window !== undefined) this.windows.setWidthToFit(this.window, findWindowWidth(this.tableWidth));
         content.SetWidth(this.tableWidth);
     }
@@ -211,6 +212,7 @@ export class StyleTableService {
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
         this.edits.fillIdBox(widgets.spellIdBox, row);
         this.edits.fillBelowBox(widgets.belowBox, row);
+        applyRowView(widgets, this.windows.isAdvanced());
     }
 
     private createWidgets(content: Frame): RowWidgets {
@@ -270,7 +272,6 @@ export class StyleTableService {
     private createSwatch(frame: Frame): { swatch: Button; swatchColor: Texture } {
         const swatch = CreateFrame("Button", undefined, frame);
         swatch.SetSize(22, 16);
-        swatch.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.color, 22), 0);
         const border = swatch.CreateTexture(undefined, "BACKGROUND");
         border.SetAllPoints(swatch);
         border.SetColorTexture(0.55, 0.42, 0.2, 1);
@@ -315,7 +316,6 @@ export class StyleTableService {
     }
 
     private connectMessage(widgets: RowWidgets): void {
-        widgets.message.SetPoint("LEFT", widgets.frame, "LEFT", findCenteredX(COLUMN.message, 24), 0);
         widgets.message.SetSize(24, 24);
         widgets.message.SetScript("OnClick", () => this.change(widgets, { isMessageOn: widgets.message.GetChecked() }));
     }
@@ -323,7 +323,6 @@ export class StyleTableService {
     /** Left click: the next sound; right click: the one before. Choosing one plays it once as a preview. */
     private connectSound(widgets: RowWidgets): void {
         widgets.sound.SetSize(126, 24);
-        widgets.sound.SetPoint("LEFT", widgets.frame, "LEFT", findCenteredX(COLUMN.sound, 126), 0);
         widgets.sound.RegisterForClicks("LeftButtonUp", "RightButtonUp");
         widgets.sound.SetScript("OnClick", (_button, mouseButton) => {
             if (widgets.row !== undefined) this.choices.chooseNextSound(widgets.row, mouseButton === "RightButton" ? -1 : 1);
@@ -332,7 +331,6 @@ export class StyleTableService {
 
     private connectReset(widgets: RowWidgets): void {
         widgets.reset.SetSize(46, 22);
-        widgets.reset.SetPoint("LEFT", widgets.frame, "LEFT", COLUMN.actions.x + 2, 0);
         widgets.reset.SetText(this.locale.getText("BTN_RESET"));
         widgets.reset.SetScript("OnClick", () => {
             const row = widgets.row;

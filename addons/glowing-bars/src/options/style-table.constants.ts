@@ -38,9 +38,26 @@ export const COLUMN = {
     actions: { x: 1126, width: 72 },
 } satisfies { [name: string]: Column };
 
-/** A row is as wide as its columns. The last one (Reset and X) is there only while a row shows one of its buttons. */
+/** The columns of the Basic view: the ones everybody needs. The others keep working, unseen. */
+export const BASIC_COLUMN = {
+    icon: COLUMN.icon,
+    name: COLUMN.name,
+    type: COLUMN.type,
+    color: { x: 270, width: 56 },
+    message: { x: 326, width: 66 },
+    sound: { x: 392, width: 130 },
+    belowLimits: { x: 522, width: 56 },
+    enabled: { x: 578, width: 66 },
+    actions: { x: 644, width: 72 },
+} satisfies { [name: string]: Column };
+
+/** Where the columns of a view are. */
+export function findColumns(isAdvanced: boolean): { [name in keyof typeof COLUMN]?: Column } & typeof BASIC_COLUMN {
+    return isAdvanced ? COLUMN : BASIC_COLUMN;
+}
+
+/** A row is as wide as its columns. */
 export const TABLE_WIDTH = COLUMN.actions.x + COLUMN.actions.width;
-export const TABLE_WIDTH_WITHOUT_ACTIONS = COLUMN.actions.x;
 export const TABLE_LEFT = 28;
 
 /** The window around a table this wide: a margin inside its border on the left, the scroll bar on the right. */

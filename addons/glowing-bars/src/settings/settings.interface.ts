@@ -97,6 +97,8 @@ export interface AddonSettings {
     fadedOpacity: number;
     /** The spell IDs in the spell and item tooltips, to add a spell by its ID in the table. */
     showTooltipIds: boolean;
+    /** The table shows every column (Advanced), not only the ones everybody needs (Basic). */
+    isTableAdvanced: boolean;
     /** The action bars (1 to 8) that glow; only set (false) where the player switched one off. */
     barsThatGlow: { [bar: string]: boolean | undefined };
     /** Per-spell switches of the cooldown and proc glows (by spell ID); only set where the player switched one off. */

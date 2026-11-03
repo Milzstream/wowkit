@@ -34,6 +34,7 @@ export function createDefaultSettings(): AddonSettings {
         fadedBars: {},
         fadedOpacity: 50,
         showTooltipIds: false,
+        isTableAdvanced: false,
         idOverrides: {},
         addedSpells: [],
         enabledReagents: {},
