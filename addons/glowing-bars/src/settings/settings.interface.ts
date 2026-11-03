@@ -27,6 +27,8 @@ export interface Style {
     when: When;
     /** Seconds the reminder shows once it is due, and again with each repeat; 0 = the whole time, until it is done. */
     glowSeconds: number;
+    /** How the glow moves: around the button, breathing, or still (fading in and out only as it comes and goes). */
+    animation: GlowStyle;
 }
 
 /** The kinds a spell can be added as by the player: every kind but the old ranks, which are found for every spell. */
@@ -44,9 +46,7 @@ export type StyleOverride = Partial<Style>;
 export interface AddonSettings {
     isMuted: boolean;
     hideResting: boolean;
-    /** How the glows move: around the button, breathing, or still (fading in and out as they come and go). */
-    glowStyle: GlowStyle;
-    /** How the glows of the round buttons of Forever's gamepad bars move: breathing, or still. */
+    /** What a circling glow does on a round button (Forever's gamepad bars, another addon's), where it cannot circle. */
     roundGlowStyle: GlowStyle;
     showBuff: boolean;
     showWeapon: boolean;
