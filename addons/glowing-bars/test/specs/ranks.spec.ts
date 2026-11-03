@@ -40,7 +40,7 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
     });
 
     it("sees the message in the color the player picked for it", () => {
-        world = createWorld((state) => setUpPriest(state, false), { styles: { rank: { color: [1, 0, 0] } } });
+        world = createWorld((state) => setUpPriest(state, false), { styles: { oldRank: { color: [1, 0, 0] } } });
         world.advance(3);
         expect(world.notice()).toContain("|cffff0000Old spell rank|r");
     });
@@ -55,14 +55,14 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
 
     it("is told nothing when the player muted the addon", () => {
         world = createWorld((state) => setUpPriest(state, false));
-        world.setOption("isMuted", true);
+        world.setOption("isDisabled", true);
         // The first message went out at login; it is not repeated when muted
         world.advance(45);
         expect(world.notice()).toBe("");
     });
 
     it("keeps its settings in the character's saved variables", () => {
-        expect(world.getSavedSettings()?.hideResting).toBe(true);
+        expect(world.getSavedSettings()?.shouldStayQuietInTowns).toBe(true);
     });
 });
 
@@ -75,7 +75,7 @@ describe("a priest resting in a town", () => {
 
     it("is told when the player switched the quiet mode off", () => {
         const world = createWorld((state) => setUpPriest(state, true));
-        world.setOption("hideResting", false);
+        world.setOption("shouldStayQuietInTowns", false);
         world.advance(3);
         expect(world.notice()).toContain("Old spell rank");
     });
@@ -89,8 +89,8 @@ describe("the sound of the message", () => {
     });
 
     it("is not played when the player picked none", () => {
-        const world = createWorld((state) => setUpPriest(state, true), { styles: { rank: { sound: "none" } } });
-        world.setOption("hideResting", false);
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { oldRank: { sound: "none" } } });
+        world.setOption("shouldStayQuietInTowns", false);
         world.advance(3);
         expect(world.sounds.length).toBe(0);
     });
@@ -107,29 +107,29 @@ describe("the sound of the message", () => {
 
 describe("a character whose saved sound has gone from the list", () => {
     it("gets the default sound again", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { rank: { sound: "ping" } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { oldRank: { sound: "ping" } } });
         world.advance(3);
-        expect((world.getSavedSettings()?.styles as { rank?: { sound?: string } } | undefined)?.rank?.sound).toBeUndefined();
+        expect((world.getSavedSettings()?.styles as { oldRank?: { sound?: string } } | undefined)?.oldRank?.sound).toBeUndefined();
         expect(world.sounds).toEqual([18871]);
     });
 
     it("keeps a saved sound that is still in the list", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { rank: { sound: "raidwarning" } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { oldRank: { sound: "raidwarning" } } });
         world.advance(3);
-        expect((world.getSavedSettings()?.styles as { rank?: { sound?: string } } | undefined)?.rank?.sound).toBe("raidwarning");
+        expect((world.getSavedSettings()?.styles as { oldRank?: { sound?: string } } | undefined)?.oldRank?.sound).toBe("raidwarning");
         expect(world.sounds).toEqual([8959]);
     });
 });
 
 describe("the look of the old rank of a spell", () => {
     it("is the one set for the spell as an old rank", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "rank:Smite": { glowPercent: 80 } } });
+        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "oldRank:Smite": { glowPercent: 80 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.8]);
     });
 
     it("does not change with a look the spell has in another type", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "buff:Smite": { glowPercent: 90 } } });
+        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "missingBuff:Smite": { glowPercent: 90 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.5]);
     });

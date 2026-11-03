@@ -2,7 +2,8 @@ import type { SettingsService, SoundKey } from "@wowkit/ui";
 import type { GlowAnimation, Rgb } from "@wowkit/wow";
 
 /** The types of reminder. Each has a look (color, glow %, message, sound) the player can change for the type and for a spell. */
-export type ReminderType = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "proc" | "rank" | "reagent" | "stock";
+export type ReminderType =
+    "missingBuff" | "weaponBuff" | "missingSeal" | "missingTracking" | "readyCooldown" | "proc" | "oldRank" | "lowReagent" | "lowStock";
 
 /** The settings service of this addon: a SettingsService that knows the shape of its settings. */
 export type AddonSettingsService = SettingsService<AddonSettings>;
@@ -11,7 +12,7 @@ export type AddonSettingsService = SettingsService<AddonSettings>;
  * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted; or (the low
  * reagents and the low stock) glowing anywhere, with its message and sound only in a town or an inn.
  */
-export type When = "always" | "combat" | "noCombat" | "target" | "townAlert";
+export type When = "always" | "inCombat" | "outOfCombat" | "enemyTargeted" | "townAlert";
 
 /** How a reminder looks and sounds, and when it shows. */
 export interface Style {
@@ -32,7 +33,8 @@ export interface Style {
 }
 
 /** The types a spell can be added as by the player: every type but the old ranks, which are found for every spell. */
-export type AddableType = "buff" | "weapon" | "seal" | "tracking" | "reagent" | "cooldown" | "proc" | "stock";
+export type AddableType =
+    "missingBuff" | "weaponBuff" | "missingSeal" | "missingTracking" | "lowReagent" | "readyCooldown" | "proc" | "lowStock";
 
 /** A spell the player added by its ID; for the low stock an item, by its item ID. */
 export interface AddedSpell {
@@ -44,12 +46,12 @@ export interface AddedSpell {
 export type StyleOverride = Partial<Style>;
 
 export interface AddonSettings {
-    isMuted: boolean;
-    hideResting: boolean;
+    isDisabled: boolean;
+    shouldStayQuietInTowns: boolean;
     /** What a circling glow does on a round button (Forever's gamepad bars, another addon's), where it cannot circle. */
     roundAnimation: GlowAnimation;
-    showBuff: boolean;
-    showWeapon: boolean;
+    isMissingBuffEnabled: boolean;
+    isWeaponBuffEnabled: boolean;
     /** Party members missing the player's buffs. */
     showPartyBuffs: boolean;
     /** Raid members missing the player's buffs. */
@@ -58,29 +60,29 @@ export interface AddonSettings {
      * The group version (Prayer of Fortitude, a Greater Blessing) is asked for from this many missing the buff, the player
      * counted (1 to 5): in a party, and in a raid. A Greater Blessing counts the members of its class.
      */
-    partyGroupMin: number;
-    raidGroupMin: number;
+    partyGroupFrom: number;
+    raidGroupFrom: number;
     /** Spells on the bars at a lower rank than the one the player knows. */
-    showRanks: boolean;
+    isOldRankEnabled: boolean;
     /** The reagents of the group buffs running low, on arriving in a town. */
-    showReagents: boolean;
+    isLowReagentEnabled: boolean;
     /** Important cooldowns that are ready. */
-    showCooldowns: boolean;
+    isReadyCooldownEnabled: boolean;
     /** As a fight starts, every ready cooldown glows too (a reminder to use it), for its glow time. */
     showCooldownsAtFightStart: boolean;
     /** A group buff's reagent runs low with fewer than this in the bags. */
     reagentBelow: number;
     /** The same of the items the player watches, and whether they are watched. */
     stockBelow: number;
-    showStock: boolean;
+    isLowStockEnabled: boolean;
     /** The limit of a row of its own ("stock:2512", "reagent:17028"), where it has one. */
     belowLimits: { [entry: string]: number | undefined };
     /** Spells the game says are usable now (Overpower, Revenge, Execute...). */
-    showProcs: boolean;
+    isProcEnabled: boolean;
     /** A paladin in a fight with no seal up. */
-    showSeals: boolean;
+    isMissingSealEnabled: boolean;
     /** A miner or a herbalist with no tracking on. */
-    showTracking: boolean;
+    isMissingTrackingEnabled: boolean;
     /** The player's changes to the look of each type of reminder (the default look of its spells). */
     styles: { [key in ReminderType]?: StyleOverride };
     /** The player's changes to the look of one spell in one type, by the type and the spell's name ("rank:Smite"). */
@@ -90,13 +92,13 @@ export interface AddonSettings {
     /** Cooldowns and procs the player added by their ID. */
     addedSpells: AddedSpell[];
     /** The action bars (1 to 8) whose buttons are faded until they glow; only set where the player switched one on. */
-    barFaded: { [bar: string]: boolean | undefined };
+    fadedBars: { [bar: string]: boolean | undefined };
     /** How visible the buttons of a faded bar are while they do not glow, in percent. */
     fadedOpacity: number;
     /** The spell IDs in the spell and item tooltips, to add a spell by its ID in the table. */
     showTooltipIds: boolean;
-    /** The action bars (1 to 8) whose buttons do not glow; only set where the player switched one off. */
-    barOff: { [bar: string]: boolean | undefined };
+    /** The action bars (1 to 8) that glow; only set (false) where the player switched one off. */
+    barsThatGlow: { [bar: string]: boolean | undefined };
     /** Per-spell switches of the cooldown and proc glows (by spell ID); only set where the player switched one off. */
     enabledSpells: { [spellId: string]: boolean | undefined };
     /** The buff of a group (one aura, one armor) the player cast last, by the group's first spell ID: the one that glows. */

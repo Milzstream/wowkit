@@ -21,14 +21,14 @@ describe("a priest who plays with ElvUI", () => {
     });
 
     it("sees no glow on ElvUI's bar 6 once Action Bar 2 is switched off; its bar 2, of no Blizzard bar, still glows", () => {
-        const world = createWorld(setUp, { barOff: { "2": true } });
+        const world = createWorld(setUp, { barsThatGlow: { "2": false } });
         world.advance(1);
         expect(world.glowsOnFrame("ElvUI_Bar6Button1")).toBe(0);
         expect(world.glowsOnFrame("ElvUI_Bar2Button1")).toBe(1);
     });
 
     it("fades ElvUI's bar 6 with Action Bar 2", () => {
-        const world = createWorld(setUp, { barFaded: { "2": true } });
+        const world = createWorld(setUp, { fadedBars: { "2": true } });
         world.advance(1);
         expect(world.findFrame((frame) => frame.name === "ElvUI_Bar6Button2")!.alpha).toBe(0.5);
     });

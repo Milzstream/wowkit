@@ -17,7 +17,7 @@ export class BlockedActionService {
     noteBlockedAction(addon: unknown, action: unknown): void {
         const text = `${tostring(addon)} | ${tostring(action)}`;
         if (!contains(text, this.addonName)) return;
-        const described = `${text} | ${this.player.isInCombat() ? "combat" : "no combat"}`;
+        const described = `${text} | ${this.player.isInCombat() ? "inCombat" : "no combat"}`;
         this.messages.say(string.format(this.locale.getText("BLOCKED_ACTION"), described));
     }
 }

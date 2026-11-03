@@ -8,9 +8,9 @@ export function readWhenState(player: PlayerService): { [when in When]: boolean 
     const isInCombat = player.isInCombat();
     return {
         always: true,
-        combat: isInCombat,
-        noCombat: !isInCombat,
-        target: player.hasEnemyTarget(),
+        inCombat: isInCombat,
+        outOfCombat: !isInCombat,
+        enemyTargeted: player.hasEnemyTarget(),
         townAlert: true,
     };
 }

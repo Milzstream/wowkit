@@ -11,7 +11,7 @@ import type { ControlsService } from "@wowkit/ui";
 export const ANIMATION_TEXTS: { [style in GlowAnimation]: TextKey } = {
     circling: "ANIMATION_CIRCLING",
     breathing: "ANIMATION_BREATHING",
-    still: "ANIMATION_STILL",
+    none: "ANIMATION_NONE",
 };
 
 export class AnimationSection {
@@ -23,7 +23,7 @@ export class AnimationSection {
 
     addAnimationSection(category: SettingsCategory): void {
         // A round button has no animation around it
-        const styles: GlowAnimation[] = ["breathing", "still"];
+        const styles: GlowAnimation[] = ["breathing", "none"];
         const key = "roundAnimation";
         this.controls.addDropdown(
             category,

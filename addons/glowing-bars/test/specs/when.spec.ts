@@ -53,7 +53,7 @@ describe("a missing buff that shows always, by default", () => {
 });
 
 describe("a missing buff that shows only in combat", () => {
-    const settings = { styles: { buff: { when: "combat" } } };
+    const settings = { styles: { missingBuff: { when: "inCombat" } } };
 
     it("does not glow out of combat", () => {
         expect(startPriest(settings).glowsOn(1)).toBe(0);
@@ -70,12 +70,12 @@ describe("a missing buff that shows only in combat", () => {
 
 describe("a missing buff that shows only out of combat", () => {
     it("does not glow in combat", () => {
-        expect(startPriest({ styles: { buff: { when: "noCombat" } } }, (state) => (state.isInCombat = true)).glowsOn(1)).toBe(0);
+        expect(startPriest({ styles: { missingBuff: { when: "outOfCombat" } } }, (state) => (state.isInCombat = true)).glowsOn(1)).toBe(0);
     });
 });
 
 describe("a missing buff that shows only with an enemy targeted", () => {
-    const settings = { styles: { buff: { when: "target" } } };
+    const settings = { styles: { missingBuff: { when: "enemyTargeted" } } };
 
     it("does not glow with no target, not even in combat", () => {
         expect(startPriest(settings, (state) => (state.isInCombat = true)).glowsOn(1)).toBe(0);
@@ -151,9 +151,9 @@ describe("the When button of the table", () => {
 
 describe("a When saved that the type does not have", () => {
     it("is the type's default again", () => {
-        const world = startPriest({ styles: { buff: { when: "town" }, reagent: { when: "sometimes" } } });
-        expect(readSaved(world, "styles").buff?.when).toBeUndefined();
-        expect(readSaved(world, "styles").reagent?.when).toBeUndefined();
+        const world = startPriest({ styles: { missingBuff: { when: "town" }, lowReagent: { when: "sometimes" } } });
+        expect(readSaved(world, "styles").missingBuff?.when).toBeUndefined();
+        expect(readSaved(world, "styles").lowReagent?.when).toBeUndefined();
         expect(world.glowsOn(1)).toBe(1);
     });
 });
@@ -176,7 +176,7 @@ describe("a paladin's missing seal", () => {
     });
 
     it("glows out of combat too when the player chose it to show always", () => {
-        expect(startPaladin({ styles: { seal: { when: "always" } } }).glowsOn(1)).toBe(1);
+        expect(startPaladin({ styles: { missingSeal: { when: "always" } } }).glowsOn(1)).toBe(1);
     });
 });
 
@@ -195,7 +195,7 @@ describe("a low stock", () => {
     });
 
     it("that alerts in town glows anywhere, and tells only in a town", () => {
-        const world = createArcher(12, { styles: { stock: { when: "townAlert" } } }, true, false);
+        const world = createArcher(12, { styles: { lowStock: { when: "townAlert" } } }, true, false);
         expect(world.glowsOn(1)).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
@@ -223,7 +223,7 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
     }
 
     it("plays the low stock's sound and shows its message on arriving, and no more while there", () => {
-        const world = createArcher(12, { styles: { stock: { sound: "raidwarning", when: "townAlert" } } }, true, false);
+        const world = createArcher(12, { styles: { lowStock: { sound: "raidwarning", when: "townAlert" } } }, true, false);
         expect(world.sounds.length).toBe(0);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
@@ -243,7 +243,7 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
                 state.bags[HOLY_CANDLE] = 0;
                 state.bars[1] = PRAYER_OF_FORTITUDE.id;
             },
-            { styles: { reagent: { sound: "raidwarning" } } },
+            { styles: { lowReagent: { sound: "raidwarning" } } },
         );
         world.advance(2);
         expect(world.sounds.length).toBe(0);

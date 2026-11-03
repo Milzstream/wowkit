@@ -10,10 +10,11 @@ export const TEXTS = {
     INFO_COPIED: "The link is in your chat box. Press Ctrl+C to copy it.",
 
     HDR_CHARACTER: "This character",
-    OPT_MUTE: "Disable on this character",
-    TIP_MUTE: "Turns off all glows, sounds and messages on this character. Your other characters aren't affected.",
-    OPT_HIDE_RESTING: "Stay quiet in towns and inns",
-    TIP_HIDE_RESTING: "No glows or messages while resting in a town or inn (out of combat). Turn this off to get reminders there too.",
+    OPT_DISABLE: "Disable on this character",
+    TIP_DISABLE: "Turns off all glows, sounds and messages on this character. Your other characters aren't affected.",
+    OPT_STAY_QUIET_IN_TOWNS: "Stay quiet in towns and inns",
+    TIP_STAY_QUIET_IN_TOWNS:
+        "No glows or messages while resting in a town or inn (out of combat). Turn this off to get reminders there too.",
 
     HDR_BARS: "Action bars that glow",
     OPT_BAR: "Action Bar %d",
@@ -33,7 +34,7 @@ export const TEXTS = {
     OPT_RAID_BUFFS: "Raid members missing your buffs",
     TIP_RAID_BUFFS:
         "Out of combat, in a raid, lists members in range who are missing one of your buffs, and the buff's button glows. Your blessings only on the classes you gave one there. Off: only your own buffs are watched.",
-    OPT_GROUP_MIN: "Group version from",
+    OPT_GROUP_FROM: "Group version from",
     TIP_PARTY_GROUP_MIN:
         "In a party, how many missing a buff (you counted, but never you alone) make the group version glow instead: Prayer of Fortitude, Gift of the Wild, Arcane Brilliance, or a Greater Blessing (counting one class). It needs its reagent in your bags.",
     TIP_RAID_GROUP_MIN:
@@ -53,7 +54,7 @@ export const TEXTS = {
     TIP_COOLDOWNS_FIGHT_START:
         "When a fight starts, every ready cooldown glows too, as a reminder to use it (Berserking, Recklessness...).",
 
-    HDR_LOOKS: "Reminders",
+    HDR_REMINDERS: "Reminders",
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
     BTN_OPEN: "Open",
@@ -62,14 +63,14 @@ export const TEXTS = {
         "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling, a round button breathes instead, or stands still.",
     ANIMATION_CIRCLING: "Circling",
     ANIMATION_BREATHING: "Breathing",
-    ANIMATION_STILL: "None",
+    ANIMATION_NONE: "None",
     BTN_RESET: "Reset",
     TABLE_TITLE: "Glowing Bars",
     HDR_TABLE_DEFAULTS: "Defaults",
     HDR_TABLE_SPELLS: "Spells (override the defaults)",
-    COL_SPELL: "Spell / Item",
+    COL_SPELL_ITEM: "Spell / Item",
     COL_TYPE: "Type",
-    COL_ID: "Spell / Item ID",
+    COL_SPELL_ITEM_ID: "Spell / Item ID",
     COL_ENABLED: "Enabled",
     TIP_ENABLED_TYPE: "Turns this reminder type on or off. While it's off, none of its spells glow and their rows are grayed out.",
     TIP_ID_EDIT:
@@ -104,7 +105,7 @@ export const TEXTS = {
         "Reminds you when you have fewer than this. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
-    TIP_TYPE_REAGENT:
+    TIP_TYPE_LOW_REAGENT:
         "By default (Alert in town) it glows anywhere, and its message and sound come only in a town or an inn. You can change this in its When column.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
@@ -121,24 +122,24 @@ export const TEXTS = {
         "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown... Click for the next choice, right-click for the one before.",
     COL_WHEN: "When",
     WHEN_ALWAYS: "Always",
-    WHEN_COMBAT: "In combat",
-    WHEN_NO_COMBAT: "Out of combat",
-    WHEN_TARGET: "Enemy targeted",
-    WHEN_TOWN_TEXT: "Alert in town",
+    WHEN_IN_COMBAT: "In combat",
+    WHEN_OUT_OF_COMBAT: "Out of combat",
+    WHEN_ENEMY_TARGETED: "Enemy targeted",
+    WHEN_TOWN_ALERT: "Alert in town",
     TIP_WHEN:
         "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
-    TIP_WHEN_TOWN:
+    TIP_WHEN_TOWN_ALERT:
         "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
-    TYPE_BUFF: "Missing buff",
-    TYPE_WEAPON: "Weapon buff",
-    TYPE_SEAL: "Missing seal",
-    TYPE_TRACKING: "Missing tracking",
-    TYPE_COOLDOWN: "Ready cooldown",
+    TYPE_MISSING_BUFF: "Missing buff",
+    TYPE_WEAPON_BUFF: "Weapon buff",
+    TYPE_MISSING_SEAL: "Missing seal",
+    TYPE_MISSING_TRACKING: "Missing tracking",
+    TYPE_READY_COOLDOWN: "Ready cooldown",
     TYPE_PROC: "Proc",
-    TYPE_RANK: "Old rank",
-    TYPE_REAGENT: "Low reagent",
-    TYPE_STOCK: "Low stock",
+    TYPE_OLD_RANK: "Old rank",
+    TYPE_LOW_REAGENT: "Low reagent",
+    TYPE_LOW_STOCK: "Low stock",
     TEXT_BUFF: "Missing buff",
     TEXT_WEAPON: "Weapon buff",
     TEXT_SEAL: "Missing seal",

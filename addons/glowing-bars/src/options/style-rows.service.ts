@@ -33,15 +33,15 @@ export interface StyleRow {
 
 /** The words that name each type of reminder. */
 export const TYPE_TEXTS: { [reminderType in ReminderType]: TextKey } = {
-    buff: "TYPE_BUFF",
-    weapon: "TYPE_WEAPON",
-    seal: "TYPE_SEAL",
-    tracking: "TYPE_TRACKING",
-    cooldown: "TYPE_COOLDOWN",
+    missingBuff: "TYPE_MISSING_BUFF",
+    weaponBuff: "TYPE_WEAPON_BUFF",
+    missingSeal: "TYPE_MISSING_SEAL",
+    missingTracking: "TYPE_MISSING_TRACKING",
+    readyCooldown: "TYPE_READY_COOLDOWN",
     proc: "TYPE_PROC",
-    rank: "TYPE_RANK",
-    reagent: "TYPE_REAGENT",
-    stock: "TYPE_STOCK",
+    oldRank: "TYPE_OLD_RANK",
+    lowReagent: "TYPE_LOW_REAGENT",
+    lowStock: "TYPE_LOW_STOCK",
 };
 
 export class StyleRowsService {
@@ -90,7 +90,7 @@ export class StyleRowsService {
         const added: { reminderType: AddableType; id: number; extra: Partial<StyleRow> }[] = [];
         for (const reminderType of ADDABLE_TYPES) {
             for (const id of this.addedSpells.listAdded(reminderType)) {
-                if (reminderType !== "stock") {
+                if (reminderType !== "lowStock") {
                     added.push({ reminderType, id, extra: { isAdded: true } });
                     continue;
                 }
@@ -126,21 +126,21 @@ export class StyleRowsService {
         const addListed = (reminderType: ReminderType, listId: number | undefined, suffix?: string) => {
             if (listId !== undefined) add(reminderType, this.addedSpells.getEffectiveId(listId), { listId }, suffix);
         };
-        for (const classBuff of this.classBuffs.getClassBuffs()) addListed("buff", classBuff.id);
-        for (const entry of this.weaponChoice.getWeaponChoices()) addListed("weapon", entry.id);
-        for (const id of this.sealReminder.listSeals()) addListed("seal", id);
-        for (const id of this.trackingReminder.listTrackings()) addListed("tracking", id);
-        for (const reminderType of ["cooldown", "proc"] as const) {
+        for (const classBuff of this.classBuffs.getClassBuffs()) addListed("missingBuff", classBuff.id);
+        for (const entry of this.weaponChoice.getWeaponChoices()) addListed("weaponBuff", entry.id);
+        for (const id of this.sealReminder.listSeals()) addListed("missingSeal", id);
+        for (const id of this.trackingReminder.listTrackings()) addListed("missingTracking", id);
+        for (const reminderType of ["readyCooldown", "proc"] as const) {
             for (const id of this.glowCues.listBuiltInIds(reminderType)) addListed(reminderType, id);
         }
         for (const { reminderType, id, extra } of this.listAddedRows()) add(reminderType, id, extra);
         // A group buff whose ranks take different reagents (Holy Candle, Sacred Candle) has a row for each reagent
         for (const reagent of this.reagents.getReagentsOfClass(this.player.getClassToken())) {
-            addListed("reagent", reagent.spells[0], this.reagents.getReagentName(reagent));
+            addListed("lowReagent", reagent.spells[0], this.reagents.getReagentName(reagent));
         }
         // The spells that have ranks (a spell with one rank has no "Rank" in its subtext), on a bar or not. The ranks are read
         // off the bars, by the IDs there: a rank row's ID is not one to fix
-        for (const id of this.spells.listSpellBookIds()) if (this.spells.getSpellRank(id) !== undefined) add("rank", id);
+        for (const id of this.spells.listSpellBookIds()) if (this.spells.getSpellRank(id) !== undefined) add("oldRank", id);
         rows.sort((a, b) => this.compareRows(a, b));
         return rows;
     }

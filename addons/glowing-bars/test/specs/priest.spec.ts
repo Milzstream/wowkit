@@ -28,7 +28,7 @@ describe("a priest", () => {
                 state.bars[1] = FORTITUDE.id;
                 state.bars[2] = SMITE_RANK_2.id;
             },
-            { styles: { rank: { sound: "none" }, buff: { isMessageOn: true } } },
+            { styles: { oldRank: { sound: "none" }, missingBuff: { isMessageOn: true } } },
         );
     });
 
@@ -38,11 +38,11 @@ describe("a priest", () => {
         });
 
         it("keeps its settings in the character's saved variables", () => {
-            expect(world.getSavedSettings()?.showBuff).toBe(true);
+            expect(world.getSavedSettings()?.isMissingBuffEnabled).toBe(true);
         });
 
         it("adds its page to the options", () => {
-            expect(world.proxySettings["GlowingBars_isMuted"]).toBeDefined();
+            expect(world.proxySettings["GlowingBars_isDisabled"]).toBeDefined();
         });
     });
 

@@ -12,7 +12,7 @@ describe("a second food of one name, added in the table", () => {
                 state.spells[FIRST] = { id: FIRST, name: "Nutritious Food", rank: 1, icon: 1 };
                 state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
             },
-            { addedSpells: [{ id: FIRST, reminderType: "buff" }] },
+            { addedSpells: [{ id: FIRST, reminderType: "missingBuff" }] },
         );
         world.advance(1);
         toggleTable();
@@ -39,8 +39,8 @@ describe("a second food of one name, added in the table", () => {
         const world = createWorldWithFirst();
         addById(world, SECOND);
         expect(world.getSavedSettings()?.addedSpells).toEqual([
-            { id: FIRST, reminderType: "buff" },
-            { id: SECOND, reminderType: "buff" },
+            { id: FIRST, reminderType: "missingBuff" },
+            { id: SECOND, reminderType: "missingBuff" },
         ]);
         expect(world.notice()).not.toContain("already in the list");
         expect(countIdBoxes(world, FIRST)).toBe(1);
@@ -61,7 +61,7 @@ describe("a second food of one name, added in the table", () => {
             buttons[1]!.scripts.OnClick!(buttons[1]!);
             expect(world.notice()).toContain("Nutritious Food is a food or drink, add it as Missing buff.");
         }
-        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: FIRST, reminderType: "buff" }]);
+        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: FIRST, reminderType: "missingBuff" }]);
     });
 
     it("is refused when its very ID is in the list", () => {
@@ -84,8 +84,8 @@ describe("the look of two foods of one name", () => {
             },
             {
                 addedSpells: [
-                    { id: FIRST, reminderType: "buff" },
-                    { id: SECOND, reminderType: "buff" },
+                    { id: FIRST, reminderType: "missingBuff" },
+                    { id: SECOND, reminderType: "missingBuff" },
                 ],
                 ...savedSettings,
             },
@@ -106,7 +106,7 @@ describe("the look of two foods of one name", () => {
         const message = findMessageBox(world, FIRST);
         message.isChecked = true;
         message.scripts.OnClick!(message);
-        expect(world.getSavedSettings()?.spellStyles).toEqual({ [`buff:${FIRST}`]: { isMessageOn: true } });
+        expect(world.getSavedSettings()?.spellStyles).toEqual({ [`missingBuff:${FIRST}`]: { isMessageOn: true } });
         expect(findMessageBox(world, FIRST).isChecked).toBe(true);
         expect(findMessageBox(world, SECOND).isChecked).toBe(false);
     });
@@ -133,8 +133,8 @@ describe("the glow of two foods of one name, each with a color of its own", () =
             },
             {
                 addedSpells: [
-                    { id: FIRST, reminderType: "buff" },
-                    { id: SECOND, reminderType: "buff" },
+                    { id: FIRST, reminderType: "missingBuff" },
+                    { id: SECOND, reminderType: "missingBuff" },
                 ],
                 spellStyles: looks,
             },
@@ -144,7 +144,10 @@ describe("the glow of two foods of one name, each with a color of its own", () =
     }
 
     it("shows one glow on each button, not both on both", () => {
-        const world = createWorldOnBars({ [`buff:${FIRST}`]: { color: [1, 0, 0] }, [`buff:${SECOND}`]: { color: [0, 1, 0] } });
+        const world = createWorldOnBars({
+            [`missingBuff:${FIRST}`]: { color: [1, 0, 0] },
+            [`missingBuff:${SECOND}`]: { color: [0, 1, 0] },
+        });
         expect(world.glowsOn(1)).toBe(1);
         expect(world.glowsOn(2)).toBe(1);
     });
@@ -156,7 +159,7 @@ describe("the glow of two foods of one name, each with a color of its own", () =
     });
 
     it("keeps the glow of the other food when only one color is changed", () => {
-        const world = createWorldOnBars({ [`buff:${FIRST}`]: { color: [1, 0, 0] } });
+        const world = createWorldOnBars({ [`missingBuff:${FIRST}`]: { color: [1, 0, 0] } });
         expect(world.glowsOn(1)).toBe(1);
         expect(world.glowsOn(2)).toBe(1);
     });

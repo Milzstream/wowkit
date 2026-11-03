@@ -104,7 +104,7 @@ describe("a shaman", () => {
         });
 
         it("has no glow when the player switched the weapon reminder off", () => {
-            world = createWorld(setUpShaman, { showWeapon: false });
+            world = createWorld(setUpShaman, { isWeaponBuffEnabled: false });
             world.advance(2);
             expect(world.glowsOn(3)).toBe(0);
         });
@@ -182,8 +182,8 @@ describe("a shaman", () => {
 
 describe("a shaman whose saved weapon sound has gone from the list", () => {
     it("gets the default weapon sound again", () => {
-        const world = createWorld((state) => playAs(state, SHAMAN), { styles: { weapon: { sound: "ping" } } });
-        expect((world.getSavedSettings()?.styles as { weapon?: { sound?: string } } | undefined)?.weapon?.sound).toBeUndefined();
+        const world = createWorld((state) => playAs(state, SHAMAN), { styles: { weaponBuff: { sound: "ping" } } });
+        expect((world.getSavedSettings()?.styles as { weaponBuff?: { sound?: string } } | undefined)?.weaponBuff?.sound).toBeUndefined();
     });
 });
 

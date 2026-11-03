@@ -22,7 +22,7 @@ function createFoodWorld(isWellFed: boolean, foodName = "Food") {
             setUpFood(state, foodName);
             if (isWellFed) state.auras.push(WELL_FED);
         },
-        { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }] },
+        { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }] },
     );
     world.advance(1);
     return world;
@@ -67,7 +67,7 @@ describe("an elixir added as a buff by the spell it casts", () => {
                 state.bags[ELIXIR_ITEM] = 5;
                 if (isUp) state.auras.push({ name: "Elixir of the Mongoose", spellId: ELIXIR_SPELL, expirationTime: 99999 });
             },
-            { addedSpells: [{ id: ELIXIR_SPELL, reminderType: "buff" }] },
+            { addedSpells: [{ id: ELIXIR_SPELL, reminderType: "missingBuff" }] },
         );
         world.advance(1);
         return world;
@@ -91,7 +91,7 @@ describe("a food on a Spanish client, where the client names the spells", () => 
                 state.spells[WELL_FED_NAMED] = { id: WELL_FED_NAMED, name: "Bien alimentado", rank: 1, icon: 1 };
                 state.auras.push(...auras);
             },
-            { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }] },
+            { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }] },
         );
         world.advance(1);
         return world;
@@ -120,8 +120,8 @@ describe("a food and a drink both added as buffs", () => {
             },
             {
                 addedSpells: [
-                    { id: FOOD_SPELL, reminderType: "buff" },
-                    { id: DRINK_SPELL, reminderType: "buff" },
+                    { id: FOOD_SPELL, reminderType: "missingBuff" },
+                    { id: DRINK_SPELL, reminderType: "missingBuff" },
                 ],
             },
         );
@@ -159,7 +159,7 @@ describe("a food added as a buff, with none of it in the bags", () => {
                 setUpFood(state, "Nutritious Food");
                 state.bags[FOOD_ITEM] = 0;
             },
-            { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }], styles: { buff: { sound: "raidwarning" } } },
+            { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }], styles: { missingBuff: { sound: "raidwarning" } } },
         );
         world.advance(1);
         return world;
@@ -200,7 +200,7 @@ describe("a food added as a buff, with none of it in the bags", () => {
                 state.barItems[2] = otherItem;
                 state.bags[otherItem] = 4;
             },
-            { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }] },
+            { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }] },
         );
         world.advance(1);
         expect(world.glowsOn(1)).toBe(0);
@@ -228,13 +228,13 @@ describe("a food added by the spell in its tooltip, with other foods of that nam
     }
 
     it("glows on its own button only", () => {
-        const world = createTwoFoods({ addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }] });
+        const world = createTwoFoods({ addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }] });
         expect(world.glowsOn(1)).toBe(1);
         expect(world.glowsOn(2)).toBe(0);
     });
 
     it("does not glow when only another food of that name is on the bars", () => {
-        const world = createTwoFoods({ addedSpells: [{ id: 18235, reminderType: "buff" }] });
+        const world = createTwoFoods({ addedSpells: [{ id: 18235, reminderType: "missingBuff" }] });
         expect(world.glowsOn(1)).toBe(0);
         expect(world.glowsOn(2)).toBe(0);
     });
@@ -242,8 +242,8 @@ describe("a food added by the spell in its tooltip, with other foods of that nam
     it("has a row of its own in the table under the item's name, one for each food", () => {
         const world = createTwoFoods({
             addedSpells: [
-                { id: FOOD_SPELL, reminderType: "buff" },
-                { id: OTHER_SPELL, reminderType: "buff" },
+                { id: FOOD_SPELL, reminderType: "missingBuff" },
+                { id: OTHER_SPELL, reminderType: "missingBuff" },
             ],
         });
         SlashCmdList["GLOWINGBARS"]!("", undefined as never);
@@ -253,7 +253,7 @@ describe("a food added by the spell in its tooltip, with other foods of that nam
 
     it("keeps the item's name when the item has left the bars", () => {
         const world = createTwoFoods({
-            addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }],
+            addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }],
             fedItems: { [`${FOOD_SPELL}`]: FOOD_ITEM },
         });
         world.state.barItems[1] = undefined;

@@ -43,7 +43,7 @@ export const BUFF_CATEGORIES: BuffCategory[] = [
         seconds: 1800,
     },
     {
-        key: "seal",
+        key: "missingSeal",
         members: [
             P.SealOfRighteousness,
             P.SealOfCommand,
@@ -56,7 +56,7 @@ export const BUFF_CATEGORIES: BuffCategory[] = [
         seconds: 30,
     },
     // Only one tracking is on at a time; it lasts until another one is put on
-    { key: "tracking", members: Object.values(Tracking), seconds: 1800 },
+    { key: "missingTracking", members: Object.values(Tracking), seconds: 1800 },
     { key: "aspect", members: [H.AspectHawk, H.AspectMonkey, H.AspectWild, H.AspectCheetah, H.AspectPack, H.AspectBeast], seconds: 1800 },
     { key: "magearmor", members: [M.MageArmor, M.IceArmor, M.FrostArmor], seconds: 1800 },
     { key: "lockarmor", members: [L.DemonArmor, L.DemonSkin], seconds: 1800 },

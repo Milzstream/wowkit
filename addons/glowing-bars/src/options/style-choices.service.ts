@@ -11,7 +11,7 @@ import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
 
 /** The types whose When has choices of their own, and so a tooltip of its own. */
-const WHEN_TIPS: { [reminderType in ReminderType]?: TextKey } = { reagent: "TIP_WHEN_TOWN", stock: "TIP_WHEN_TOWN" };
+const WHEN_TIPS: { [reminderType in ReminderType]?: TextKey } = { lowReagent: "TIP_WHEN_TOWN_ALERT", lowStock: "TIP_WHEN_TOWN_ALERT" };
 
 /** The buttons of a row that click through choices. */
 export interface ChoiceButtons {
@@ -24,10 +24,10 @@ export interface ChoiceButtons {
 /** The words of each When. */
 const WHEN_TEXTS: { [when in When]: TextKey } = {
     always: "WHEN_ALWAYS",
-    combat: "WHEN_COMBAT",
-    noCombat: "WHEN_NO_COMBAT",
-    target: "WHEN_TARGET",
-    townAlert: "WHEN_TOWN_TEXT",
+    inCombat: "WHEN_IN_COMBAT",
+    outOfCombat: "WHEN_OUT_OF_COMBAT",
+    enemyTargeted: "WHEN_ENEMY_TARGETED",
+    townAlert: "WHEN_TOWN_ALERT",
 };
 
 export class StyleChoicesService {
@@ -106,7 +106,7 @@ export class StyleChoicesService {
         });
         button.SetScript("OnEnter", () => {
             GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.reminderType ?? "buff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
+            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.reminderType ?? "missingBuff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
         button.SetScript("OnLeave", () => GameTooltip.Hide());
@@ -171,9 +171,9 @@ export class StyleChoicesService {
         hover.SetSize(COLUMN.type.x + COLUMN.type.width - COLUMN.name.x, ROW_HEIGHT);
         hover.EnableMouse(true);
         hover.SetScript("OnEnter", () => {
-            if (getRow()?.reminderType !== "reagent") return;
+            if (getRow()?.reminderType !== "lowReagent") return;
             GameTooltip.SetOwner(hover, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText("TIP_TYPE_REAGENT"), 1, 1, 1, 1, true);
+            GameTooltip.SetText(this.locale.getText("TIP_TYPE_LOW_REAGENT"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
         hover.SetScript("OnLeave", () => GameTooltip.Hide());

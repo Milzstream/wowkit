@@ -18,8 +18,8 @@ export class AddedSpellsService {
      * reagent named in the tooltip; the game tells both. The other types it cannot tell apart, so they are taken as given.
      */
     findTypeProblem(spellId: number, reminderType: AddableType): TextKey | undefined {
-        if (reminderType === "cooldown" && this.cooldowns.getBaseCooldown(spellId) <= 0) return "MSG_NO_COOLDOWN";
-        if (reminderType === "reagent" && this.reagents.findTooltipReagent(spellId) === undefined) return "MSG_NO_REAGENT";
+        if (reminderType === "readyCooldown" && this.cooldowns.getBaseCooldown(spellId) <= 0) return "MSG_NO_COOLDOWN";
+        if (reminderType === "lowReagent" && this.reagents.findTooltipReagent(spellId) === undefined) return "MSG_NO_REAGENT";
         return undefined;
     }
 
@@ -63,8 +63,8 @@ export class AddedSpellsService {
     addItem(itemId: number): boolean {
         if (!isKnownItem(itemId)) return false;
         const spells = this.settings.get("addedSpells");
-        if (!spells.some((spell) => spell.id === itemId && spell.reminderType === "stock"))
-            this.settings.change("addedSpells", [...spells, { id: itemId, reminderType: "stock" }]);
+        if (!spells.some((spell) => spell.id === itemId && spell.reminderType === "lowStock"))
+            this.settings.change("addedSpells", [...spells, { id: itemId, reminderType: "lowStock" }]);
         return true;
     }
 
@@ -86,7 +86,7 @@ export class AddedSpellsService {
                 .filter(
                     (spell) =>
                         spell.id !== spellId ||
-                        (reminderType !== undefined && (reminderType === "stock") !== (spell.reminderType === "stock")),
+                        (reminderType !== undefined && (reminderType === "lowStock") !== (spell.reminderType === "lowStock")),
                 ),
         );
     }

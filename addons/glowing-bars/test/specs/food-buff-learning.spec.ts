@@ -31,8 +31,8 @@ describe("a food and a drink the player has used", () => {
             },
             {
                 addedSpells: [
-                    { id: FOOD_SPELL, reminderType: "buff" },
-                    { id: DRINK_SPELL, reminderType: "buff" },
+                    { id: FOOD_SPELL, reminderType: "missingBuff" },
+                    { id: DRINK_SPELL, reminderType: "missingBuff" },
                 ],
                 ...savedSettings,
             },
@@ -123,7 +123,7 @@ describe("a food and a drink the player has used", () => {
                 setUpFood(state, "Nutritious Food");
                 state.auras.push(FOOD_FED);
             },
-            { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }] },
+            { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }] },
         );
         world.advance(1);
         expect(readLearned(world)[`${FOOD_SPELL}`]).toBeUndefined();
@@ -135,7 +135,7 @@ describe("a food and a drink the player has used", () => {
                 setUpFood(state, "Brain Food");
                 state.auras.push(FOOD_FED);
             },
-            { addedSpells: [{ id: FOOD_SPELL, reminderType: "buff" }], fedBuffs: { [`${FOOD_SPELL}`]: FOOD_FED.spellId } },
+            { addedSpells: [{ id: FOOD_SPELL, reminderType: "missingBuff" }], fedBuffs: { [`${FOOD_SPELL}`]: FOOD_FED.spellId } },
         );
         world.advance(1);
         expect(world.glowsOn(1)).toBe(0);

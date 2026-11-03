@@ -1,5 +1,5 @@
 // Gathering: a miner or a herbalist wants Find Minerals or Find Herbs on. Only one tracking can be on at a time, so any
-// counts (the "tracking" category of the buff memory): a hunter tracking beasts is not told to find minerals. When none is
+// counts (the "missingTracking" category of the buff memory): a hunter tracking beasts is not told to find minerals. When none is
 // on, every gathering tracking the player has learned glows, the ones the player added by their ID too.
 import type { ActionBarsService, SpellsService } from "@wowkit/wow";
 import { Tracking } from "@wowkit/wow-data";
@@ -26,10 +26,10 @@ export class TrackingReminderService {
 
     /** With no tracking on: the gathering trackings to put on, when they are on a button and switched on. */
     findMissingTrackings(): number[] {
-        if (!this.settings.get("showTracking")) return [];
+        if (!this.settings.get("isMissingTrackingEnabled")) return [];
         const enabledSpells = this.settings.get("enabledSpells");
         const onBars: number[] = [];
-        for (const listId of [...this.listTrackings(), ...this.addedSpells.listAdded("tracking")]) {
+        for (const listId of [...this.listTrackings(), ...this.addedSpells.listAdded("missingTracking")]) {
             const id = this.spells.resolve(listId) ?? listId;
             // Any tracking counts for every other (one category)
             if (this.buffState.hasAura(id)) return [];

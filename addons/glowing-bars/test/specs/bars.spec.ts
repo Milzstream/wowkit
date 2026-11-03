@@ -46,8 +46,8 @@ describe("a priest with Fortitude on Action Bar 1 and on Action Bar 7", () => {
     it("keeps the switch only where the player changed it", () => {
         world.setOption("bar_1", false);
         world.setOption("bar_1", true);
-        const barOff = world.getSavedSettings()?.barOff as Record<string, boolean | undefined>;
-        expect(barOff["1"]).toBeUndefined();
+        const barsThatGlow = world.getSavedSettings()?.barsThatGlow as Record<string, boolean | undefined>;
+        expect(barsThatGlow["1"]).toBeUndefined();
         world.advance(0.5);
         expect(world.glowsOn(1)).toBe(1);
     });
@@ -109,7 +109,7 @@ describe("a priest who chose how the glow moves", () => {
     }
 
     it("sees the missing buff glow standing still: Blizzard's glow, without the flash it starts with", () => {
-        const world = createWorld(setUp, { styles: { buff: { animation: "still" } } });
+        const world = createWorld(setUp, { styles: { missingBuff: { animation: "none" } } });
         world.advance(1);
         const alert = findAlert(world);
         expect(alert.isShown).toBe(true);
@@ -118,7 +118,7 @@ describe("a priest who chose how the glow moves", () => {
     });
 
     it("sees the glow breathing as Blizzard's glow standing still, without the flash", () => {
-        const world = createWorld(setUp, { styles: { buff: { animation: "breathing" } } });
+        const world = createWorld(setUp, { styles: { missingBuff: { animation: "breathing" } } });
         world.advance(1);
         const alert = findAlert(world);
         expect(alert.ProcStartFlipbook!.isShown).toBe(false);
@@ -156,9 +156,9 @@ describe("a priest who chose how the glow moves", () => {
     it("keeps, on the Settings page, only what a circling glow does on a round button: breathing by default", () => {
         const world = createWorld(setUp);
         expect(world.getSavedSettings()?.roundAnimation).toBe("breathing");
-        world.setOption("roundAnimation", "still");
-        expect(world.getSavedSettings()?.roundAnimation).toBe("still");
-        const [hasGlowStyle] = pcall(() => world.setOption("glowStyle", "still"));
+        world.setOption("roundAnimation", "none");
+        expect(world.getSavedSettings()?.roundAnimation).toBe("none");
+        const [hasGlowStyle] = pcall(() => world.setOption("glowStyle", "none"));
         expect(hasGlowStyle).toBe(false);
     });
 });
@@ -179,20 +179,20 @@ describe("a priest with Action Bar 7 faded until it glows", () => {
     }
 
     it("sees the glowing button in full and the other one faded", () => {
-        const world = createWorld(setUp, { barFaded: { "7": true } });
+        const world = createWorld(setUp, { fadedBars: { "7": true } });
         world.advance(1);
         expect(readAlpha(world, 1)).toBe(1);
         expect(readAlpha(world, 2)).toBe(0.5);
     });
 
     it("sees the faded opacity the player chose", () => {
-        const world = createWorld(setUp, { barFaded: { "7": true }, fadedOpacity: 20 });
+        const world = createWorld(setUp, { fadedBars: { "7": true }, fadedOpacity: 20 });
         world.advance(1);
         expect(readAlpha(world, 2)).toBe(0.2);
     });
 
     it("sees the bar in full again once it is no longer faded", () => {
-        const world = createWorld(setUp, { barFaded: { "7": true } });
+        const world = createWorld(setUp, { fadedBars: { "7": true } });
         world.advance(1);
         world.setOption("fade_7", false);
         world.advance(1);
@@ -255,13 +255,13 @@ describe("a priest who plays with Bartender4", () => {
     });
 
     it("sees no glow there once Action Bar 2 is switched off: Bartender4's bar 2 is it", () => {
-        const world = createWorld(setUp, { barOff: { "2": true } });
+        const world = createWorld(setUp, { barsThatGlow: { "2": false } });
         world.advance(1);
         expect(world.glowsOn(BARTENDER_BAR_2_FIRST, "BT4")).toBe(0);
     });
 
     it("fades Bartender4's bar 2 with Action Bar 2", () => {
-        const world = createWorld(setUp, { barFaded: { "2": true } });
+        const world = createWorld(setUp, { fadedBars: { "2": true } });
         world.advance(1);
         const other = world.findFrame((frame) => frame.name === `BT4Button${BARTENDER_BAR_2_FIRST + 1}`)!;
         expect(other.alpha).toBe(0.5);
@@ -289,7 +289,7 @@ describe("a priest who plays with Dominos", () => {
     });
 
     it("sees no glow on Dominos's bar 3 once Action Bar 3 is switched off", () => {
-        const world = createWorld(setUp, { barOff: { "3": true } });
+        const world = createWorld(setUp, { barsThatGlow: { "3": false } });
         world.advance(1);
         expect(world.glowsOnFrame("MultiBarRightActionButton1")).toBe(0);
         expect(world.glowsOnFrame("DominosActionButton13")).toBe(1);
@@ -317,7 +317,7 @@ describe("a priest who plays with EllesmereUI", () => {
     });
 
     it("sees no glow on EllesmereUI's Action Bar 2 once Action Bar 2 is switched off; its bar 9 still glows", () => {
-        const world = createWorld(setUp, { barOff: { "2": true } });
+        const world = createWorld(setUp, { barsThatGlow: { "2": false } });
         world.advance(5);
         expect(world.glowsOn(ELLESMERE_BAR_2_FIRST, "EAB")).toBe(0);
         expect(world.glowsOn(ELLESMERE_BAR_9_FIRST, "EAB")).toBe(1);
@@ -335,7 +335,7 @@ describe("a priest who plays with EllesmereUI", () => {
     });
 
     it("fades EllesmereUI's Action Bar 2 with Action Bar 2", () => {
-        const world = createWorld(setUp, { barFaded: { "2": true } });
+        const world = createWorld(setUp, { fadedBars: { "2": true } });
         world.advance(5);
         const other = world.findFrame((frame) => frame.name === `EABButton${ELLESMERE_BAR_2_FIRST + 1}`)!;
         expect(other.alpha).toBe(0.5);

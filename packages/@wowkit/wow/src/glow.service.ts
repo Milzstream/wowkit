@@ -19,7 +19,7 @@ export type Rgb = [r: number, g: number, b: number];
  * How a glow moves: Blizzard's animation running around the button; the glow standing still, slowly fading out and in;
  * or standing still, fading in as it lights and out as it goes.
  */
-export type GlowAnimation = "circling" | "breathing" | "still";
+export type GlowAnimation = "circling" | "breathing" | "none";
 
 /** Fallback art if the spell-alert glow template is missing; built-in client art only. */
 const GLOW_FALLBACK = "Interface\\Cooldown\\star4";
@@ -156,7 +156,7 @@ export class GlowService {
     /** Puts a glow out; a still one fades out first. */
     private hideOverlay(entry: Overlay): void {
         entry.isWanted = false;
-        if (entry.animation === "still" && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
+        if (entry.animation === "none" && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
         else entry.frame.Hide();
     }
 
@@ -265,7 +265,7 @@ export class GlowService {
             return;
         }
         this.showLoopPicture(alert, () => {
-            if (fades.animation === "still") {
+            if (fades.animation === "none") {
                 fades.fadeIn?.Play();
             } else if (fades.breathe !== undefined) {
                 this.pulses.add(fades.breathe);

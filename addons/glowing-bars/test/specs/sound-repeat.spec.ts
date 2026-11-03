@@ -19,14 +19,14 @@ function createPriestWorld(styles: Record<string, unknown>): World {
 
 describe("the sound of a missing buff", () => {
     it("plays once, as the glow starts, by default", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1" } });
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1" } });
         expect(world.sounds).toEqual([ALARM_1]);
         world.advance(30);
         expect(world.sounds).toEqual([ALARM_1]);
     });
 
     it("plays again every 10 seconds while the glow is on, once the player chose so", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1", repeat: 10 } });
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1", repeat: 10 } });
         expect(world.sounds).toEqual([ALARM_1]);
         // The glow started as the world was made, about 2 seconds ago
         world.advance(7);
@@ -38,15 +38,15 @@ describe("the sound of a missing buff", () => {
     });
 
     it("stops repeating once the buff is on", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1", repeat: 10 } });
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1", repeat: 10 } });
         world.state.auras.push(world.makeAura(FORTITUDE.name, FORTITUDE.id, 1800));
         world.advance(30);
         expect(world.sounds).toEqual([ALARM_1]);
     });
 
     it("keeps a repeat that is not one of the choices out of the saved look", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1", repeat: 7 } });
-        const buff = (world.getSavedSettings()?.styles as { buff?: Record<string, unknown> }).buff!;
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1", repeat: 7 } });
+        const buff = (world.getSavedSettings()?.styles as { missingBuff?: Record<string, unknown> }).missingBuff!;
         expect(buff.repeat).toBeUndefined();
         world.advance(30);
         expect(world.sounds).toEqual([ALARM_1]);
@@ -55,7 +55,7 @@ describe("the sound of a missing buff", () => {
 
 describe("the message of a missing buff", () => {
     it("comes again with the sound that repeats", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1", repeat: 10, isMessageOn: true } });
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1", repeat: 10, isMessageOn: true } });
         expect(world.notice()).toContain("Missing buff");
         // The message is gone after its 10 seconds; the repeat at 10 seconds shows it again
         world.advance(11);
@@ -63,7 +63,7 @@ describe("the message of a missing buff", () => {
     });
 
     it("does not come again when the sound does not repeat", () => {
-        const world = createPriestWorld({ buff: { sound: "alarm1", isMessageOn: true } });
+        const world = createPriestWorld({ missingBuff: { sound: "alarm1", isMessageOn: true } });
         expect(world.notice()).toContain("Missing buff");
         world.advance(11);
         expect(world.notice()).not.toContain("Missing buff");

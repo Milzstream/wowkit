@@ -29,7 +29,7 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("says so and plays its sound while it is on no bar, where nothing can glow", () => {
-        const world = createArcher(12, { styles: { stock: { sound: "raidwarning" } } }, false);
+        const world = createArcher(12, { styles: { lowStock: { sound: "raidwarning" } } }, false);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
         expect(world.sounds.length).toBe(1);
     });
@@ -40,7 +40,7 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("goes by the limit of its own row", () => {
-        expect(createArcher(150, { belowLimits: { [`stock:${ARROW}`]: 200 } }).glowsOn(1)).toBe(1);
+        expect(createArcher(150, { belowLimits: { [`lowStock:${ARROW}`]: 200 } }).glowsOn(1)).toBe(1);
     });
 
     it("goes by the limit of the type's row, where its own has none", () => {
@@ -63,7 +63,7 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("stays quiet when the type is switched off", () => {
-        expect(createArcher(10, { showStock: false }).glowsOn(1)).toBe(0);
+        expect(createArcher(10, { isLowStockEnabled: false }).glowsOn(1)).toBe(0);
     });
 
     it("has a row of its own in the table, under the item's name", () => {
@@ -82,7 +82,7 @@ describe("an item added as low stock by its ID", () => {
                 state.bags[other] = 5;
                 state.barItems[1] = other;
             },
-            { addedSpells: [{ id: ARROW, reminderType: "stock" }] },
+            { addedSpells: [{ id: ARROW, reminderType: "lowStock" }] },
         );
         world.advance(1);
         expect(world.glowsOn(1)).toBe(0);
@@ -114,7 +114,7 @@ describe("the limit of a low reagent", () => {
     });
 
     it("can be set on the row of the reagent", () => {
-        expect(createPriest(8, { belowLimits: { [`reagent:${HOLY_CANDLE}`]: 10 } }).glowsOn(1)).toBe(1);
+        expect(createPriest(8, { belowLimits: { [`lowReagent:${HOLY_CANDLE}`]: 10 } }).glowsOn(1)).toBe(1);
     });
 
     it("takes a limit that is not one of the old choices", () => {
@@ -131,7 +131,7 @@ describe("the message of a low stock", () => {
     });
 
     it("comes again as often as its repeat says, with what is left by then", () => {
-        const world = createArcher(12, { styles: { stock: { repeat: 10 } } });
+        const world = createArcher(12, { styles: { lowStock: { repeat: 10 } } });
         world.state.bags[ARROW] = 3;
         world.advance(11);
         expect(world.notice()).toContain("Running low: Rough Arrow (3)");
@@ -146,7 +146,7 @@ describe("the message of a low stock", () => {
                 state.itemNames[ARROW] = "Rough Arrow";
                 state.bags[ARROW] = 12;
             },
-            { addedSpells: [{ id: ARROW, reminderType: "stock" }], styles: { buff: { isMessageOn: true } } },
+            { addedSpells: [{ id: ARROW, reminderType: "lowStock" }], styles: { missingBuff: { isMessageOn: true } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
@@ -180,8 +180,8 @@ describe("two items running low one after the other", () => {
             },
             {
                 addedSpells: [
-                    { id: ARROW, reminderType: "stock" },
-                    { id: WATER, reminderType: "stock" },
+                    { id: ARROW, reminderType: "lowStock" },
+                    { id: WATER, reminderType: "lowStock" },
                 ],
             },
         );

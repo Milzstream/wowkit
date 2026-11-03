@@ -24,35 +24,35 @@ import type { Reminders } from "./tick.interface";
 interface GlowType {
     category: ReminderType;
     isOnSetting:
-        | "showBuff"
-        | "showWeapon"
-        | "showSeals"
-        | "showTracking"
-        | "showCooldowns"
-        | "showProcs"
-        | "showRanks"
-        | "showReagents"
-        | "showStock";
+        | "isMissingBuffEnabled"
+        | "isWeaponBuffEnabled"
+        | "isMissingSealEnabled"
+        | "isMissingTrackingEnabled"
+        | "isReadyCooldownEnabled"
+        | "isProcEnabled"
+        | "isOldRankEnabled"
+        | "isLowReagentEnabled"
+        | "isLowStockEnabled";
     findSpells: (this: void, reminders: Reminders) => number[];
 }
 
 const TYPES: GlowType[] = [
-    { category: "buff", isOnSetting: "showBuff", findSpells: (reminders) => reminders.buffsToCast },
+    { category: "missingBuff", isOnSetting: "isMissingBuffEnabled", findSpells: (reminders) => reminders.buffsToCast },
     {
-        category: "weapon",
-        isOnSetting: "showWeapon",
+        category: "weaponBuff",
+        isOnSetting: "isWeaponBuffEnabled",
         findSpells: (reminders) => [
             ...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []),
             ...reminders.addedWeaponSpells,
         ],
     },
-    { category: "seal", isOnSetting: "showSeals", findSpells: (reminders) => reminders.seals },
-    { category: "tracking", isOnSetting: "showTracking", findSpells: (reminders) => reminders.trackings },
-    { category: "cooldown", isOnSetting: "showCooldowns", findSpells: (reminders) => reminders.readyCooldowns },
-    { category: "proc", isOnSetting: "showProcs", findSpells: (reminders) => reminders.procs },
-    { category: "rank", isOnSetting: "showRanks", findSpells: (reminders) => reminders.outdatedRanks.map((rank) => rank.id) },
-    { category: "reagent", isOnSetting: "showReagents", findSpells: (reminders) => reminders.reagentSpells },
-    { category: "stock", isOnSetting: "showStock", findSpells: (reminders) => reminders.lowStock.map((stock) => stock.key) },
+    { category: "missingSeal", isOnSetting: "isMissingSealEnabled", findSpells: (reminders) => reminders.seals },
+    { category: "missingTracking", isOnSetting: "isMissingTrackingEnabled", findSpells: (reminders) => reminders.trackings },
+    { category: "readyCooldown", isOnSetting: "isReadyCooldownEnabled", findSpells: (reminders) => reminders.readyCooldowns },
+    { category: "proc", isOnSetting: "isProcEnabled", findSpells: (reminders) => reminders.procs },
+    { category: "oldRank", isOnSetting: "isOldRankEnabled", findSpells: (reminders) => reminders.outdatedRanks.map((rank) => rank.id) },
+    { category: "lowReagent", isOnSetting: "isLowReagentEnabled", findSpells: (reminders) => reminders.reagentSpells },
+    { category: "lowStock", isOnSetting: "isLowStockEnabled", findSpells: (reminders) => reminders.lowStock.map((stock) => stock.key) },
 ];
 
 /** The spells that glow in one color, glow % and animation: one glow shows them. */
@@ -104,7 +104,7 @@ export class ShowRemindersService {
     private applyBarFades(): void {
         const opacityByBar = new LuaMap<number, number>();
         const glowPercent = this.settings.get("fadedOpacity") / 100;
-        for (const [bar, isFaded] of pairs(this.settings.get("barFaded"))) {
+        for (const [bar, isFaded] of pairs(this.settings.get("fadedBars"))) {
             const number = tonumber(bar);
             if (isFaded === true && number !== undefined) opacityByBar.set(number, glowPercent);
         }
@@ -121,7 +121,7 @@ export class ShowRemindersService {
         if (
             key !== "styles" &&
             key !== "spellStyles" &&
-            key !== "barOff" &&
+            key !== "barsThatGlow" &&
             key !== "idOverrides" &&
             key !== "addedSpells" &&
             key !== "roundAnimation" &&
@@ -204,7 +204,7 @@ export class ShowRemindersService {
         const isOwnUsedUp = spells.some((id) => this.usedUpShown.includes(id) && this.actionBars.findButtonsOf(id).includes(button));
         if (!isOwnUsedUp && !this.fedBuffs.isButtonWanted(button, spells)) return false;
         const bar = this.actionBars.getBarNumber(button);
-        return bar === undefined || this.settings.get("barOff")[string.format("%d", bar)] !== true;
+        return bar === undefined || this.settings.get("barsThatGlow")[string.format("%d", bar)] !== false;
     }
 
     /** The spells to glow, in groups of the same look. */

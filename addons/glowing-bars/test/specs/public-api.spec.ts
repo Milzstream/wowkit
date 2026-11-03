@@ -48,11 +48,11 @@ describe("a bar addon that registers its buttons", () => {
     });
 
     it("has its button follow the switch of the bar it said it counts as", () => {
-        expect(setUpWithButton({ barOff: { "2": true } }, 2).glowsOnFrame("MyBarsButton1")).toBe(0);
+        expect(setUpWithButton({ barsThatGlow: { "2": false } }, 2).glowsOnFrame("MyBarsButton1")).toBe(0);
     });
 
     it("has its button faded with that bar", () => {
-        const world = setUpWithButton({ barFaded: { "2": true } }, 2);
+        const world = setUpWithButton({ fadedBars: { "2": true } }, 2);
         world.state.bars[BAR_2_FIRST] = 0;
         world.fire("ACTIONBAR_SLOT_CHANGED", BAR_2_FIRST);
         world.advance(3);
@@ -60,7 +60,7 @@ describe("a bar addon that registers its buttons", () => {
     });
 
     it("has a button of no bar glow whatever the bar switches", () => {
-        expect(setUpWithButton({ barOff: { "2": true } }).glowsOnFrame("MyBarsButton1")).toBe(1);
+        expect(setUpWithButton({ barsThatGlow: { "2": false } }).glowsOnFrame("MyBarsButton1")).toBe(1);
     });
 
     it("has its round button glow round: the client's round highlight, not the square spell alert", () => {

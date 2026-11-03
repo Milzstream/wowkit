@@ -43,7 +43,7 @@ describe("a priest in a party", () => {
                     // Another priest's Prayer of Fortitude is on the player
                     state.auras.push({ name: PRAYER_OF_FORTITUDE.name, spellId: PRAYER_OF_FORTITUDE.id, expirationTime: 1000 + 3600 });
                 },
-                { styles: { buff: { isMessageOn: true } } },
+                { styles: { missingBuff: { isMessageOn: true } } },
             );
             world.advance(1);
         });
@@ -165,7 +165,7 @@ describe("a priest in a raid with candles", () => {
                     state.party.push({ name: `Member${i}`, classToken: "WARRIOR", power: POWER.Rage, auras });
                 }
             },
-            { styles: { buff: { isMessageOn: true } } },
+            { styles: { missingBuff: { isMessageOn: true } } },
         );
         world.advance(1);
         return world;
