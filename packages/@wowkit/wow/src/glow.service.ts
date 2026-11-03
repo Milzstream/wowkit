@@ -7,6 +7,7 @@
 // through the children of its buttons, and a frame an addon made there taints it (the game then blocks its
 // SetPreferredGamepadInteractTarget). The glow follows the button through hooks on its showing and hiding instead.
 
+import { showLoopPicture } from "./utils/glow-picture.utils";
 import type { ActionBarsService } from "./action-bars.service";
 import { tryCall } from "./utils/protected-call.utils";
 import { getReadable } from "./utils/secret-value.utils";
@@ -264,30 +265,13 @@ export class GlowService {
             alert.ProcStartAnim!.Play();
             return;
         }
-        this.showLoopPicture(alert, () => {
+        showLoopPicture(alert, LOOP_ATLAS, () => {
             if (fades.animation === "none") {
                 fades.fadeIn?.Play();
             } else if (fades.breathe !== undefined) {
                 this.pulses.add(fades.breathe);
                 this.syncPulses();
             }
-        });
-    }
-
-    /** A picture of the loop's flipbook, standing still; `then` runs once it stands (a frame later). */
-    private showLoopPicture(alert: SpellAlertFrame, then: (this: void) => void): void {
-        const picture = alert.ProcLoopFlipbook;
-        if (picture === undefined) return;
-        picture.Show();
-        alert.ProcLoop!.Play();
-        C_Timer.After(0, () => {
-            // Put out in the meantime: nothing to keep
-            if (!alert.IsShown()) return;
-            const [ulX, ulY, llX, llY, urX, urY, lrX, lrY] = picture.GetTexCoord();
-            alert.ProcLoop!.Stop();
-            picture.SetTexCoord(ulX, ulY, llX, llY, urX, urY, lrX, lrY);
-            picture.SetAlpha(1);
-            then();
         });
     }
 

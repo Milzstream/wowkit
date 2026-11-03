@@ -66,17 +66,18 @@ describe("the spells of the table, fixed and added by the player", () => {
         toggleTable();
     });
 
-    it("shows the ID of a cooldown in its row, and says what it is for", () => {
+    it("shows the ID of a cooldown in its row", () => {
         const box = findIdBox("Recklessness");
         expect(box.text).toBe("1719");
-        box.scripts.OnEnter!(box);
-        expect(world.findFrame((frame) => frame.name === "GameTooltip")?.text).toContain("Change it if the game uses a different ID");
     });
 
-    it("says what the box of the add row is for", () => {
+    it("says what to enter over the heading of the add row, not on its box", () => {
         const { box } = findAddRow();
-        box.scripts.OnEnter!(box);
-        expect(world.findFrame((frame) => frame.name === "GameTooltip")?.text).toContain("Add a spell the addon doesn't know yet");
+        expect(box.scripts.OnEnter).toBeUndefined();
+        const hover = world.frames.find((frame) => frame.parent === box.parent && frame.frameType === "Frame")!;
+        hover.scripts.OnEnter!(hover);
+        const tip = world.findFrame((frame) => frame.name === "GameTooltip")?.text;
+        expect(tip).toContain("Low stock needs an Item ID, every other type a Spell ID.");
     });
 
     it("takes a fixed ID for a cooldown of the list", () => {
@@ -252,11 +253,14 @@ describe("the old rank of a spell, switched off in the table", () => {
 describe("a buff of the list whose ID the player fixed", () => {
     it("is looked for by the new ID: its button glows", () => {
         const INNER_FIRE_HERE: SpellDefinition = { id: 999588, name: "Inner Fire", rank: 1, icon: 135926, isHelpful: true };
-        const world = createWorld((state) => {
-            playAs(state, PRIEST);
-            learnSpell(state, INNER_FIRE_HERE);
-            state.bars[3] = INNER_FIRE_HERE.id;
-        });
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, INNER_FIRE_HERE);
+                state.bars[3] = INNER_FIRE_HERE.id;
+            },
+            { isTableAdvanced: true },
+        );
         world.advance(1);
         expect(world.glowsOn(3)).toBe(0);
         SlashCmdList["GLOWINGBARS"]!("", undefined as never);
@@ -285,9 +289,6 @@ describe("the IDs that cannot be changed in the table", () => {
         box.scripts.OnEditFocusLost!(box);
         expect(world.getSavedSettings()?.idOverrides).toEqual({});
         expect(findLabel(world, "Smite")).toBeDefined();
-        // The tooltip says why
-        box.scripts.OnEnter!(box);
-        expect(world.findFrame((frame) => frame.name === "GameTooltip")?.text).toContain("this ID can't be changed");
     });
 
     it("are those of a spell listed on another row: it would take that row's place", () => {

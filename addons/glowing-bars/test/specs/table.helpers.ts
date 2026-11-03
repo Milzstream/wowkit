@@ -37,7 +37,9 @@ export interface Row {
 
 /** The text with this label: the text widgets are not frames of their own, they belong to the frame that made them. */
 export function findLabel(world: World, label: string): FakeFrame | undefined {
-    for (const frame of world.frames) {
+    // The rows first: a type's small heading in the list of spells says the same as its row
+    const isRow = (frame: FakeFrame) => world.frames.some((other) => other.parent === frame && other.frameType === "CheckButton");
+    for (const frame of [...world.frames.filter((frame) => isRow(frame)), ...world.frames]) {
         const found = frame.fontStrings.find((text) => text.text === label);
         if (found !== undefined) return found;
     }

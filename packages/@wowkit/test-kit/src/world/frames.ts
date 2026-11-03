@@ -21,6 +21,7 @@ export interface FakeFrame {
     anchor?: FakeFrame;
     /** The width the addon set (36, the size of an action button, until it sets one). */
     width: number;
+    scale: number;
     /** A check button's state. */
     isChecked: boolean;
     scripts: { [script: string]: Script | undefined };
@@ -43,6 +44,7 @@ export interface FakeFrame {
     GetName(): string | undefined;
     GetFrameLevel(): number;
     SetWidth(width: number): void;
+    SetScale(scale: number): void;
     SetPoint(point: string, relativeTo?: unknown): void;
     IsVisible(): boolean;
     HookScript(script: string, handler: Script): void;
@@ -94,6 +96,7 @@ function createFakeFrame(init: FrameInit): FakeFrame {
         isIgnoringParentAlpha: false,
         text: undefined,
         width: 36,
+        scale: 1,
         isChecked: false,
         scripts: {},
         events: {},
@@ -132,6 +135,9 @@ function createFakeFrame(init: FrameInit): FakeFrame {
         },
         GetFrameLevel() {
             return 1;
+        },
+        SetScale(scale) {
+            this.scale = scale;
         },
         SetWidth(width) {
             this.width = width;
@@ -208,6 +214,26 @@ export interface FrameRegistry {
     fire(event: string, ...args: unknown[]): void;
 }
 
+/** The flipbooks of the fake game: while stalled (a loading screen), a playing one has not reached a picture yet. */
+export const fakeFlipbooks = { isStalled: false };
+
+/** The whole sheet of a flipbook until its animation runs, then one picture of it. */
+function addFlipbookCoords(alert: FakeFrame): void {
+    let isPlayed = false;
+    const loop = alert.ProcLoop as FakeFrame & { Play(): void };
+    const flipbook = alert.ProcLoopFlipbook as FakeFrame & { SetAtlas(): void; GetTexCoord(): LuaMultiReturn<number[]> };
+    loop.Play = () => {
+        isPlayed = true;
+    };
+    flipbook.SetAtlas = () => {
+        isPlayed = false;
+    };
+    flipbook.GetTexCoord = () => {
+        const size = isPlayed && !fakeFlipbooks.isStalled ? 0.1 : 1;
+        return $multi(0, 0, 0, size, size, 0, size, size);
+    };
+}
+
 export function createFrameRegistry(): FrameRegistry {
     const all: FakeFrame[] = [];
     return {
@@ -220,6 +246,7 @@ export function createFrameRegistry(): FrameRegistry {
                 frame.ProcAltGlow = createFakeFrame({ frameType: "Texture" });
                 frame.ProcStartFlipbook = createFakeFrame({ frameType: "Texture" });
                 frame.ProcLoopFlipbook = createFakeFrame({ frameType: "Texture" });
+                addFlipbookCoords(frame);
             }
             // Its children, as the game lists them (a frame is a child of the frame it was made in)
             (frame as FakeFrame & { GetChildren(): LuaMultiReturn<FakeFrame[]> }).GetChildren = () =>

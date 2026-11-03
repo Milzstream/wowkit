@@ -12,7 +12,7 @@ describe("a second food of one name, added in the table", () => {
                 state.spells[FIRST] = { id: FIRST, name: "Nutritious Food", rank: 1, icon: 1 };
                 state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
             },
-            { addedSpells: [{ id: FIRST, reminderType: "missingBuff" }] },
+            { addedSpells: [{ id: FIRST, reminderType: "missingBuff" }], isTableAdvanced: true },
         );
         world.advance(1);
         toggleTable();
@@ -83,6 +83,7 @@ describe("the look of two foods of one name", () => {
                 state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
             },
             {
+                isTableAdvanced: true,
                 addedSpells: [
                     { id: FIRST, reminderType: "missingBuff" },
                     { id: SECOND, reminderType: "missingBuff" },

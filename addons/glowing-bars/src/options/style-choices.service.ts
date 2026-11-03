@@ -4,14 +4,11 @@ import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import { ANIMATION_CHOICES, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
 import { ANIMATION_TEXTS } from "./animation.section";
-import type { ReminderType, When } from "../settings/settings.interface";
+import type { When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
-import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
+import { COLUMN, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
-
-/** The types whose When has choices of their own, and so a tooltip of its own. */
-const WHEN_TIPS: { [reminderType in ReminderType]?: TextKey } = { lowReagent: "TIP_WHEN_TOWN_ALERT", lowStock: "TIP_WHEN_TOWN_ALERT" };
 
 /** The buttons of a row that click through choices. */
 export interface ChoiceButtons {
@@ -81,12 +78,6 @@ export class StyleChoicesService {
             const row = getRow();
             if (row !== undefined) this.chooseNextRepeat(row, mouseButton === "RightButton" ? -1 : 1);
         });
-        button.SetScript("OnEnter", () => {
-            GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText("TIP_REPEAT"), 1, 1, 1, 1, true);
-            GameTooltip.Show();
-        });
-        button.SetScript("OnLeave", () => GameTooltip.Hide());
         return button;
     }
 
@@ -104,12 +95,6 @@ export class StyleChoicesService {
             const step = mouseButton === "RightButton" ? -1 : 1;
             this.styles.changeStyle(row.reminderType, row.spellId, { when: choices[(index + step + choices.length) % choices.length]! });
         });
-        button.SetScript("OnEnter", () => {
-            GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.reminderType ?? "missingBuff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
-            GameTooltip.Show();
-        });
-        button.SetScript("OnLeave", () => GameTooltip.Hide());
         return button;
     }
 
@@ -132,7 +117,6 @@ export class StyleChoicesService {
             const chosen = GLOW_TIME_CHOICES[(index + step + GLOW_TIME_CHOICES.length) % GLOW_TIME_CHOICES.length]!;
             this.styles.changeStyle(row.reminderType, row.spellId, { glowTime: chosen });
         });
-        this.addTooltip(button, () => "TIP_GLOW_TIME");
         return button;
     }
 
@@ -150,33 +134,7 @@ export class StyleChoicesService {
             const chosen = ANIMATION_CHOICES[(index + step + ANIMATION_CHOICES.length) % ANIMATION_CHOICES.length]!;
             this.styles.changeStyle(row.reminderType, row.spellId, { animation: chosen });
         });
-        this.addTooltip(button, () => "TIP_ANIMATION");
         return button;
-    }
-
-    /** A tooltip on a button, its text asked as the mouse comes. */
-    private addTooltip(button: Button, getText: () => TextKey): void {
-        button.SetScript("OnEnter", () => {
-            GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText(getText()), 1, 1, 1, 1, true);
-            GameTooltip.Show();
-        });
-        button.SetScript("OnLeave", () => GameTooltip.Hide());
-    }
-
-    /** The name and type of a low reagent's row say where it works; the other types need no words. */
-    addTypeTooltip(frame: Frame, getRow: () => StyleRow | undefined): void {
-        const hover = CreateFrame("Frame", undefined, frame);
-        hover.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x, 0);
-        hover.SetSize(COLUMN.type.x + COLUMN.type.width - COLUMN.name.x, ROW_HEIGHT);
-        hover.EnableMouse(true);
-        hover.SetScript("OnEnter", () => {
-            if (getRow()?.reminderType !== "lowReagent") return;
-            GameTooltip.SetOwner(hover, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText("TIP_TYPE_LOW_REAGENT"), 1, 1, 1, 1, true);
-            GameTooltip.Show();
-        });
-        hover.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 
     /** What the repeat button shows. */
