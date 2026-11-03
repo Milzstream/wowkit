@@ -107,7 +107,7 @@ export const TEXTS = {
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     TIP_TYPE_LOW_REAGENT:
         "By default (Alert in town) it glows anywhere, and its message and sound come only in a town or an inn. You can change this in its When column.",
-    COL_SOUND: "Sound (click)",
+    COL_SOUND: "Sound",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
     REPEAT_SECONDS: "%d s",
