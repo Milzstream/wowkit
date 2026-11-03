@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Structures and callback types.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ ca8368f2f2), game version 1.60.1.70532
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
 
 /** @noSelfInFile */
 
@@ -743,6 +743,7 @@ interface BNetGameAccountInfo {
     regionID: number;
     isInCurrentRegion: boolean;
     timerunningSeasonID?: number;
+    subIcon?: string;
 }
 
 interface BountyInfo {

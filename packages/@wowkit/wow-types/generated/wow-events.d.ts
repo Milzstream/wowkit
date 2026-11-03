@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Event payloads, keyed by event name.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ ca8368f2f2), game version 1.60.1.70532
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
 
 interface WowEventPayloads {
     /** @remarks Synchronous event. */
@@ -2463,6 +2463,8 @@ interface WowEventPayloads {
     /** @remarks Synchronous event. */
     PET_JOURNAL_TRAP_LEVEL_SET: [trapLevel: number];
     /** @remarks Synchronous event. */
+    PET_ORDER_MOVE_TO_PENDING_CHANGED: [isPetOrderMoveToPending: boolean];
+    /** @remarks Synchronous event. */
     PET_SPECIALIZATION_CHANGED: [];
     /** @remarks Synchronous event. */
     PET_STABLE_CLOSED: [];
@@ -2925,6 +2927,8 @@ interface WowEventPayloads {
     SEND_MAIL_MONEY_CHANGED: [];
     /** @remarks Synchronous event. */
     SET_SEEN_PRODUCTS: [productIds: number[]];
+    /** @remarks Synchronous event. */
+    SETTINGS_HEADER_TEXT_UPDATE: [];
     /** @remarks Synchronous event. */
     SETTINGS_LOADED: [];
     /** @remarks Synchronous event. */

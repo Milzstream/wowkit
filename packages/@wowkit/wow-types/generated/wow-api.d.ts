@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Global functions and C_* namespaces.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ ca8368f2f2), game version 1.60.1.70532
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
 
 /** @noSelfInFile */
 
@@ -919,6 +919,7 @@ declare namespace C_ActionBar {
     function IsEquippedGearOutfitAction(slotID: number): boolean;
     function IsHarmfulAction(actionID: number, useNeutral: boolean): boolean;
     function IsHelpfulAction(actionID: number, useNeutral: boolean): boolean;
+    function IsHighestSpellRank(spellID: number | string): boolean;
     /** Returns whether the given action button contains a spell that can interrupt spellcasting. */
     function IsInterruptAction(slotID: number): boolean;
     function IsItemAction(actionID: number): boolean;
@@ -3063,7 +3064,8 @@ declare namespace C_GameRules {
     function IsSelfFoundAllowed(): boolean;
     function IsStandard(): boolean;
     function IsWoWHack(): boolean;
-    function SetForeverExperiencePreset(preset: Enum.ForeverExperiencePreset): void;
+    function SetForeverExperiencePresetPostLogin(preset: Enum.ForeverExperiencePreset): void;
+    function SetForeverExperiencePresetPreLogin(preset: Enum.ForeverExperiencePreset): void;
     function SetSDHDToggleValue(setToSD: boolean, usageLocation: Enum.SdToggleUsageLocationUI): void;
 }
 
@@ -4560,7 +4562,7 @@ declare namespace C_PaperDollInfo {
     function AmmoNeeded(): boolean;
     function CanAutoEquipCursorItem(): boolean;
     /**
-     * Cancels active temporary enchantments on inventory slot items.
+     * Cancels active temporary enchantments on inventory slot items. Imbue enchants take priority over temporary enchants.
      * @remarks Has restrictions: may fail or be blocked depending on game state.
      */
     function CancelTemporaryEnchantment(slot: number): void;
@@ -4577,7 +4579,7 @@ declare namespace C_PaperDollInfo {
     function GetInventorySlotInfoForInvSlot(invSlotValue: number): LuaMultiReturn<[invSlot: number | undefined, slotTexture: number | undefined, checkRelic: boolean | undefined, slotName: string | undefined]>;
     function GetMinItemLevel(): number | undefined;
     function GetStaggerPercentage(unit: UnitToken): LuaMultiReturn<[stagger: number, staggerAgainstTarget: number | undefined]>;
-    /** Queries information about active temporary enchants on inventory slot items. */
+    /** Queries information about active temporary enchants on inventory slot items. Imbue enchants take priority over temporary enchants. */
     function GetTemporaryEnchantmentInfo(slot: number): TemporaryItemEnchantInfo | undefined;
     function IsInventorySlotEnabled(slotName: string): boolean;
     function IsRangedSlotShown(): boolean;
@@ -4749,6 +4751,7 @@ declare namespace C_PetInfo {
     function GetPetUIModelSceneID(): number;
     function GetSpellForPetAction(actionID: number): number | undefined;
     function IsPetActionPassive(actionID: number): boolean;
+    function IsPetOrderMoveToPending(): boolean;
     function PetAbandon(petNumber?: number): void;
     function PetAssistMode(): void;
     function PetRename(name: string, petNumber?: number, declensions?: string[]): void;
@@ -5362,7 +5365,10 @@ declare namespace C_RestrictedActions {
 }
 
 declare namespace C_Roleset {
-    /** Sets or clears both blocklist and allowlist filters atomically with a single visibility reevaluation. Pass an empty table to clear the corresponding filter. */
+    /**
+     * Sets or clears both blocklist and allowlist filters atomically with a single visibility reevaluation. Pass an empty table to clear the corresponding filter. Blocked for tainted callers while in combat lockdown.
+     * @remarks Has restrictions: may fail or be blocked depending on game state.
+     */
     function ApplyRolesetFilters(blockedRolesets: string[], allowedRolesets: string[]): void;
     /** Returns the rolesets in the currently active allowlist. */
     function GetActiveAllowedRolesets(): string[];
@@ -6007,9 +6013,9 @@ declare namespace C_Texture {
     function GetAtlasID(atlas: string): number;
     function GetAtlasInfo(atlas: string): AtlasInfo | undefined;
     function GetFilenameFromFileDataID(fileDataID: number): string;
-    function GetTitleIconTexture(titleID: string, version: Enum.TitleIconVersion, callback: GetTitleIconTextureCallback): void;
-    function IsTitleIconTextureReady(titleID: string, version: Enum.TitleIconVersion): boolean;
-    function SetTitleIconTexture(texture: Texture, titleID: string, version: Enum.TitleIconVersion): void;
+    function GetTitleIconTexture(titleID: string, version: Enum.TitleIconVersion, callback: GetTitleIconTextureCallback, subIcon?: string): void;
+    function IsTitleIconTextureReady(titleID: string, version: Enum.TitleIconVersion, subIcon?: string): boolean;
+    function SetTitleIconTexture(texture: Texture, titleID: string, version: Enum.TitleIconVersion, subIcon?: string): void;
     /** @remarks Has restrictions: may fail or be blocked depending on game state. */
     function SetURLTexture(texture: Texture, url: string): void;
 }
@@ -7207,8 +7213,8 @@ declare namespace Constants {
         const LEGACY_DEFAULT_CATEGORY_WARLOCK: 15584;
         const LEGACY_DEFAULT_CATEGORY_DRUID: 15577;
     }
-    namespace LevelConstsExposed {
-        const MIN_RES_SICKNESS_LEVEL: 10;
+    namespace LevelConstsExposed_Camelot {
+        const MIN_RES_SICKNESS_LEVEL: 11;
         const MIN_ACHIEVEMENT_LEVEL: 10;
         const MIN_TALENT_LEVEL: 10;
     }

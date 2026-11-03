@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Enum.* tables.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ ca8368f2f2), game version 1.60.1.70532
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
 
 declare namespace Enum {
     enum AbbreviationDataError {
@@ -3098,7 +3098,7 @@ declare namespace Enum {
     }
     enum ForeverExperiencePreset {
         Classic = 0,
-        Modern = 1,
+        Enhanced = 1,
     }
     enum FragmentID {
         MirrorState = 0,
@@ -4984,6 +4984,7 @@ declare namespace Enum {
     enum NamePartType {
         Firstname = 0,
         Surname = 1,
+        Combined = 2,
     }
     enum NamePlateCastBarDisplay {
         None = 0,
@@ -6848,6 +6849,7 @@ declare namespace Enum {
         Standard = 0,
         LeftNpeArea = 1,
         MaxLevel = 2,
+        SubscriptionPeriod = 3,
     }
     enum SummonReason {
         Spell = 0,
@@ -8426,7 +8428,8 @@ declare namespace Enum {
         ProxyCharacterHasWoWToken = 53,
         ProxyTooBusyBackOff = 54,
         ProxyAccountDataTooBig = 55,
-        EndProxyErrors = 56,
+        ProxyNoMixedAlliance = 56,
+        EndProxyErrors = 57,
         BeginDbErrors = 20010,
         DbRealmNotEligible = 20011,
         DbCannotMoveGuildmaster = 20012,
