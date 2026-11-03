@@ -27,7 +27,6 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     combat: "WHEN_COMBAT",
     noCombat: "WHEN_NO_COMBAT",
     target: "WHEN_TARGET",
-    town: "WHEN_TOWN",
     townText: "WHEN_TOWN_TEXT",
 };
 

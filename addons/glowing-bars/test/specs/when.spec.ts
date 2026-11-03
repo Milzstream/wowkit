@@ -20,7 +20,7 @@ import { findLabel, readSaved, toggleTable } from "./table.helpers";
 import { createArcher } from "./low-stock.helpers";
 
 const RIGHTEOUSNESS: SpellDefinition = { id: 20154, name: "Seal of Righteousness", rank: 1, icon: 132325, isHelpful: true };
-const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Alert in town"];
+const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "Alert in town"];
 
 /** A priest missing Fortitude, which sits on button 1. */
 function setUpPriest(state: ClientState): void {
@@ -140,11 +140,11 @@ describe("the When button of the table", () => {
         toggleTable();
         const button = findWhenButton(world, "Low reagent");
         const seen: string[] = [];
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 5; i++) {
             seen.push(button.text!);
             button.scripts.OnClick!(button, "LeftButton");
         }
-        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
+        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted"]);
         expect(button.text).toBe("Alert in town");
     });
 });
@@ -187,33 +187,31 @@ describe("a low stock", () => {
         world.advance(1);
     }
 
-    it("that shows in town glows and tells nothing out of one, both in one", () => {
-        const world = createArcher(12, { styles: { stock: { when: "town" } } }, true, false);
-        expect(world.glowsOn(1)).toBe(0);
-        expect(world.notice()).not.toContain("Running low");
-        arriveInTown(world);
-        expect(world.glowsOn(1)).toBe(1);
-        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
-    });
-
-    it("glows anywhere by default, and tells only in a town (Alert in town)", () => {
+    it("glows and tells anywhere by default, on a bar or not", () => {
         const world = createArcher(12, {}, true, false);
         expect(world.glowsOn(1)).toBe(1);
+        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
+        expect(createArcher(12, {}, false, false).notice()).toContain("Running low: Rough Arrow (12)");
+    });
+
+    it("that alerts in town glows anywhere, and tells only in a town", () => {
+        const world = createArcher(12, { styles: { stock: { when: "townText" } } }, true, false);
+        expect(world.glowsOn(1)).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
     });
 
-    it("has every choice of the When column, Alert in town by default", () => {
+    it("has every choice of the When column, Always by default", () => {
         const world = createArcher(12);
         toggleTable();
         const button = findWhenButton(world, "Low stock");
         const seen: string[] = [];
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 5; i++) {
             seen.push(button.text!);
             button.scripts.OnClick!(button, "LeftButton");
         }
-        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
+        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted", "Alert in town"]);
     });
 });
 
@@ -224,19 +222,19 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
         world.advance(1);
     }
 
-    it("plays the low stock's sound and shows its message once more, and no more while there", () => {
-        const world = createArcher(12, { styles: { stock: { sound: "raidwarning" } } }, true, false);
-        expect(world.sounds.length).toBe(1);
+    it("plays the low stock's sound and shows its message on arriving, and no more while there", () => {
+        const world = createArcher(12, { styles: { stock: { sound: "raidwarning", when: "townText" } } }, true, false);
+        expect(world.sounds.length).toBe(0);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
-        expect(world.sounds.length).toBe(2);
+        expect(world.sounds.length).toBe(1);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
         world.advance(60);
-        expect(world.sounds.length).toBe(2);
+        expect(world.sounds.length).toBe(1);
         expect(world.notice()).not.toContain("Running low");
     });
 
-    it("plays the low reagent's sound and shows its message once more, and again on the next visit", () => {
+    it("plays the low reagent's sound and shows its message on arriving, and again on the next visit", () => {
         const world = createWorld(
             (state) => {
                 playAs(state, PRIEST);
@@ -248,16 +246,16 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
             { styles: { reagent: { sound: "raidwarning" } } },
         );
         world.advance(2);
-        expect(world.sounds.length).toBe(1);
+        expect(world.sounds.length).toBe(0);
         arriveInTown(world);
-        expect(world.sounds.length).toBe(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.sounds.length).toBe(1);
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
         world.advance(60);
-        expect(world.sounds.length).toBe(2);
+        expect(world.sounds.length).toBe(1);
         world.state.isResting = false;
         world.fire("PLAYER_UPDATE_RESTING");
         world.advance(5);
         arriveInTown(world);
-        expect(world.sounds.length).toBe(3);
+        expect(world.sounds.length).toBe(2);
     });
 });

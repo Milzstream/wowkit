@@ -15,9 +15,9 @@ import { findLabel, toggleTable } from "./table.helpers";
 import { ARROW, ARROW_KEY, createArcher } from "./low-stock.helpers";
 
 describe("an item added as low stock by its ID", () => {
-    it("glows on its button once 20 or fewer are left, by default", () => {
-        expect(createArcher(21).glowsOn(1)).toBe(0);
-        expect(createArcher(20).glowsOn(1)).toBe(1);
+    it("glows on its button once fewer than 20 are left, by default", () => {
+        expect(createArcher(20).glowsOn(1)).toBe(0);
+        expect(createArcher(19).glowsOn(1)).toBe(1);
     });
 
     it("glows when none is left too", () => {
@@ -35,17 +35,8 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("says so out of a town and in one", () => {
-        const world = createWorld(
-            (state) => {
-                playAs(state, PRIEST);
-                state.itemNames[ARROW] = "Rough Arrow";
-                state.bags[ARROW] = 5;
-                state.isResting = true;
-            },
-            { customCues: [{ id: ARROW, kind: "stock" }] },
-        );
-        world.advance(1);
-        expect(world.notice()).toContain("Running low: Rough Arrow (5)");
+        expect(createArcher(5, {}, false, false).notice()).toContain("Running low: Rough Arrow (5)");
+        expect(createArcher(5, {}, false, true).notice()).toContain("Running low: Rough Arrow (5)");
     });
 
     it("goes by the limit of its own row", () => {
@@ -113,9 +104,9 @@ describe("the limit of a low reagent", () => {
         return world;
     }
 
-    it("is 5 by default", () => {
-        expect(createPriest(5).glowsOn(1)).toBe(1);
-        expect(createPriest(6).glowsOn(1)).toBe(0);
+    it("is below 10 by default", () => {
+        expect(createPriest(9).glowsOn(1)).toBe(1);
+        expect(createPriest(10).glowsOn(1)).toBe(0);
     });
 
     it("keeps what the character chose on the old Settings page, as the kind's", () => {
@@ -155,7 +146,7 @@ describe("the message of a low stock", () => {
                 state.itemNames[ARROW] = "Rough Arrow";
                 state.bags[ARROW] = 12;
             },
-            { customCues: [{ id: ARROW, kind: "stock" }], styles: { buff: { isTextOn: true }, stock: { when: "always" } } },
+            { customCues: [{ id: ARROW, kind: "stock" }], styles: { buff: { isTextOn: true } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
@@ -192,7 +183,6 @@ describe("two items running low one after the other", () => {
                     { id: ARROW, kind: "stock" },
                     { id: WATER, kind: "stock" },
                 ],
-                styles: { stock: { when: "always" } },
             },
         );
         world.advance(2);

@@ -9,9 +9,9 @@ export type AddonSettingsService = SettingsService<AddonSettings>;
 
 /**
  * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted; or (the low
- * reagents and the low stock) only in a town or an inn, or glowing anywhere with its message and repeat only there.
+ * reagents and the low stock) glowing anywhere, with its message and sound only in a town or an inn.
  */
-export type When = "always" | "combat" | "noCombat" | "target" | "town" | "townText";
+export type When = "always" | "combat" | "noCombat" | "target" | "townText";
 
 /** How a reminder looks and sounds, and when it shows. */
 export interface Style {
@@ -68,7 +68,7 @@ export interface AddonSettings {
     showCooldowns: boolean;
     /** As a fight starts, every ready cooldown glows too (a reminder to use it), for its glow time. */
     showCooldownsAtFightStart: boolean;
-    /** A group buff's reagent runs low with this many or fewer in the bags. */
+    /** A group buff's reagent runs low with fewer than this in the bags. */
     reagentLow: number;
     /** The same of the items the player watches, and whether they are watched. */
     stockLow: number;

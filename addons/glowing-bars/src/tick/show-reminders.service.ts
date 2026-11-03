@@ -148,11 +148,10 @@ export class ShowRemindersService {
                 const key = `${kind.category}:${id}`;
                 const style = this.styles.getStyle(kind.category, id);
                 const lastAt = this.soundPlayedAt.get(key);
-                const isNew =
-                    !this.previous[index]!.includes(id) || lastAt === undefined || (hasArrivedInTown && style.when === "townText");
-                const isDue = !isNew && this.isRepeatDue(style, lastAt!, now, reminders.isInTown === true);
+                const isNew = !this.previous[index]!.includes(id) || lastAt === undefined || this.isStartingOver(style, hasArrivedInTown);
+                const isDue = !isNew && style.repeat > 0 && now - lastAt! >= style.repeat;
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
-                if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
+                if (this.isHeardHere(style, reminders) && (isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
             }
             this.previous[index] = spells;
         });
@@ -161,10 +160,14 @@ export class ShowRemindersService {
         for (const sound of sounds) this.messages.playAlertSound(sound);
     }
 
-    /** Is the sound due again? Only where it repeats, and an Alert in town only in a town. */
-    private isRepeatDue(style: Style, lastAt: number, now: number, isInTown: boolean): boolean {
-        const isRepeating = style.repeat > 0 && (style.when !== "townText" || isInTown);
-        return isRepeating && now - lastAt >= style.repeat;
+    /** Arriving in a town, an Alert in town starts over. */
+    private isStartingOver(style: Style, hasArrivedInTown: boolean): boolean {
+        return hasArrivedInTown && style.when === "townText";
+    }
+
+    /** May its sound play here? An Alert in town keeps it to a town, the way it does its message. */
+    private isHeardHere(style: Style, reminders: Reminders): boolean {
+        return style.when !== "townText" || reminders.isInTown === true;
     }
 
     private updateGlows(reminders: Reminders): void {
