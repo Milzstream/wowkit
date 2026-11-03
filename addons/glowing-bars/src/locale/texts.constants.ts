@@ -57,7 +57,7 @@ export const TEXTS = {
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
     BTN_OPEN: "Open",
-    OPT_ROUND_GLOW_STYLE: "Circling on round buttons",
+    OPT_ROUND_GLOW_STYLE: "Circling on round buttons (alpha)",
     TIP_ROUND_GLOW_STYLE:
         "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling, a round button breathes instead, or stands still.",
     OPT_STYLE_CIRCLING: "Circling",
