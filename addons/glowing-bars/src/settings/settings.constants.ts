@@ -62,13 +62,10 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
 };
 
-/**
- * When a reminder of the kind may show: by combat or a target; the low reagents and the low stock, bought in a town, also
- * in a town only, or with only their message there.
- */
+/** When a reminder of the kind may show: by combat or a target; the low reagents and the low stock also with their alert in a town. */
 export function listWhenChoices(kind: ColorKey): When[] {
     const choices: When[] = ["always", "combat", "noCombat", "target"];
-    return kind === "reagent" || kind === "stock" ? [...choices, "town", "townText"] : choices;
+    return kind === "reagent" || kind === "stock" ? [...choices, "townText"] : choices;
 }
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */

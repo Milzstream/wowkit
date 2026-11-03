@@ -19,6 +19,7 @@ export function filterReminders(reminders: Reminders, isShown: (this: void, kind
         outdatedRanks: reminders.outdatedRanks.filter((rank) => isShown("rank", rank.id)),
         lowStock: reminders.lowStock.filter((stock) => isShown("stock", stock.key)),
         reagentSpells: pickShown("reagent", reminders.reagentSpells),
+        lowReagents: reminders.lowReagents.filter((stock) => isShown("reagent", stock.spellId)),
         readyCooldowns: pickShown("cooldown", reminders.readyCooldowns),
         procs: pickShown("proc", reminders.procs),
     };

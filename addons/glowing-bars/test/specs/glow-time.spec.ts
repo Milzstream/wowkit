@@ -183,3 +183,39 @@ describe("a ready cooldown that shows always, with the fight start reminder on",
         expect(world.glowsOn(2)).toBe(1);
     });
 });
+
+describe("the message of a low reagent", () => {
+    function startInTown(reagent: Record<string, unknown>): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, FORTITUDE);
+                learnSpell(state, PRAYER_OF_FORTITUDE);
+                state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+                state.bags[HOLY_CANDLE] = 1;
+                state.isResting = true;
+            },
+            { styles: { reagent } },
+        );
+        world.advance(2);
+        return world;
+    }
+
+    it("goes with its glow time, like any other message", () => {
+        const world = startInTown({ glowSeconds: 3 });
+        expect(world.notice()).toContain("Running low: Holy Candle (1)");
+        world.advance(2);
+        expect(world.notice()).not.toContain("Running low");
+    });
+
+    it("comes again with its repeat, for its glow time", () => {
+        const world = startInTown({ glowSeconds: 1, repeat: 5 });
+        const seen: boolean[] = [];
+        for (let step = 0; step < 16; step++) {
+            world.advance(0.5);
+            seen.push((world.notice() ?? "").includes("Running low: Holy Candle (1)"));
+        }
+        expect(seen.includes(true)).toBe(true);
+        expect(seen.includes(false)).toBe(true);
+    });
+});

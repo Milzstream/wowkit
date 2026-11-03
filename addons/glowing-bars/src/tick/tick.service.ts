@@ -54,10 +54,10 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
      * out, glow, message and sound alike.
      */
     private filterShowing(reminders: Reminders): Reminders {
-        const now = readWhenState(this.player, false);
+        const now = readWhenState(this.player);
         const byWhen = filterReminders(reminders, (kind, id) => now[this.styles.getStyle(kind, id).when]);
         const time = this.clock.getCurrentTime();
-        const isInTown = now.town;
+        const isInTown = this.player.isResting();
         const hasArrivedInTown = isInTown && !this.wasInTown;
         this.wasInTown = isInTown;
         const hasFightStarted = now.combat && !this.wasInCombat;

@@ -54,15 +54,9 @@ describe("the repeat of a sound", () => {
         expect(world.sounds.length > first).toBe(true);
     });
 
-    it("plays once for a low reagent out of a town by default: its repeat waits for a town", () => {
+    it("plays nothing for a low reagent out of a town by default: its sound waits for a town", () => {
         const world = createLowOnCandles({ sound: "raidwarning", repeat: 5 }, false);
-        expect(world.sounds.length).toBe(1);
-        world.advance(11);
-        expect(world.sounds.length).toBe(1);
-    });
-
-    it("plays nothing for a low reagent out of a town when it shows only in town", () => {
-        const world = createLowOnCandles({ sound: "raidwarning", repeat: 5, when: "town" }, false);
+        expect(world.sounds.length).toBe(0);
         world.advance(11);
         expect(world.sounds.length).toBe(0);
     });
@@ -76,12 +70,10 @@ describe("the repeat of a sound", () => {
 
     it("shows the message of a low reagent again in a town, with what is left by then", () => {
         const world = createLowOnCandles({ isTextOn: true, repeat: 10 }, true);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
         world.state.bags[HOLY_CANDLE] = 3;
-        world.advance(4);
-        expect(world.notice()).toContain("Holy Candle (0)");
-        world.advance(7);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (3)");
+        world.advance(11);
+        expect(world.notice()).toContain("Running low: Holy Candle (3)");
     });
 
     it("never says only that a reagent is low", () => {
@@ -91,13 +83,13 @@ describe("the repeat of a sound", () => {
     it("shows no message of a low reagent out of a town", () => {
         const world = createLowOnCandles({ isTextOn: true, repeat: 10 }, false);
         world.advance(11);
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("shows no message of a low reagent with the text off", () => {
         const world = createLowOnCandles({ isTextOn: false, repeat: 10 }, true);
         world.advance(11);
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("does not show the message again without a repeat", () => {
@@ -151,23 +143,23 @@ describe("the message of a low reagent that repeats in a town", () => {
         });
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(6);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (3)");
+        expect(world.notice()).toContain("Running low: Holy Candle (3)");
     });
 
     it("comes also when the reagent ran low after the arrival, where no first message came", () => {
         const world = createPriest(100, { styles: { reagent: { isTextOn: true, repeat: 5 } } });
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (3)");
+        expect(world.notice()).toContain("Running low: Holy Candle (3)");
     });
 
     it("comes also when its text was off on arrival and is switched on later", () => {
         const world = createPriest(0, { styles: { reagent: { isTextOn: false, repeat: 5 } } });
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
         switchMessageOn(world);
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
     });
 });
 
@@ -235,7 +227,7 @@ describe("the town message of a reagent spell the player added", () => {
     }
 
     it("names its reagent on arriving, on a bar or not", () => {
-        expect(createWarlock().notice()).toContain("Reagents running low: Soul Shard (2)");
+        expect(createWarlock().notice()).toContain("Running low: Soul Shard (2)");
     });
 
     it("leaves it out when its row is switched off", () => {
@@ -256,7 +248,7 @@ describe("the town message of a reagent spell the player added", () => {
             { customCues: [{ id: PRAYER_OF_FORTITUDE.id, kind: "reagent" }] },
         );
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (1)");
+        expect(world.notice()).toContain("Running low: Holy Candle (1)");
         expect(world.notice()).not.toContain("Holy Candle (1), Holy Candle");
     });
 });
@@ -281,7 +273,7 @@ describe("a reagent that runs low after the town message came", () => {
             { customCues: [{ id: RITUAL.id, kind: "reagent" }] },
         );
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (1)");
+        expect(world.notice()).toContain("Running low: Holy Candle (1)");
         expect(world.notice()).not.toContain("Soul Shard");
         world.state.bags[6265] = 2;
         world.advance(2);

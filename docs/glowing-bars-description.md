@@ -41,7 +41,7 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 *   **Sound**, from a short list of game sounds
 *   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)
 *   **Repeat**: every 5, 10, 30 or 60 seconds the glow, the message and the sound come again, for the glow time (off by default)
-*   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock also in town, or with their message only in town
+*   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock can also keep their message and sound to towns and inns
 *   **Enabled**: turn a whole type, or one spell, on or off
 
 In the same table you can **add your own spells by their ID**, as any type, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Show spell and item IDs in tooltips**.
