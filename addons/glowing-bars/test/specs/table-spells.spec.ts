@@ -71,6 +71,18 @@ describe("the spells of the table, fixed and added by the player", () => {
         expect(box.text).toBe("1719");
     });
 
+    it("goes through the types with a left click, and back with a right click", () => {
+        const { reminderType: kind } = findAddRow();
+        const first = kind.text;
+        kind.scripts.OnClick!(kind, "LeftButton");
+        const second = kind.text;
+        expect(second === first).toBe(false);
+        kind.scripts.OnClick!(kind, "RightButton");
+        expect(kind.text).toBe(first);
+        kind.scripts.OnClick!(kind, "RightButton");
+        expect(kind.text).toBe("Missing tracking");
+    });
+
     it("says what to enter over the heading of the add row, not on its box", () => {
         const { box } = findAddRow();
         expect(box.scripts.OnEnter).toBeUndefined();

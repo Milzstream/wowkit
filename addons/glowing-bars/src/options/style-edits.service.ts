@@ -150,8 +150,10 @@ export class StyleEditsService {
         typeButton.SetSize(136, 24);
         typeButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
         const showType = () => typeButton.SetText(this.locale.getText(TYPE_TEXTS[ADDABLE_TYPES[typeIndex]!]));
-        typeButton.SetScript("OnClick", () => {
-            typeIndex = (typeIndex + 1) % ADDABLE_TYPES.length;
+        typeButton.RegisterForClicks("LeftButtonUp", "RightButtonUp");
+        typeButton.SetScript("OnClick", (_button, mouseButton) => {
+            const step = mouseButton === "RightButton" ? -1 : 1;
+            typeIndex = (typeIndex + step + ADDABLE_TYPES.length) % ADDABLE_TYPES.length;
             showType();
         });
         showType();
