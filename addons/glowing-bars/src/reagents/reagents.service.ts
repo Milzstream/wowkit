@@ -98,7 +98,7 @@ export class ReagentsService {
 
     /** This many of a reagent in the bags is running low: fewer than the limit of its row (`entry`), else the reminderType's. */
     isLow(count: number, entry?: string): boolean {
-        return count < this.limits.getLimit("reagent", entry);
+        return count < this.limits.getLimit("lowReagent", entry);
     }
 
     /** The name of the item (the client's, else the English one). */

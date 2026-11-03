@@ -44,31 +44,31 @@ export class FindRemindersService {
         this.buffReminder.rememberSelfBuffs();
 
         // Nothing while dead, mounted or eating, or when the player muted the addon
-        if (this.idle.shouldStayIdle(false) || this.settings.get("isMuted")) return this.createEmptyReminders();
+        if (this.idle.shouldStayIdle(false) || this.settings.get("isDisabled")) return this.createEmptyReminders();
 
         // The reagents are bought in a town, so their hint stays there; the rest keeps quiet when asked
         const reagentSpells = this.findReagentSpells();
         const lowReagents = this.findLowReagents();
         const lowStock = this.lowStock.findLowStock();
-        if (this.idle.shouldStayIdle(this.settings.get("hideResting")))
+        if (this.idle.shouldStayIdle(this.settings.get("shouldStayQuietInTowns")))
             return { ...this.createEmptyReminders(), reagentSpells, lowReagents, lowStock };
 
-        const showBuff = this.settings.get("showBuff");
-        const missingBuffs: MissingBuffs = showBuff ? this.buffReminder.findMissingBuffs() : { glow: [], notOnBars: [] };
-        const partySuggestions = showBuff ? this.partyBuffs.findPartyBuffSuggestions() : [];
-        const weaponCheck = this.settings.get("showWeapon") ? this.weaponReminder.check() : undefined;
+        const isMissingBuffEnabled = this.settings.get("isMissingBuffEnabled");
+        const missingBuffs: MissingBuffs = isMissingBuffEnabled ? this.buffReminder.findMissingBuffs() : { glow: [], notOnBars: [] };
+        const partySuggestions = isMissingBuffEnabled ? this.partyBuffs.findPartyBuffSuggestions() : [];
+        const weaponCheck = this.settings.get("isWeaponBuffEnabled") ? this.weaponReminder.check() : undefined;
         return {
             buffsToCast: [
                 ...this.findBuffsToCast(missingBuffs.glow, partySuggestions),
-                ...(showBuff ? this.addedReminders.findMissingBuffs() : []),
+                ...(isMissingBuffEnabled ? this.addedReminders.findMissingBuffs() : []),
             ],
             weaponSpell: weaponCheck?.isNeeded ? weaponCheck.spellId : undefined,
-            addedWeaponSpells: this.settings.get("showWeapon") ? this.addedReminders.findWeaponSpells() : [],
+            addedWeaponSpells: this.settings.get("isWeaponBuffEnabled") ? this.addedReminders.findWeaponSpells() : [],
             seals: this.sealReminder.findMissingSeal(),
             trackings: this.trackingReminder.findMissingTrackings(),
             buffsNotOnBars: missingBuffs.notOnBars,
             partySuggestions,
-            outdatedRanks: this.settings.get("showRanks") ? this.outdatedRanks.findOutdatedRanks() : [],
+            outdatedRanks: this.settings.get("isOldRankEnabled") ? this.outdatedRanks.findOutdatedRanks() : [],
             readyCooldowns: this.glowCues.findReadyCooldowns(),
             procs: this.glowCues.findProcs(),
             reagentSpells,
@@ -82,7 +82,7 @@ export class FindRemindersService {
      * look, in a town or an inn by default).
      */
     private findReagentSpells(): number[] {
-        if (!this.settings.get("showReagents")) return [];
+        if (!this.settings.get("isLowReagentEnabled")) return [];
         const enabledReagents = this.settings.get("enabledReagents");
         const listed = this.reagents
             .findSpellsWithLowReagent((reagent) => enabledReagents[String(reagent.itemId)] !== false)
@@ -92,7 +92,7 @@ export class FindRemindersService {
 
     /** The reagents running low that are switched on: those of the list, then those of the spells the player added. */
     private findLowReagents(): LowReagent[] {
-        if (!this.settings.get("showReagents")) return [];
+        if (!this.settings.get("isLowReagentEnabled")) return [];
         const enabledReagents = this.settings.get("enabledReagents");
         const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => enabledReagents[String(reagent.itemId)] !== false);
         const added = this.addedReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));

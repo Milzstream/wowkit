@@ -29,7 +29,7 @@ export class RemindersPage implements OptionsPage {
     ) {}
 
     buildPage(category: SettingsCategory, layout: SettingsLayout): void {
-        this.reminderControls.addHeader(layout, "HDR_LOOKS");
+        this.reminderControls.addHeader(layout, "HDR_REMINDERS");
         this.widgets.addButton(
             layout,
             this.locale.getText("OPT_TABLE"),
@@ -49,14 +49,14 @@ export class RemindersPage implements OptionsPage {
         this.reminderControls.addHeader(layout, "HDR_CHARACTER");
         this.controls.addCheckbox(
             category,
-            "isMuted",
-            this.locale.getText("OPT_MUTE"),
-            this.locale.getText("TIP_MUTE"),
+            "isDisabled",
+            this.locale.getText("OPT_DISABLE"),
+            this.locale.getText("TIP_DISABLE"),
             false,
-            () => this.settings.get("isMuted"),
-            (isChecked) => this.settings.change("isMuted", isChecked),
+            () => this.settings.get("isDisabled"),
+            (isChecked) => this.settings.change("isDisabled", isChecked),
         );
-        this.reminderControls.addSwitch(category, "hideResting", "OPT_HIDE_RESTING", "TIP_HIDE_RESTING");
+        this.reminderControls.addSwitch(category, "shouldStayQuietInTowns", "OPT_STAY_QUIET_IN_TOWNS", "TIP_STAY_QUIET_IN_TOWNS");
 
         // The party members: a part of the buff reminder that is not one buff
         if (this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party !== undefined)) {
@@ -65,10 +65,10 @@ export class RemindersPage implements OptionsPage {
             const hasGroupVersion = this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party?.groupIds !== undefined);
             const partySwitch = this.reminderControls.addSwitch(category, "showPartyBuffs", "OPT_PARTY_BUFFS", "TIP_PARTY_BUFFS");
             if (hasGroupVersion)
-                this.reminderControls.addGroupMin(category, "partyGroupMin", "TIP_PARTY_GROUP_MIN", partySwitch, "showPartyBuffs");
+                this.reminderControls.addGroupMin(category, "partyGroupFrom", "TIP_PARTY_GROUP_MIN", partySwitch, "showPartyBuffs");
             const raidSwitch = this.reminderControls.addSwitch(category, "showRaidBuffs", "OPT_RAID_BUFFS", "TIP_RAID_BUFFS");
             if (hasGroupVersion)
-                this.reminderControls.addGroupMin(category, "raidGroupMin", "TIP_RAID_GROUP_MIN", raidSwitch, "showRaidBuffs");
+                this.reminderControls.addGroupMin(category, "raidGroupFrom", "TIP_RAID_GROUP_MIN", raidSwitch, "showRaidBuffs");
         }
 
         this.weaponSection.addWeaponSection(category, layout);

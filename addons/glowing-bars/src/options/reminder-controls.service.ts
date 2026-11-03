@@ -4,20 +4,20 @@
 import type { ControlsService } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
-import { GROUP_MIN_CHOICES } from "../settings/settings.constants";
+import { GROUP_FROM_CHOICES } from "../settings/settings.constants";
 import type { AddonSettings, AddonSettingsService } from "../settings/settings.interface";
 
 type FeatureKey =
-    | "hideResting"
-    | "showBuff"
-    | "showWeapon"
+    | "shouldStayQuietInTowns"
+    | "isMissingBuffEnabled"
+    | "isWeaponBuffEnabled"
     | "showPartyBuffs"
     | "showRaidBuffs"
-    | "showRanks"
-    | "showReagents"
-    | "showCooldowns"
+    | "isOldRankEnabled"
+    | "isLowReagentEnabled"
+    | "isReadyCooldownEnabled"
     | "showCooldownsAtFightStart"
-    | "showProcs";
+    | "isProcEnabled";
 
 export class ReminderControlsService {
     constructor(
@@ -41,7 +41,7 @@ export class ReminderControlsService {
      */
     addGroupMin(
         category: SettingsCategory,
-        key: "partyGroupMin" | "raidGroupMin",
+        key: "partyGroupFrom" | "raidGroupFrom",
         tooltip: TextKey,
         parent: SettingsInitializer,
         parentKey: "showPartyBuffs" | "showRaidBuffs",
@@ -49,13 +49,13 @@ export class ReminderControlsService {
         const initializer = this.controls.addDropdown(
             category,
             key,
-            this.locale.getText("OPT_GROUP_MIN"),
+            this.locale.getText("OPT_GROUP_FROM"),
             this.locale.getText(tooltip),
             string.format("%d", this.settings.getDefault(key)),
             () => string.format("%d", this.settings.get(key)),
             (value) => this.settings.change(key, tonumber(value) ?? this.settings.getDefault(key)),
             () =>
-                GROUP_MIN_CHOICES.map((count): [string, string] => [
+                GROUP_FROM_CHOICES.map((count): [string, string] => [
                     string.format("%d", count),
                     string.format(this.locale.getText(count === 1 ? "OPT_MEMBER_MISSING" : "OPT_MEMBERS_MISSING"), count),
                 ]),

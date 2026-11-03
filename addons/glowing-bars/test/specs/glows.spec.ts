@@ -87,7 +87,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("glows for 1 second once Recklessness is back, when the player chose the shortest", () => {
-        world = createWorld(setUpWarrior, { styles: { cooldown: { glowTime: 1 } } });
+        world = createWorld(setUpWarrior, { styles: { readyCooldown: { glowTime: 1 } } });
         world.state.isInCombat = true;
         world.state.cooldowns[RECKLESSNESS.id] = { start: 0, duration: 99999 };
         world.advance(0.5);
@@ -99,7 +99,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("glows until it is pressed when the player chose so", () => {
-        world = createWorld(setUpWarrior, { styles: { cooldown: { glowTime: 0 } } });
+        world = createWorld(setUpWarrior, { styles: { readyCooldown: { glowTime: 0 } } });
         world.state.isInCombat = true;
         world.state.cooldowns[RECKLESSNESS.id] = { start: 0, duration: 99999 };
         world.advance(0.5);
@@ -141,7 +141,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("lights Recklessness out of combat when the player chose it to show always", () => {
-        world = createWorld(setUpWarrior, { styles: { cooldown: { when: "always" } } });
+        world = createWorld(setUpWarrior, { styles: { readyCooldown: { when: "always" } } });
         world.advance(0.5);
         expect(world.glowsOn(2)).toBe(1);
     });
@@ -181,7 +181,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("lights no cooldown when the player switched the cooldown glows off", () => {
-        world = createWorld(setUpWarrior, { showCooldowns: false });
+        world = createWorld(setUpWarrior, { isReadyCooldownEnabled: false });
         world.advance(1);
         world.state.isInCombat = true;
         world.advance(0.5);
@@ -189,7 +189,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("lights nothing when the player disabled the addon on this character", () => {
-        world.setOption("isMuted", true);
+        world.setOption("isDisabled", true);
         world.state.isInCombat = true;
         world.state.unusableSpells[OVERPOWER.id] = undefined;
         world.advance(0.5);
@@ -220,19 +220,19 @@ describe("a warrior who added Recklessness as a cooldown and as a proc", () => {
     it("still has the page in the Settings panel", () => {
         const world = createWorld((state) => playAs(state, WARRIOR), {
             addedSpells: [
-                { id: 1719, reminderType: "cooldown" },
+                { id: 1719, reminderType: "readyCooldown" },
                 { id: 1719, reminderType: "proc" },
             ],
         });
-        expect(world.proxySettings["GlowingBars_isMuted"]).toBeDefined();
+        expect(world.proxySettings["GlowingBars_isDisabled"]).toBeDefined();
     });
 });
 
 describe("a warrior who saved a glow time", () => {
     it("keeps one of the choices after a reload, and drops another", () => {
-        const world = createWorld(setUpWarrior, { styles: { cooldown: { glowTime: 1 }, buff: { glowTime: 7 } } });
+        const world = createWorld(setUpWarrior, { styles: { readyCooldown: { glowTime: 1 }, missingBuff: { glowTime: 7 } } });
         const styles = world.getSavedSettings()?.styles as Record<string, { glowTime?: number } | undefined>;
-        expect(styles.cooldown?.glowTime).toBe(1);
-        expect(styles.buff?.glowTime).toBeUndefined();
+        expect(styles.readyCooldown?.glowTime).toBe(1);
+        expect(styles.missingBuff?.glowTime).toBeUndefined();
     });
 });

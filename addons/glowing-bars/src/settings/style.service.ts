@@ -123,6 +123,6 @@ export class StyleService {
             const value = layer[part];
             if (value !== undefined) return value as Style[K];
         }
-        return STYLE_DEFAULTS.buff[part];
+        return STYLE_DEFAULTS.missingBuff[part];
     }
 }

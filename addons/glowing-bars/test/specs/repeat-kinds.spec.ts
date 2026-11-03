@@ -40,7 +40,7 @@ describe("the repeat of a sound", () => {
                 state.bars[1] = PRAYER_OF_FORTITUDE.id;
                 state.isResting = isResting;
             },
-            { styles: { reagent } },
+            { styles: { lowReagent: reagent } },
         );
         world.advance(2);
         return world;
@@ -106,7 +106,7 @@ describe("the repeat of a sound", () => {
                 learnSpell(state, RECKLESSNESS);
                 state.bars[1] = RECKLESSNESS.id;
             },
-            { styles: { cooldown: { sound: "raidwarning", repeat: 5, glowTime: 0 } } },
+            { styles: { readyCooldown: { sound: "raidwarning", repeat: 5, glowTime: 0 } } },
         );
         world.advance(1);
         world.state.isInCombat = true;
@@ -138,8 +138,8 @@ describe("the message of a low reagent that repeats in a town", () => {
 
     it("goes by the repeat and the text set on the reagent's own row", () => {
         const world = createPriest(0, {
-            styles: { reagent: { isMessageOn: false } },
-            spellStyles: { [`reagent:${PRAYER_OF_FORTITUDE.name}`]: { isMessageOn: true, repeat: 5 } },
+            styles: { lowReagent: { isMessageOn: false } },
+            spellStyles: { [`lowReagent:${PRAYER_OF_FORTITUDE.name}`]: { isMessageOn: true, repeat: 5 } },
         });
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(6);
@@ -147,7 +147,7 @@ describe("the message of a low reagent that repeats in a town", () => {
     });
 
     it("comes also when the reagent ran low after the arrival, where no first message came", () => {
-        const world = createPriest(100, { styles: { reagent: { isMessageOn: true, repeat: 5 } } });
+        const world = createPriest(100, { styles: { lowReagent: { isMessageOn: true, repeat: 5 } } });
         expect(world.notice()).not.toContain("Running low");
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(2);
@@ -155,7 +155,7 @@ describe("the message of a low reagent that repeats in a town", () => {
     });
 
     it("comes also when its text was off on arrival and is switched on later", () => {
-        const world = createPriest(0, { styles: { reagent: { isMessageOn: false, repeat: 5 } } });
+        const world = createPriest(0, { styles: { lowReagent: { isMessageOn: false, repeat: 5 } } });
         expect(world.notice()).not.toContain("Running low");
         switchMessageOn(world);
         world.advance(2);
@@ -220,7 +220,7 @@ describe("the town message of a reagent spell the player added", () => {
                 state.bags[6265] = 2;
                 state.isResting = true;
             },
-            { addedSpells: [{ id: RITUAL.id, reminderType: "reagent" }], ...savedSettings },
+            { addedSpells: [{ id: RITUAL.id, reminderType: "lowReagent" }], ...savedSettings },
         );
         world.advance(2);
         return world;
@@ -245,7 +245,7 @@ describe("the town message of a reagent spell the player added", () => {
                 state.bags[HOLY_CANDLE] = 1;
                 state.isResting = true;
             },
-            { addedSpells: [{ id: PRAYER_OF_FORTITUDE.id, reminderType: "reagent" }] },
+            { addedSpells: [{ id: PRAYER_OF_FORTITUDE.id, reminderType: "lowReagent" }] },
         );
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (1)");
@@ -270,7 +270,7 @@ describe("a reagent that runs low after the town message came", () => {
                 state.bags[6265] = 100;
                 state.isResting = true;
             },
-            { addedSpells: [{ id: RITUAL.id, reminderType: "reagent" }] },
+            { addedSpells: [{ id: RITUAL.id, reminderType: "lowReagent" }] },
         );
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (1)");

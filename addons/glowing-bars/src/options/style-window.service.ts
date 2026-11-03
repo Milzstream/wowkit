@@ -103,9 +103,9 @@ export class StyleWindowService {
     private addColumnHeaders(window: Frame): void {
         // The name and the type read from the left; the other headers are centered over their controls
         const columns: [column: Column, text: TextKey, isCentered: boolean][] = [
-            [COLUMN.name, "COL_SPELL", false],
+            [COLUMN.name, "COL_SPELL_ITEM", false],
             [COLUMN.type, "COL_TYPE", false],
-            [COLUMN.id, "COL_ID", true],
+            [COLUMN.id, "COL_SPELL_ITEM_ID", true],
             [COLUMN.color, "COL_COLOR", true],
             [COLUMN.glowPercent, "COL_GLOW_PERCENT", true],
             [COLUMN.message, "COL_MESSAGE", true],

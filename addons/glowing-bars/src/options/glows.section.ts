@@ -12,7 +12,7 @@ export class GlowsSection {
 
     /** Whether the ready cooldowns glow as a fight starts (the rest is the table's); nothing for a character without one. */
     addGlowsSection(category: SettingsCategory, layout: SettingsLayout): void {
-        if (this.glowCues.listCueIds("cooldown").length === 0) return;
+        if (this.glowCues.listCueIds("readyCooldown").length === 0) return;
         this.reminderControls.addHeader(layout, "HDR_COOLDOWNS");
         this.reminderControls.addSwitch(category, "showCooldownsAtFightStart", "OPT_COOLDOWNS_FIGHT_START", "TIP_COOLDOWNS_FIGHT_START");
     }

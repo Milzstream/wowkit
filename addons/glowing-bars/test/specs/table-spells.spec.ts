@@ -100,7 +100,7 @@ describe("the spells of the table, fixed and added by the player", () => {
         const { box, add } = findAddRow();
         box.text = "72";
         add.scripts.OnClick!(add);
-        expect(readSettings().addedSpells).toEqual([{ id: 72, reminderType: "cooldown" }]);
+        expect(readSettings().addedSpells).toEqual([{ id: 72, reminderType: "readyCooldown" }]);
         expect(findLabel(world, "Shield Bash")).toBeDefined();
         world.state.isInCombat = true;
         world.state.cooldowns[SHIELD_BASH.id] = { start: 0, duration: 99999 };

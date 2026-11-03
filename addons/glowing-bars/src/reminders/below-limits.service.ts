@@ -2,14 +2,14 @@
 import type { AddonSettingsService, ReminderType } from "../settings/settings.interface";
 
 /** The types with a limit, and the setting that holds the limit of the type. */
-const TYPE_LIMITS = { reagent: "reagentBelow", stock: "stockBelow" } as const;
+const TYPE_LIMITS = { lowReagent: "reagentBelow", lowStock: "stockBelow" } as const;
 
 export class BelowLimitsService {
     constructor(private readonly settings: AddonSettingsService) {}
 
     /** Does this type have a limit? */
     hasLimit(reminderType: ReminderType): reminderType is keyof typeof TYPE_LIMITS {
-        return reminderType === "reagent" || reminderType === "stock";
+        return reminderType === "lowReagent" || reminderType === "lowStock";
     }
 
     /** The limit of a type; with `entry`, that of a row of it ("2512"). */

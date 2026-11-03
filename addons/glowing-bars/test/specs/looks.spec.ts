@@ -58,7 +58,7 @@ describe("the glow % of a reminder", () => {
     });
 
     it("is kept between 1 and 100 percent", () => {
-        const world = start({ styles: { proc: { glowPercent: 500 }, cooldown: { glowPercent: -4 } } });
+        const world = start({ styles: { proc: { glowPercent: 500 }, readyCooldown: { glowPercent: -4 } } });
         expect(world.glowAlphasOn(1)).toEqual([1]);
         expect(world.glowAlphasOn(2)).toEqual([0.01]);
     });
@@ -86,7 +86,7 @@ describe("the message of a reminder", () => {
     });
 
     it("can be on for one spell although the type has it off", () => {
-        const world = start({ spellStyles: { "cooldown:Recklessness": { isMessageOn: true } } });
+        const world = start({ spellStyles: { "readyCooldown:Recklessness": { isMessageOn: true } } });
         expect(world.notice()).toBe("|cffffffffCooldown ready|r");
     });
 });
@@ -102,7 +102,7 @@ describe("the sound of a reminder", () => {
             },
             {
                 styles: { proc: { sound: "alarm1" } },
-                spellStyles: { "proc:Overpower": { sound: "raidwarning" }, "cooldown:Recklessness": { sound: "alarm3" } },
+                spellStyles: { "proc:Overpower": { sound: "raidwarning" }, "readyCooldown:Recklessness": { sound: "alarm3" } },
             },
         );
         world.advance(1);

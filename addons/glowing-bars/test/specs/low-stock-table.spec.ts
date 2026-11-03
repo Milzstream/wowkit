@@ -37,7 +37,7 @@ describe("the Below column and the low stock in the table", () => {
         expect(buttons[0]!.text).toBe("Low stock");
         box.text = `${ARROW}`;
         buttons[1]!.scripts.OnClick!(buttons[1]!);
-        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: ARROW, reminderType: "stock" }]);
+        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: ARROW, reminderType: "lowStock" }]);
     });
 
     it("removes the item of the row", () => {
@@ -54,7 +54,7 @@ describe("the Below column and the low stock in the table", () => {
         expect(belowLimits.text).toBe("20");
         enter(belowLimits, "200");
         world.advance(1);
-        expect(world.getSavedSettings()?.belowLimits).toEqual({ [`stock:${ARROW}`]: 200 });
+        expect(world.getSavedSettings()?.belowLimits).toEqual({ [`lowStock:${ARROW}`]: 200 });
         expect(world.glowsOn(1)).toBe(1);
     });
 

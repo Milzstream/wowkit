@@ -43,7 +43,7 @@ export class StyleEditsService {
         box.SetScript("OnEnter", () => {
             const row = getRow();
             if (row === undefined) return;
-            const isStock = row.reminderType === "stock";
+            const isStock = row.reminderType === "lowStock";
             if (row.spellId === undefined) this.showTooltip(box, isStock ? "TIP_ENABLED_TYPE_ITEM" : "TIP_ENABLED_TYPE");
             else this.showTooltip(box, isStock ? "TIP_ENABLED_ITEM" : "TIP_ENABLED_SPELL");
         });
@@ -156,7 +156,7 @@ export class StyleEditsService {
         frame.SetSize(TABLE_WIDTH, ROW_HEIGHT);
         const box = this.createNumberBox(frame, COLUMN.name.x, 90, 7);
         let typeIndex = 0;
-        box.SetScript("OnEnter", () => this.showTooltip(box, ADDABLE_TYPES[typeIndex] === "stock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
+        box.SetScript("OnEnter", () => this.showTooltip(box, ADDABLE_TYPES[typeIndex] === "lowStock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
         box.SetScript("OnLeave", () => GameTooltip.Hide());
         const typeButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         typeButton.SetSize(136, 24);
@@ -181,7 +181,7 @@ export class StyleEditsService {
 
     /** Adds a spell or item as the type picked, or says why not (unknown ID, listed already, surely wrong type). */
     private addSpell(spellId: number, reminderType: AddableType): boolean {
-        if (reminderType === "stock") {
+        if (reminderType === "lowStock") {
             if (this.addedSpells.addItem(spellId)) return true;
             this.showProblem(string.format(this.locale.getText("MSG_UNKNOWN_ITEM"), spellId), ERROR_COLOR);
             return false;
@@ -195,7 +195,7 @@ export class StyleEditsService {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return false;
         }
-        const isWrongForFood = this.rows.isSharingName(spellId) && reminderType !== "buff";
+        const isWrongForFood = this.rows.isSharingName(spellId) && reminderType !== "missingBuff";
         const problem = isWrongForFood ? "MSG_FOOD_IS_BUFF" : this.addedSpells.findTypeProblem(spellId, reminderType);
         if (problem !== undefined) {
             this.showProblem(string.format(this.locale.getText(problem), name), ERROR_COLOR);
@@ -217,7 +217,7 @@ export class StyleEditsService {
             .listSpellRows()
             .some(
                 (row) =>
-                    row.reminderType !== "rank" &&
+                    row.reminderType !== "oldRank" &&
                     row.spellId !== undefined &&
                     (isSharingName ? row.spellId === spellId : this.styles.getSpellKey(row.spellId) === name) &&
                     !(

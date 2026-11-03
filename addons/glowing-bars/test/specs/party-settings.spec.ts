@@ -36,7 +36,10 @@ function setUp(state: ClientState, isPlayerBuffed: boolean, isInRaid = false): v
 }
 
 function start(isPlayerBuffed: boolean, settings: Record<string, unknown> = {}, isInRaid = false): World {
-    const world = createWorld((state) => setUp(state, isPlayerBuffed, isInRaid), { styles: { buff: { isMessageOn: true } }, ...settings });
+    const world = createWorld((state) => setUp(state, isPlayerBuffed, isInRaid), {
+        styles: { missingBuff: { isMessageOn: true } },
+        ...settings,
+    });
     world.advance(1);
     return world;
 }
@@ -83,21 +86,21 @@ describe("the number of members missing a buff its group version waits for", () 
     });
 
     it("counts the player: three missing with the player make the group version, in place of the player's own Fortitude", () => {
-        const world = start(false, { partyGroupMin: 3 });
+        const world = start(false, { partyGroupFrom: 3 });
         expect(world.notice()).toContain("Prayer of Fortitude missing on: Bob, Alice");
         expect(world.glowsOn(2)).toBe(1);
         expect(world.glowsOn(1)).toBe(0);
     });
 
     it("asks for the single buff when fewer miss it than the player wants", () => {
-        const world = start(true, { partyGroupMin: 3 });
+        const world = start(true, { partyGroupFrom: 3 });
         expect(world.notice()).toContain("Power Word: Fortitude missing on: Bob, Alice");
         expect(world.glowsOn(1)).toBe(1);
         expect(world.glowsOn(2)).toBe(0);
     });
 
     for (const [place, isInRaid, settings] of [
-        ["a party set to one", false, { partyGroupMin: 1 }],
+        ["a party set to one", false, { partyGroupFrom: 1 }],
         ["a raid", true, {}],
     ] as const) {
         it(`never asks for the group version for the player alone, in ${place}: the single buff glows, naming no one`, () => {
@@ -107,7 +110,7 @@ describe("the number of members missing a buff its group version waits for", () 
                     for (const member of state.party)
                         member.auras.push({ name: FORTITUDE.name, spellId: FORTITUDE.id, expirationTime: 99999 });
                 },
-                { styles: { buff: { isMessageOn: true } }, ...settings },
+                { styles: { missingBuff: { isMessageOn: true } }, ...settings },
             );
             world.advance(1);
             expect(world.glowsOn(1)).toBe(1);
@@ -122,7 +125,7 @@ describe("the number of members missing a buff its group version waits for", () 
                 setUp(state, true, true);
                 state.party[1]!.auras.push({ name: FORTITUDE.name, spellId: FORTITUDE.id, expirationTime: 99999 });
             },
-            { styles: { buff: { isMessageOn: true } } },
+            { styles: { missingBuff: { isMessageOn: true } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Prayer of Fortitude missing on: Bob");
@@ -130,7 +133,7 @@ describe("the number of members missing a buff its group version waits for", () 
 
     it("can be set from the Settings page", () => {
         const world = start(true);
-        world.setOption("partyGroupMin", "3");
+        world.setOption("partyGroupFrom", "3");
         world.fire("GROUP_ROSTER_UPDATE");
         world.advance(2);
         expect(world.notice()).toContain("Power Word: Fortitude missing on: Bob, Alice");
@@ -141,15 +144,15 @@ describe("a character that saved the old switch of a Greater Blessing for one me
     it("has it as a party group version from one member", () => {
         const world = createWorld((state) => setUp(state, true), { showGreaterForOne: true });
         world.advance(1);
-        expect(world.getSavedSettings()?.partyGroupMin).toBe(1);
+        expect(world.getSavedSettings()?.partyGroupFrom).toBe(1);
         expect(world.getSavedSettings()?.showGreaterForOne).toBeUndefined();
     });
 
     it("keeps the default without it, and a number it no longer knows is the default again", () => {
-        const world = createWorld((state) => setUp(state, true), { showGreaterForOne: false, raidGroupMin: 9 });
+        const world = createWorld((state) => setUp(state, true), { showGreaterForOne: false, raidGroupFrom: 9 });
         world.advance(1);
-        expect(world.getSavedSettings()?.partyGroupMin).toBe(2);
-        expect(world.getSavedSettings()?.raidGroupMin).toBe(1);
+        expect(world.getSavedSettings()?.partyGroupFrom).toBe(2);
+        expect(world.getSavedSettings()?.raidGroupFrom).toBe(1);
     });
 });
 
@@ -189,7 +192,7 @@ describe("a paladin in a raid", () => {
                 state.auras.push({ name: BLESSING_OF_KINGS.name, spellId: BLESSING_OF_KINGS.id, expirationTime: 99999 });
                 state.party = [{ name: "Healer", classToken: "PRIEST", power: POWER.Mana, auras: [] }];
             },
-            { styles: { buff: { isMessageOn: true } }, showPartyBuffs: false },
+            { styles: { missingBuff: { isMessageOn: true } }, showPartyBuffs: false },
         );
         world.advance(1);
         const healer = world.state.party[0]!;

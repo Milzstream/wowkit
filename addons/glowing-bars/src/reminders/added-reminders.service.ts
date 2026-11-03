@@ -25,21 +25,21 @@ export class AddedRemindersService {
 
     /** The added buffs that are on a button and not on the player (in combat a cast one counts until the fight ends). */
     findMissingBuffs(): number[] {
-        const ids = this.listOnBars("buff");
+        const ids = this.listOnBars("missingBuff");
         const missingFed = this.fedBuffs.findMissing(ids.filter((id) => this.fedBuffs.isFedSpell(id)));
         return ids.filter((id) => (this.fedBuffs.isFedSpell(id) ? missingFed.includes(id) : !this.buffState.hasAura(id)));
     }
 
     /** The added weapon buffs, when the main-hand weapon has no temporary enchant (poison, imbue or stone) at all. */
     findWeaponSpells(): number[] {
-        const spellIds = this.listOnBars("weapon");
+        const spellIds = this.listOnBars("weaponBuff");
         if (spellIds.length === 0) return [];
         return this.weaponEnchants.getWeaponEnchant(false).has === false ? spellIds : [];
     }
 
     /** The added spells whose reagent, named in the spell's tooltip, runs low in the bags. */
     findReagentSpells(): number[] {
-        return this.listOnBars("reagent").filter((id) => {
+        return this.listOnBars("lowReagent").filter((id) => {
             const reagent = this.reagents.findTooltipReagent(id);
             return reagent !== undefined && this.reagents.isLow(this.bags.getItemCountByName(reagent), `spell${string.format("%d", id)}`);
         });
@@ -49,7 +49,7 @@ export class AddedRemindersService {
     findLowReagents(): LowReagent[] {
         const low: LowReagent[] = [];
         const enabledSpells = this.settings.get("enabledSpells");
-        for (const id of this.addedSpells.listAdded("reagent")) {
+        for (const id of this.addedSpells.listAdded("lowReagent")) {
             const spellId = this.spells.resolve(id);
             const name = this.reagents.findTooltipReagent(id);
             if (spellId === undefined || name === undefined || enabledSpells[string.format("%d", id)] === false) continue;

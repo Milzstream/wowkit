@@ -7,31 +7,31 @@ export const SAVED_VARIABLES_NAME = "GlowingBarsCharDB";
 
 export function createDefaultSettings(): AddonSettings {
     return {
-        isMuted: false,
-        hideResting: true,
+        isDisabled: false,
+        shouldStayQuietInTowns: true,
         roundAnimation: "breathing",
-        showBuff: true,
-        showWeapon: true,
+        isMissingBuffEnabled: true,
+        isWeaponBuffEnabled: true,
         showPartyBuffs: true,
         showRaidBuffs: true,
-        partyGroupMin: 2,
-        raidGroupMin: 1,
-        showRanks: true,
-        showReagents: true,
-        showCooldowns: true,
+        partyGroupFrom: 2,
+        raidGroupFrom: 1,
+        isOldRankEnabled: true,
+        isLowReagentEnabled: true,
+        isReadyCooldownEnabled: true,
         showCooldownsAtFightStart: false,
         reagentBelow: 10,
         stockBelow: 20,
-        showStock: true,
+        isLowStockEnabled: true,
         belowLimits: {},
-        showProcs: true,
-        showSeals: true,
-        showTracking: true,
+        isProcEnabled: true,
+        isMissingSealEnabled: true,
+        isMissingTrackingEnabled: true,
         styles: {},
         spellStyles: {},
         enabledBuffs: {},
-        barOff: {},
-        barFaded: {},
+        barsThatGlow: {},
+        fadedBars: {},
         fadedOpacity: 50,
         showTooltipIds: false,
         idOverrides: {},
@@ -47,7 +47,7 @@ export function createDefaultSettings(): AddonSettings {
 
 /** The look of each type of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
 export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
-    buff: {
+    missingBuff: {
         color: [0.2, 0.55, 1],
         glowPercent: 100,
         isMessageOn: false,
@@ -57,7 +57,7 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         glowTime: 0,
         animation: "circling",
     },
-    weapon: {
+    weaponBuff: {
         color: [1, 0.55, 0.1],
         glowPercent: 100,
         isMessageOn: false,
@@ -68,18 +68,18 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         animation: "circling",
     },
     // The paladin's gold
-    seal: {
+    missingSeal: {
         color: [1, 0.85, 0.2],
         glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
-        when: "combat",
+        when: "inCombat",
         glowTime: 0,
         animation: "circling",
     },
     // #1AA6BF, a deep turquoise: a lighter cyan glows almost white
-    tracking: {
+    missingTracking: {
         color: [0.1, 0.65, 0.75],
         glowPercent: 100,
         isMessageOn: false,
@@ -89,13 +89,13 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         glowTime: 0,
         animation: "circling",
     },
-    cooldown: {
+    readyCooldown: {
         color: [1, 1, 1],
         glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
-        when: "combat",
+        when: "inCombat",
         glowTime: 3,
         animation: "circling",
     },
@@ -109,7 +109,7 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         glowTime: 0,
         animation: "circling",
     },
-    rank: {
+    oldRank: {
         color: [1, 0.85, 0.2],
         glowPercent: 50,
         isMessageOn: true,
@@ -120,7 +120,7 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         animation: "circling",
     },
     // Its message is the town's: it names the reagents to buy
-    reagent: {
+    lowReagent: {
         color: [1, 0.85, 0.2],
         glowPercent: 50,
         isMessageOn: true,
@@ -131,7 +131,7 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
         animation: "circling",
     },
     // A quieter red than the procs'
-    stock: {
+    lowStock: {
         color: [1, 0.12, 0.08],
         glowPercent: 50,
         isMessageOn: true,
@@ -145,8 +145,8 @@ export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
 
 /** When a reminder of the reminderType may show: by combat or a target; the low reagents and the low stock also with their alert in a town. */
 export function listWhenChoices(reminderType: ReminderType): When[] {
-    const choices: When[] = ["always", "combat", "noCombat", "target"];
-    return reminderType === "reagent" || reminderType === "stock" ? [...choices, "townAlert"] : choices;
+    const choices: When[] = ["always", "inCombat", "outOfCombat", "enemyTargeted"];
+    return reminderType === "lowReagent" || reminderType === "lowStock" ? [...choices, "townAlert"] : choices;
 }
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */
@@ -156,19 +156,38 @@ export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 /** The choices of how a glow moves. */
-export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "breathing", "still"];
+export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "breathing", "none"];
 
 /** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
 export const GLOW_TIME_CHOICES = [0, 1, 2, 3, 5, 10];
 
 /** The choices of from how many missing a buff its group version is asked for. */
-export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
+export const GROUP_FROM_CHOICES = [1, 2, 3, 4, 5];
 
 /** The types a spell can be added as, in the order the add button goes through them. */
-export const ADDABLE_TYPES: AddableType[] = ["cooldown", "proc", "buff", "weapon", "reagent", "stock", "seal", "tracking"];
+export const ADDABLE_TYPES: AddableType[] = [
+    "readyCooldown",
+    "proc",
+    "missingBuff",
+    "weaponBuff",
+    "lowReagent",
+    "lowStock",
+    "missingSeal",
+    "missingTracking",
+];
 
 /** The types in the order the tables list them. */
-export const TYPE_ORDER: ReminderType[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
+export const TYPE_ORDER: ReminderType[] = [
+    "missingBuff",
+    "weaponBuff",
+    "missingSeal",
+    "missingTracking",
+    "lowReagent",
+    "lowStock",
+    "readyCooldown",
+    "proc",
+    "oldRank",
+];
 
 /** A saved value that is one of the choices; undefined for any other. */
 function pickChoice<T>(value: T | undefined, choices: T[]): T | undefined {
@@ -208,7 +227,7 @@ function repairLimit(limit: unknown, byDefault: number): number {
 export function repairSettings(values: AddonSettings): void {
     // A style no longer known (or circling on a round button) is the default again
     const defaults = createDefaultSettings();
-    if (!["breathing", "still"].includes(values.roundAnimation)) values.roundAnimation = defaults.roundAnimation;
+    if (!["breathing", "none"].includes(values.roundAnimation)) values.roundAnimation = defaults.roundAnimation;
     if (!FADED_OPACITY_CHOICES.includes(values.fadedOpacity)) values.fadedOpacity = defaults.fadedOpacity;
     // An added spell that is not a number and a type is dropped
     values.addedSpells = (values.addedSpells ?? []).filter(
@@ -218,10 +237,10 @@ export function repairSettings(values: AddonSettings): void {
     values.stockBelow = repairLimit(values.stockBelow, defaults.stockBelow);
     // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one
     const old = values as { showGreaterForOne?: boolean };
-    if (old.showGreaterForOne === true) values.partyGroupMin = 1;
+    if (old.showGreaterForOne === true) values.partyGroupFrom = 1;
     old.showGreaterForOne = undefined;
-    if (!GROUP_MIN_CHOICES.includes(values.partyGroupMin)) values.partyGroupMin = defaults.partyGroupMin;
-    if (!GROUP_MIN_CHOICES.includes(values.raidGroupMin)) values.raidGroupMin = defaults.raidGroupMin;
+    if (!GROUP_FROM_CHOICES.includes(values.partyGroupFrom)) values.partyGroupFrom = defaults.partyGroupFrom;
+    if (!GROUP_FROM_CHOICES.includes(values.raidGroupFrom)) values.raidGroupFrom = defaults.raidGroupFrom;
     for (const reminderType of TYPE_ORDER) values.styles[reminderType] = repairStyle(values.styles[reminderType], reminderType);
     // A spell's look is kept under its type and name ("buff:Arcane Intellect")
     for (const [key, style] of pairs(values.spellStyles)) {

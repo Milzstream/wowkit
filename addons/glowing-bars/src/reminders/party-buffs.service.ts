@@ -180,7 +180,7 @@ export class PartyBuffsService {
         if (missing.length === 0) return [];
         const groupSpell = this.findUsableGroupSpell(classBuff);
         if (groupSpell === undefined) return this.buildSuggestion(classBuff, classBuff.id, missing);
-        const groupMin = this.settings.get(isInRaid ? "raidGroupMin" : "partyGroupMin");
+        const groupMin = this.settings.get(isInRaid ? "raidGroupFrom" : "partyGroupFrom");
         if (!classBuff.party!.isPerClass) {
             return this.buildSuggestion(classBuff, this.isGroupWorth(missing, groupMin) ? groupSpell : classBuff.id, missing);
         }

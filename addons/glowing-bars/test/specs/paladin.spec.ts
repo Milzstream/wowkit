@@ -151,7 +151,7 @@ describe("a paladin who added a seal of Forever by its ID", () => {
                 learnSpell(state, SEAL_OF_THE_DAWN);
                 state.bars[1] = SEAL_OF_THE_DAWN.id;
             },
-            { addedSpells: [{ id: SEAL_OF_THE_DAWN.id, reminderType: "seal" }] },
+            { addedSpells: [{ id: SEAL_OF_THE_DAWN.id, reminderType: "missingSeal" }] },
         );
         world.state.isInCombat = true;
         world.state.areAurasHidden = true;

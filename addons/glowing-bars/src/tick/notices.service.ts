@@ -82,30 +82,30 @@ export class NoticesService {
 
     private listLines(reminders: Reminders): Line[] {
         const lines: Line[] = [];
-        this.addTypeLines(lines, "buff", reminders.buffsToCast, "TEXT_BUFF");
+        this.addTypeLines(lines, "missingBuff", reminders.buffsToCast, "TEXT_BUFF");
         this.addTypeLines(
             lines,
-            "weapon",
+            "weaponBuff",
             [...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []), ...reminders.addedWeaponSpells],
             "TEXT_WEAPON",
         );
-        this.addTypeLines(lines, "seal", reminders.seals, "TEXT_SEAL");
-        this.addTypeLines(lines, "tracking", reminders.trackings, "TEXT_TRACKING");
-        this.addTypeLines(lines, "cooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
+        this.addTypeLines(lines, "missingSeal", reminders.seals, "TEXT_SEAL");
+        this.addTypeLines(lines, "missingTracking", reminders.trackings, "TEXT_TRACKING");
+        this.addTypeLines(lines, "readyCooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
         this.addTypeLines(lines, "proc", reminders.procs, "TEXT_PROC");
         this.addTypeLines(
             lines,
-            "rank",
+            "oldRank",
             reminders.outdatedRanks.map((rank) => rank.id),
             "TEXT_RANK",
         );
         for (const stock of reminders.lowStock) {
-            const style = this.styles.getStyle("stock", stock.key);
+            const style = this.styles.getStyle("lowStock", stock.key);
             const text = this.styles.applyTextColor(
                 style.color,
                 string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
             );
-            if (this.isTold(style, reminders)) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
+            if (this.isTold(style, reminders)) lines.push({ parts: [`lowStock:${stock.itemId}`], text, repeat: style.repeat });
         }
         this.addReagentLine(lines, reminders);
         for (const spellId of reminders.buffsNotOnBars) {
@@ -134,7 +134,7 @@ export class NoticesService {
     /** One line that names the reagents running low, in the color of the first; it repeats with the row that repeats soonest. */
     private addReagentLine(lines: Line[], reminders: Reminders): void {
         const told = reminders.lowReagents
-            .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
+            .map((stock) => ({ stock, style: this.styles.getStyle("lowReagent", stock.spellId) }))
             .filter(({ style }) => this.isTold(style, reminders));
         const first = told[0];
         if (first === undefined) return;
@@ -142,7 +142,7 @@ export class NoticesService {
         for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
         const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");
         lines.push({
-            parts: told.map(({ stock }) => `reagent:${stock.name}`),
+            parts: told.map(({ stock }) => `lowReagent:${stock.name}`),
             text: this.styles.applyTextColor(first.style.color, string.format(this.locale.getText("NOTICE_REAGENTS_LOW"), names)),
             repeat,
         });
@@ -171,7 +171,7 @@ export class NoticesService {
 
     /** A line that names what it is about, in the buff color of the spell. */
     private addNamedLine(lines: Line[], spellId: number, parts: string[], text: string): void {
-        const style = this.styles.getStyle("buff", spellId);
+        const style = this.styles.getStyle("missingBuff", spellId);
         if (style.isMessageOn) lines.push({ parts, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
     }
 }

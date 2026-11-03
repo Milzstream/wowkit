@@ -31,7 +31,7 @@ describe("a priest who arrives in a town", () => {
     let world!: World;
 
     beforeEach(() => {
-        world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isMessageOn: true } } });
+        world = createWorld((state) => setUpPriest(state, true), { styles: { lowReagent: { isMessageOn: true } } });
     });
 
     it("is told on the screen which reagents run low", () => {
@@ -44,26 +44,28 @@ describe("a priest who arrives in a town", () => {
 
     it("is told nothing when the player muted the addon", () => {
         world = createWorld((state) => setUpPriest(state, false));
-        world.setOption("isMuted", true);
+        world.setOption("isDisabled", true);
         world.state.isResting = true;
         world.fire("PLAYER_UPDATE_RESTING");
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("keeps its settings in the character's saved variables", () => {
-        expect(world.getSavedSettings()?.isMuted).toBe(false);
+        expect(world.getSavedSettings()?.isDisabled).toBe(false);
     });
 });
 
 describe("the reagent message out of a town", () => {
     it("does not come by default", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { lowReagent: { isMessageOn: true } } });
         world.advance(2);
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("follows the other choices of When too: out of combat, but not in a fight", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true, when: "noCombat" } } });
+        const world = createWorld((state) => setUpPriest(state, false), {
+            styles: { lowReagent: { isMessageOn: true, when: "outOfCombat" } },
+        });
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (0)");
         const inFight = createWorld(
@@ -71,14 +73,14 @@ describe("the reagent message out of a town", () => {
                 setUpPriest(state, false);
                 state.isInCombat = true;
             },
-            { styles: { reagent: { isMessageOn: true, when: "noCombat" } } },
+            { styles: { lowReagent: { isMessageOn: true, when: "outOfCombat" } } },
         );
         inFight.advance(2);
         expect(inFight.notice()).not.toContain("Running low");
     });
 
     it("comes when the player chose the reagents to show always", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true, when: "always" } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { lowReagent: { isMessageOn: true, when: "always" } } });
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (0)");
     });
@@ -87,7 +89,7 @@ describe("the reagent message out of a town", () => {
 describe("the reagent message on the screen", () => {
     it("is on unless the player switched it off", () => {
         expect(createWorld((state) => setUpPriest(state, true)).notice()).toContain("Running low");
-        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isMessageOn: false } } });
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { lowReagent: { isMessageOn: false } } });
         expect(world.notice()).not.toContain("Running low");
     });
 });
@@ -114,7 +116,7 @@ describe("the sound of the reminder", () => {
     });
 
     it("is played when the glow appears", () => {
-        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { sound: "raidwarning" } } });
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { lowReagent: { sound: "raidwarning" } } });
         world.state.bars[1] = PRAYER_OF_FORTITUDE.id;
         world.fire("ACTIONBAR_SLOT_CHANGED", 1);
         world.advance(2);
@@ -165,7 +167,7 @@ describe("the group buff on the bar of a priest low on candles", () => {
                 state.bars[1] = PRAYER_OF_FORTITUDE.id;
                 state.isInCombat = true;
             },
-            { styles: { reagent: { when: "always" } } },
+            { styles: { lowReagent: { when: "always" } } },
         );
         world.advance(2);
         expect(world.glowsOn(1)).toBe(1);
@@ -187,7 +189,7 @@ describe("the reagents of a priest in the table", () => {
     });
 
     it("silence the message of a reagent that is switched off", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { lowReagent: { isMessageOn: true } } });
         switchInTable(world, "Prayer of Fortitude (Holy Candle)", false);
         arriveInTown(world);
         expect(world.notice()).not.toContain("Running low");
@@ -206,8 +208,8 @@ describe("the reagents of a priest in the table", () => {
 
 describe("a character whose saved sound has gone from the list", () => {
     it("gets the default sound again", () => {
-        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { sound: "coin" } } });
-        expect((world.getSavedSettings()?.styles as { reagent?: { sound?: string } } | undefined)?.reagent?.sound).toBeUndefined();
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { lowReagent: { sound: "coin" } } });
+        expect((world.getSavedSettings()?.styles as { lowReagent?: { sound?: string } } | undefined)?.lowReagent?.sound).toBeUndefined();
     });
 });
 
@@ -219,7 +221,7 @@ describe("a priest with an old rank on the bar who arrives in a town", () => {
                 for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
                 state.bars[3] = SMITE_RANK_1.id;
             },
-            { styles: { reagent: { isMessageOn: true } } },
+            { styles: { lowReagent: { isMessageOn: true } } },
         );
         world.advance(3);
         expect(world.notice()).toContain("Old spell rank");

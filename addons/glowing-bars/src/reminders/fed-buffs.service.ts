@@ -56,7 +56,7 @@ export class FedBuffsService {
     noteUse(cast: PlayerSpellCast): void {
         const spellId = cast.spellId;
         if (spellId === undefined) return;
-        const isAdded = this.addedSpells.listAdded("buff").some((id) => id === spellId || this.spells.resolve(id) === spellId);
+        const isAdded = this.addedSpells.listAdded("missingBuff").some((id) => id === spellId || this.spells.resolve(id) === spellId);
         if (isAdded) this.used.push({ spellId, usedAt: this.clock.getCurrentTime() });
     }
 

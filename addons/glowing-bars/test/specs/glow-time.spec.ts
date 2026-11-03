@@ -24,7 +24,7 @@ function startPriest(buff: Record<string, unknown>): World {
             learnSpell(state, FORTITUDE);
             state.bars[1] = FORTITUDE.id;
         },
-        { styles: { buff } },
+        { styles: { missingBuff: buff } },
     );
     world.advance(0.5);
     return world;
@@ -100,7 +100,7 @@ describe("a ready cooldown with a repeat", () => {
                 state.bars[2] = RECKLESSNESS.id;
                 state.isInCombat = true;
             },
-            { styles: { cooldown: { repeat: 10 } } },
+            { styles: { readyCooldown: { repeat: 10 } } },
         );
         world.advance(0.5);
         useAndRecoverRecklessness(world);
@@ -122,7 +122,7 @@ describe("a low reagent with a glow time and Alert in town", () => {
     }
 
     it("glows for that long out of town, and again for that long on arriving in one", () => {
-        const world = createWorld(setUp, { styles: { reagent: { glowTime: 3 } } });
+        const world = createWorld(setUp, { styles: { lowReagent: { glowTime: 3 } } });
         world.advance(1);
         expect(world.glowsOn(1)).toBe(1);
         world.advance(5);
@@ -173,7 +173,7 @@ describe("a ready cooldown that shows always, with the fight start reminder on",
                 setUpWarrior(state);
                 state.isInCombat = false;
             },
-            { styles: { cooldown: { when: "always" } }, showCooldownsAtFightStart: true },
+            { styles: { readyCooldown: { when: "always" } }, showCooldownsAtFightStart: true },
         );
         world.advance(5);
         expect(world.glowsOn(2)).toBe(0);
@@ -195,7 +195,7 @@ describe("the message of a low reagent", () => {
                 state.bags[HOLY_CANDLE] = 1;
                 state.isResting = true;
             },
-            { styles: { reagent } },
+            { styles: { lowReagent: reagent } },
         );
         world.advance(2);
         return world;

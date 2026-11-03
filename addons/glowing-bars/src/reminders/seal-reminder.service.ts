@@ -1,5 +1,5 @@
 // The paladin's seals: in a fight a seal should be up. The client hides the auras in combat, so a seal counts from the
-// player's own cast for its 30 seconds (the "seal" category of the buff memory); a Judgement leaves it on. Any seal
+// player's own cast for its 30 seconds (the "missingSeal" category of the buff memory); a Judgement leaves it on. Any seal
 // counts, the seals the player added too. The one that glows is the seal the player last used (kept per character); before
 // the first one, the one the main talent tree wants, else the first on the bars. A seal switched off in the table or not
 // on the bars is skipped.
@@ -32,7 +32,7 @@ const TALENT_SEALS: { [tree: number]: number[] | undefined } = {
 };
 
 /** The key of the seal cast last in the saved settings. */
-const LAST_SEAL_KEY = "seal";
+const LAST_SEAL_KEY = "missingSeal";
 
 export class SealReminderService {
     constructor(
@@ -51,7 +51,7 @@ export class SealReminderService {
 
     /** The learned seals of the list, and the ones the player added (by their IDs). */
     private listAllSeals(): number[] {
-        return [...this.listSeals(), ...this.addedSpells.listAdded("seal")];
+        return [...this.listSeals(), ...this.addedSpells.listAdded("missingSeal")];
     }
 
     /** A seal cast is the one to glow next time (kept per character). */
@@ -75,7 +75,7 @@ export class SealReminderService {
      * default: that is the When of the seals' look.
      */
     findMissingSeal(): number[] {
-        if (!this.settings.get("showSeals")) return [];
+        if (!this.settings.get("isMissingSealEnabled")) return [];
         const enabledSpells = this.settings.get("enabledSpells");
         const onBars: number[] = [];
         for (const listId of this.listAllSeals()) {

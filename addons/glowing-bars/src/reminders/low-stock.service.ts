@@ -16,14 +16,14 @@ export class LowStockService {
 
     /** The items running low, that are switched on. */
     findLowStock(): LowStock[] {
-        if (!this.settings.get("showStock")) return [];
+        if (!this.settings.get("isLowStockEnabled")) return [];
         const low: LowStock[] = [];
         const enabledSpells = this.settings.get("enabledSpells");
-        for (const itemId of this.addedSpells.listAdded("stock")) {
+        for (const itemId of this.addedSpells.listAdded("lowStock")) {
             const key = getItemButtonKey(itemId);
             if (enabledSpells[string.format("%d", key)] === false) continue;
             const count = this.bags.getItemCount(itemId);
-            if (count < this.limits.getLimit("stock", string.format("%d", itemId))) {
+            if (count < this.limits.getLimit("lowStock", string.format("%d", itemId))) {
                 low.push({ key, itemId, name: this.bags.getItemName(itemId) ?? string.format("%d", itemId), count });
             }
         }

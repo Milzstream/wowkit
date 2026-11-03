@@ -29,7 +29,7 @@ export class BarsSection {
                 string.format(this.locale.getText("OPT_BAR"), bar),
                 this.locale.getText("TIP_BAR"),
                 true,
-                () => this.settings.get("barOff")[key] !== true,
+                () => this.settings.get("barsThatGlow")[key] !== false,
                 (isChecked) => this.setBarOn(key, isChecked),
             );
         }
@@ -46,7 +46,7 @@ export class BarsSection {
                 string.format(this.locale.getText("OPT_BAR"), bar),
                 this.locale.getText("TIP_FADE"),
                 false,
-                () => this.settings.get("barFaded")[key] === true,
+                () => this.settings.get("fadedBars")[key] === true,
                 (isChecked) => this.setBarFaded(key, isChecked),
             );
         }
@@ -69,15 +69,15 @@ export class BarsSection {
 
     /** Fades one bar or not; the default (not) is not stored. */
     private setBarFaded(key: string, isFaded: boolean): void {
-        const barFaded = { ...this.settings.get("barFaded") };
-        barFaded[key] = isFaded ? true : undefined;
-        this.settings.change("barFaded", barFaded);
+        const fadedBars = { ...this.settings.get("fadedBars") };
+        fadedBars[key] = isFaded ? true : undefined;
+        this.settings.change("fadedBars", fadedBars);
     }
 
     /** Switches one bar on or off; the default (on) is not stored. */
     private setBarOn(key: string, isOn: boolean): void {
-        const barOff = { ...this.settings.get("barOff") };
-        barOff[key] = isOn ? undefined : true;
-        this.settings.change("barOff", barOff);
+        const barsThatGlow = { ...this.settings.get("barsThatGlow") };
+        barsThatGlow[key] = isOn ? undefined : false;
+        this.settings.change("barsThatGlow", barsThatGlow);
     }
 }

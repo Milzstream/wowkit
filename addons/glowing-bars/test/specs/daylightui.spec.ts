@@ -18,7 +18,7 @@ describe("a priest who plays with DaylightUI", () => {
     });
 
     it("sees no glow there once Action Bar 2 is switched off: DaylightUI's bar 2 is it", () => {
-        const world = createWorld(setUp, { barOff: { "2": true } });
+        const world = createWorld(setUp, { barsThatGlow: { "2": false } });
         world.advance(1);
         expect(world.glowsOnFrame("DaylightUIBar2Button1")).toBe(0);
     });
@@ -37,7 +37,7 @@ describe("a priest who plays with DaylightUI", () => {
     });
 
     it("fades DaylightUI's bar 2 with Action Bar 2", () => {
-        const world = createWorld(setUp, { barFaded: { "2": true } });
+        const world = createWorld(setUp, { fadedBars: { "2": true } });
         world.advance(1);
         expect(world.findFrame((frame) => frame.name === "DaylightUIBar2Button2")!.alpha).toBe(0.5);
     });

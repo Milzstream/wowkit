@@ -50,7 +50,7 @@ describe("the table of looks", () => {
         const row = findRow(world, "Ready cooldown");
         row.enabled.isChecked = false;
         row.enabled.scripts.OnClick!(row.enabled);
-        expect(world.getSavedSettings()?.showCooldowns).toBe(false);
+        expect(world.getSavedSettings()?.isReadyCooldownEnabled).toBe(false);
         // The spells of the type are faded: they will not glow, whatever their own box says
         expect(findLabel(world, "Recklessness")!.parent!.alpha).toBe(0.4);
     });
@@ -75,7 +75,7 @@ describe("the table of looks", () => {
         const row = findRow(world, "Recklessness");
         row.glowPercent.text = "40";
         row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.glowPercent).toBe(40);
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.glowPercent).toBe(40);
         expect(world.glowAlphasOn(2)).toEqual([0.4]);
     });
 
@@ -83,7 +83,7 @@ describe("the table of looks", () => {
         const row = findRow(world, "Ready cooldown");
         row.glowPercent.text = "60";
         row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
-        expect(readSaved(world, "styles").cooldown?.glowPercent).toBe(60);
+        expect(readSaved(world, "styles").readyCooldown?.glowPercent).toBe(60);
         expect(world.glowAlphasOn(2)).toEqual([0.6]);
     });
 
@@ -91,14 +91,14 @@ describe("the table of looks", () => {
         const row = findRow(world, "Recklessness");
         row.message.isChecked = true;
         row.message.scripts.OnClick!(row.message);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.isMessageOn).toBe(true);
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.isMessageOn).toBe(true);
         expect(world.notice()).toContain("Cooldown ready");
     });
 
     it("takes the next sound on a click and plays it", () => {
         const row = findRow(world, "Recklessness");
         row.sound.scripts.OnClick!(row.sound, "LeftButton");
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.sound).toBe("raidwarning");
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.sound).toBe("raidwarning");
         expect(world.sounds).toEqual([8959]);
     });
 
@@ -108,7 +108,7 @@ describe("the table of looks", () => {
         const picker = ColorPickerFrame as unknown as FakeColorPicker;
         picker.pickedColor = [1, 0, 0];
         picker.info!.swatchFunc();
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.color).toEqual([1, 0, 0]);
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.color).toEqual([1, 0, 0]);
     });
 
     it("keeps the saved percent when Escape is pressed in the box", () => {
@@ -118,14 +118,14 @@ describe("the table of looks", () => {
         // Letting go of the box saves what it shows
         row.glowPercent.scripts.OnEditFocusLost!(row.glowPercent);
         expect(row.glowPercent.text).toBe("100");
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]).toBeUndefined();
     });
 
     it("keeps no change that is the same as what the spell inherits", () => {
         const row = findRow(world, "Recklessness");
         row.glowPercent.text = "100";
         row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]).toBeUndefined();
     });
 
     it("forgets what the player changed for a spell on Reset", () => {
@@ -133,7 +133,7 @@ describe("the table of looks", () => {
         row.glowPercent.text = "40";
         row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
         row.reset.scripts.OnClick!(row.reset);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
+        expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]).toBeUndefined();
         expect(world.glowAlphasOn(2)).toEqual([1]);
     });
 });

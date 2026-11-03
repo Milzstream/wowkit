@@ -32,7 +32,7 @@ export class GlowCuesService {
     startFight(): void {
         this.usedInCombat = new LuaSet<number>();
         const isReadyGlowing = this.settings.get("showCooldownsAtFightStart");
-        for (const id of this.listCues(this.listCueIds("cooldown"))) {
+        for (const id of this.listCues(this.listCueIds("readyCooldown"))) {
             if (isReadyGlowing || this.tracker.getRemaining(id) > READY_MARGIN) this.usedInCombat.add(id);
         }
     }
@@ -45,10 +45,10 @@ export class GlowCuesService {
      * client hides them.
      */
     findReadyCooldowns(): number[] {
-        if (!this.settings.get("showCooldowns")) return [];
+        if (!this.settings.get("isReadyCooldownEnabled")) return [];
         const isInCombat = this.player.isInCombat();
         const ready: number[] = [];
-        for (const id of this.listCues(this.listCueIds("cooldown"))) {
+        for (const id of this.listCues(this.listCueIds("readyCooldown"))) {
             if (this.tracker.getRemaining(id) > READY_MARGIN) {
                 if (isInCombat) this.usedInCombat.add(id);
                 continue;
@@ -60,7 +60,7 @@ export class GlowCuesService {
 
     /** The procs of the class that the game says are usable now, and on a button. */
     findProcs(): number[] {
-        if (!this.settings.get("showProcs")) return [];
+        if (!this.settings.get("isProcEnabled")) return [];
         return this.listCues(this.listCueIds("proc")).filter(
             (id) => this.spellDetails.readUsability(id).isUsable === true && this.tracker.getRemaining(id) <= READY_MARGIN,
         );

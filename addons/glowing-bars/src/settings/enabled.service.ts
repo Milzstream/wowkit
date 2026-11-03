@@ -9,15 +9,15 @@ import type { AddonSettingsService, ReminderType } from "./settings.interface";
 
 /** The setting that switches a type of reminder on. */
 const TYPE_SWITCHES = {
-    buff: "showBuff",
-    weapon: "showWeapon",
-    seal: "showSeals",
-    tracking: "showTracking",
-    reagent: "showReagents",
-    cooldown: "showCooldowns",
-    proc: "showProcs",
-    rank: "showRanks",
-    stock: "showStock",
+    missingBuff: "isMissingBuffEnabled",
+    weaponBuff: "isWeaponBuffEnabled",
+    missingSeal: "isMissingSealEnabled",
+    missingTracking: "isMissingTrackingEnabled",
+    lowReagent: "isLowReagentEnabled",
+    readyCooldown: "isReadyCooldownEnabled",
+    proc: "isProcEnabled",
+    oldRank: "isOldRankEnabled",
+    lowStock: "isLowStockEnabled",
 } as const satisfies { [reminderType in ReminderType]: string };
 
 export class EnabledService {
@@ -40,7 +40,7 @@ export class EnabledService {
         if (classBuff !== undefined) return this.classBuffs.isBuffEnabled(classBuff);
         const itemId = this.findReagentItem(row);
         if (itemId !== undefined) return this.settings.get("enabledReagents")[itemId] !== false;
-        if (row.reminderType === "rank") return this.settings.get("enabledRanks")[this.getName(spellId)] !== false;
+        if (row.reminderType === "oldRank") return this.settings.get("enabledRanks")[this.getName(spellId)] !== false;
         return this.settings.get("enabledSpells")[this.getGlowKey(row, spellId)] !== false;
     }
 
@@ -52,18 +52,18 @@ export class EnabledService {
         if (classBuff !== undefined) return this.classBuffs.setBuffEnabled(classBuff, isEnabled);
         const itemId = this.findReagentItem(row);
         if (itemId !== undefined) return this.changeEntry("enabledReagents", itemId, isEnabled ? undefined : false);
-        if (row.reminderType === "rank") return this.changeEntry("enabledRanks", this.getName(spellId), isEnabled ? undefined : false);
+        if (row.reminderType === "oldRank") return this.changeEntry("enabledRanks", this.getName(spellId), isEnabled ? undefined : false);
         this.changeEntry("enabledSpells", this.getGlowKey(row, spellId), isEnabled ? undefined : false);
     }
 
     private findClassBuff(row: StyleRow) {
-        if (row.reminderType !== "buff" || row.isAdded === true) return undefined;
+        if (row.reminderType !== "missingBuff" || row.isAdded === true) return undefined;
         return this.classBuffs.getClassBuffs().find((classBuff) => classBuff.id === row.spellId);
     }
 
     /** The reagent item of a group buff of the class (the reagent rows of the lists). */
     private findReagentItem(row: StyleRow): string | undefined {
-        if (row.reminderType !== "reagent" || row.isAdded === true || row.spellId === undefined) return undefined;
+        if (row.reminderType !== "lowReagent" || row.isAdded === true || row.spellId === undefined) return undefined;
         const reagent = this.reagents.findReagentOfSpell(row.spellId);
         return reagent !== undefined ? string.format("%d", reagent.itemId) : undefined;
     }
