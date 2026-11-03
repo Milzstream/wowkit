@@ -144,7 +144,7 @@ export class ShowRemindersService {
                 const style = this.styles.getStyle(kind.category, id);
                 const lastAt = this.soundPlayedAt.get(key);
                 const isNew = !this.previous[index]!.includes(id) || lastAt === undefined;
-                const isRepeating = style.repeat > 0;
+                const isRepeating = style.repeat > 0 && (style.when !== "townText" || reminders.isInTown === true);
                 const isDue = isRepeating && lastAt !== undefined && now - lastAt >= style.repeat;
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
                 if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);

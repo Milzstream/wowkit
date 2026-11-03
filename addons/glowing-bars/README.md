@@ -26,8 +26,8 @@ Your Rotation.
     Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the
     classes you buffed there.
 - **Reagents**: the group buff on your action bar (Prayer of Fortitude, Gift of the Wild...) glows, quietly, while its
-  reagent runs low (5 or fewer by default, set in the Low at column of the table), in a town or an inn by default, and a message on the screen names the reagents
-  as you arrive. Set its When to Always and the glow and the message come anywhere.
+  reagent runs low (5 or fewer by default, set in the Low at column of the table); in a town or an inn a message on the
+  screen names the reagents. Its When can also keep the glow to a town, or bring the message anywhere.
 - **Low stock**: add any item by its Item ID (arrows, drinks, candles) as `Low stock` in the table. At 20 or fewer (set in the Low at column,
   for all items or for each one) a message on the screen says how many are left, and if the item is on a bar, its button glows too, even at none.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
@@ -49,9 +49,9 @@ Your Rotation.
 Every kind of reminder has the same four settings: the **color** of its glow and message, the **opacity** of the glow
 (1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each can also **repeat** their sound every 5, 10, 30 or 60 seconds while the glow is on,
 the message coming again with it (off by default). And **when** it shows: Always, In combat, Out of combat, or only with a
-living Enemy targeted (a shaman's shield glowing as you target a mob before the pull, say); the low reagents In town (a
-city or an inn, the default) or Always. By default everything shows always, but the ready cooldowns and the seals only in
-combat. The defaults: missing
+living Enemy targeted (a shaman's shield glowing as you target a mob before the pull, say). The low reagents and the low
+stock can also show In town (a city or an inn), or glow anywhere with their Message in town (the reagents' default). By
+default everything else shows always, but the ready cooldowns and the seals only in combat. The defaults: missing
 buffs blue, weapon buffs orange, ready cooldowns white, procs red, old ranks and low reagents yellow (and a quieter glow
 than the others), low stock a quieter red. By default only the old ranks, the reagents and the low stock show a message; the buff messages (including the ones that name a
 buff on no bar and the party members who miss one) are there to switch on. They are set in a table, and every spell of your class can have a look of its own in the same table.

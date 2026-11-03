@@ -3,11 +3,14 @@
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import { REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
-import type { When } from "../settings/settings.interface";
+import type { ColorKey, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
 import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
+
+/** The kinds whose When has choices of their own, and so a tooltip of its own. */
+const WHEN_TIPS: { [kind in ColorKey]?: TextKey } = { reagent: "TIP_WHEN_REAGENT", stock: "TIP_WHEN_STOCK" };
 
 /** The buttons of a row that click through choices. */
 export interface ChoiceButtons {
@@ -22,6 +25,7 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     noCombat: "WHEN_NO_COMBAT",
     target: "WHEN_TARGET",
     town: "WHEN_TOWN",
+    townText: "WHEN_TOWN_TEXT",
 };
 
 export class StyleChoicesService {
@@ -89,7 +93,7 @@ export class StyleChoicesService {
         });
         button.SetScript("OnEnter", () => {
             GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText(getRow()?.kind === "reagent" ? "TIP_WHEN_REAGENT" : "TIP_WHEN"), 1, 1, 1, 1, true);
+            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.kind ?? "buff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
         button.SetScript("OnLeave", () => GameTooltip.Hide());

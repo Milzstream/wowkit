@@ -93,6 +93,8 @@ describe("a priest in a party", () => {
         });
 
         it("does not look at the party in combat, when the game hides other people's auras", () => {
+            // Without candles Prayer of Fortitude would glow as a low reagent, which shows in combat too
+            world.state.bags[HOLY_CANDLE] = 20;
             world.state.isInCombat = true;
             world.fire("GROUP_ROSTER_UPDATE");
             world.advance(2);

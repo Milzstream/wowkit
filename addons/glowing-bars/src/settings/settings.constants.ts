@@ -58,14 +58,19 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     proc: { color: [1, 0.12, 0.08], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always" },
     rank: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "alarm1", repeat: 0, when: "always" },
     // Its message is the town's: it names the reagents to buy
-    reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "town" },
+    reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText" },
     // A quieter red than the procs'
     stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "always" },
 };
 
-/** When a reminder of the kind may show: the low reagents in a town or always, the others by combat or a target. */
+/**
+ * When a reminder of the kind may show: the low reagents in a town, with only their message there, or always; the others
+ * by combat or a target, and the low stock in a town, or with only its message there, too.
+ */
 export function listWhenChoices(kind: ColorKey): When[] {
-    return kind === "reagent" ? ["town", "always"] : ["always", "combat", "noCombat", "target"];
+    if (kind === "reagent") return ["town", "townText", "always"];
+    const choices: When[] = ["always", "combat", "noCombat", "target"];
+    return kind === "stock" ? [...choices, "town", "townText"] : choices;
 }
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */

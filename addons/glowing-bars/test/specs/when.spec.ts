@@ -15,9 +15,10 @@ import {
     type World,
 } from "@wowkit/test-kit";
 import { findLabel, readSaved, toggleTable } from "./table.helpers";
+import { createArcher } from "./low-stock.helpers";
 
 const RIGHTEOUSNESS: SpellDefinition = { id: 20154, name: "Seal of Righteousness", rank: 1, icon: 132325, isHelpful: true };
-const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "In town"];
+const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Message in town"];
 
 /** A priest missing Fortitude, which sits on button 1. */
 function setUpPriest(state: ClientState): void {
@@ -132,15 +133,17 @@ describe("the When button of the table", () => {
         expect(button.text).toBe("Enemy targeted");
     });
 
-    it("has only In town and Always for the low reagents, In town first", () => {
+    it("has In town, Message in town and Always for the low reagents, Message in town by default", () => {
         const world = startPriest();
         toggleTable();
         const button = findWhenButton(world, "Low reagent");
-        expect(button.text).toBe("In town");
-        button.scripts.OnClick!(button, "LeftButton");
-        expect(button.text).toBe("Always");
-        button.scripts.OnClick!(button, "LeftButton");
-        expect(button.text).toBe("In town");
+        const seen: string[] = [];
+        for (let i = 0; i < 3; i++) {
+            seen.push(button.text!);
+            button.scripts.OnClick!(button, "LeftButton");
+        }
+        expect(seen).toEqual(["Message in town", "Always", "In town"]);
+        expect(button.text).toBe("Message in town");
     });
 });
 
@@ -172,5 +175,42 @@ describe("a paladin's missing seal", () => {
 
     it("glows out of combat too when the player chose it to show always", () => {
         expect(startPaladin({ styles: { seal: { when: "always" } } }).glowsOn(1)).toBe(1);
+    });
+});
+
+describe("a low stock", () => {
+    function arriveInTown(world: World): void {
+        world.state.isResting = true;
+        world.fire("PLAYER_UPDATE_RESTING");
+        world.advance(1);
+    }
+
+    it("that shows in town glows and tells nothing out of one, both in one", () => {
+        const world = createArcher(12, { styles: { stock: { when: "town" } } });
+        expect(world.glowsOn(1)).toBe(0);
+        expect(world.notice()).not.toContain("Running low");
+        arriveInTown(world);
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
+    });
+
+    it("that shows its message in town glows anywhere, and tells only in one", () => {
+        const world = createArcher(12, { styles: { stock: { when: "townText" } } });
+        expect(world.glowsOn(1)).toBe(1);
+        expect(world.notice()).not.toContain("Running low");
+        arriveInTown(world);
+        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
+    });
+
+    it("has every choice of the When column", () => {
+        const world = createArcher(12);
+        toggleTable();
+        const button = findWhenButton(world, "Low stock");
+        const seen: string[] = [];
+        for (let i = 0; i < 6; i++) {
+            seen.push(button.text!);
+            button.scripts.OnClick!(button, "LeftButton");
+        }
+        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Message in town"]);
     });
 });

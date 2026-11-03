@@ -22,7 +22,7 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Weapon buffs** – shaman imbues, rogue poisons (per hand) and warlock stones, when missing or about to run out.
 *   **Paladin seals** – in a fight (by default) with no seal up, the seal you used last glows gold, already a moment before it runs out. Before your first seal, the one of your talent tree.
 *   **Gathering** – a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow. Any tracking counts, so a hunter tracking beasts is left alone.
-*   **Low reagents** – in a town or an inn, the group buff on your bar glows quietly while its reagent runs low (5 or fewer, or the limit you set in the table), and a message names what to buy. Set it to Always and it reminds you anywhere.
+*   **Low reagents** – the group buff on your bar glows quietly while its reagent runs low (5 or fewer, or the limit you set in the table), and in a town or an inn a message names what to buy.
 *   **Low stock, if you add it** – add any item by its *Item ID* (arrows, drinks, candles). When only a few are left, a message says how many. If the item is on your bars, its button glows too.
 *   **Cooldowns that are back** – in a fight, an important cooldown of your class or your race (Recklessness, Rapid Fire, Adrenaline Rush, Innervate, Swift Judgement, Blood Fury, Stoneform, Desperate Prayer…) glows for a few seconds when it is ready again. If you like, the ready ones also glow as a fight starts.
 *   **Procs** – Overpower, Revenge, Execute, Victory Rush, Riposte, Counterattack, Mongoose Bite and Hammer of Wrath glow while you can use them.
@@ -40,7 +40,7 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds
 *   **Repeat**: the sound plays again every 5, 10, 30 or 60 seconds while the glow is on, and the message with it (off by default)
-*   **When**: always, in combat, out of combat, or only with an enemy targeted (the low reagents: in town or always)
+*   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock also in town, or with their message only in town
 *   **Enabled**: turn a whole type, or one spell, on or off
 
 In the same table you can **add your own spells by their ID**, as any type, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Spell IDs in tooltips**.

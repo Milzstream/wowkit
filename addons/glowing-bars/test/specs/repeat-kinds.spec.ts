@@ -54,8 +54,15 @@ describe("the repeat of a sound", () => {
         expect(world.sounds.length > first).toBe(true);
     });
 
-    it("plays nothing for a low reagent out of a town by default", () => {
+    it("plays once for a low reagent out of a town by default: its repeat waits for a town", () => {
         const world = createLowOnCandles({ sound: "raidwarning", repeat: 5 }, false);
+        expect(world.sounds.length).toBe(1);
+        world.advance(11);
+        expect(world.sounds.length).toBe(1);
+    });
+
+    it("plays nothing for a low reagent out of a town when it shows only in town", () => {
+        const world = createLowOnCandles({ sound: "raidwarning", repeat: 5, when: "town" }, false);
         world.advance(11);
         expect(world.sounds.length).toBe(0);
     });

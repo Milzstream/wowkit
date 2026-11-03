@@ -9,9 +9,10 @@ export type AddonSettingsService = SettingsService<AddonSettings>;
 
 /**
  * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted, or (the low
- * reagents) only in a town or an inn.
+ * reagents) only in a town or an inn; or (the low reagents and the low stock) glowing anywhere, but its message and its
+ * repeat only in a town or an inn.
  */
-export type When = "always" | "combat" | "noCombat" | "target" | "town";
+export type When = "always" | "combat" | "noCombat" | "target" | "town" | "townText";
 
 /** How a reminder looks and sounds, and when it shows. */
 export interface Style {

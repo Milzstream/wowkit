@@ -48,12 +48,15 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
             noCombat: !isInCombat,
             target: this.player.hasEnemyTarget(),
             town: this.player.isResting(),
+            // Its glow anywhere; its message and repeat are kept for a town where they are shown
+            townText: true,
         };
         const isShown = (kind: ColorKey, id: number) => now[this.styles.getStyle(kind, id).when];
         const pickShown = (kind: ColorKey, ids: number[]) => ids.filter((id) => isShown(kind, id));
         const weapon = reminders.weaponSpell;
         return {
             ...reminders,
+            isInTown: this.player.isResting(),
             buffsToCast: pickShown("buff", reminders.buffsToCast),
             buffsNotOnBars: pickShown("buff", reminders.buffsNotOnBars),
             partySuggestions: reminders.partySuggestions.filter((suggestion) => isShown("buff", suggestion.spellId)),

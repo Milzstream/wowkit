@@ -130,10 +130,22 @@ describe("the group buff on the bar of a priest low on candles", () => {
         expect(world.glowsOn(1)).toBe(0);
     });
 
-    it("does not glow out of a town by default", () => {
+    it("glows out of a town too by default: only its message waits for one", () => {
         world.state.isResting = false;
         world.fire("PLAYER_UPDATE_RESTING");
         world.advance(1);
+        expect(world.glowsOn(1)).toBe(1);
+    });
+
+    it("does not glow out of a town when the player chose it to show only in town", () => {
+        world = createWorld(
+            (state) => {
+                setUpPriest(state, false);
+                state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            },
+            { styles: { reagent: { when: "town" } } },
+        );
+        world.advance(2);
         expect(world.glowsOn(1)).toBe(0);
     });
 

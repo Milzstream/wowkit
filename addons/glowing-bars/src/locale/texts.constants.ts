@@ -112,7 +112,8 @@ export const TEXTS = {
         "Reminds you when you have this many or fewer. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
-    TIP_KIND_REAGENT: "Its glow, message and repeat follow its When column: in a town or an inn (cities and inns) by default, or anywhere.",
+    TIP_KIND_REAGENT:
+        "Its glow, message and repeat follow its When column. By default it glows anywhere, and its message and repeat come only in a town or an inn (cities and inns).",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
@@ -125,10 +126,13 @@ export const TEXTS = {
     WHEN_NO_COMBAT: "Out of combat",
     WHEN_TARGET: "Enemy targeted",
     WHEN_TOWN: "In town",
+    WHEN_TOWN_TEXT: "Message in town",
     TIP_WHEN:
         "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
     TIP_WHEN_REAGENT:
-        "When the reminder may show: only in a town or an inn (cities and inns, where reagents are sold), or always. Click for the other choice.",
+        "When the reminder may show: only in a town or an inn (cities and inns, where reagents are sold); glowing anywhere, but its message and repeat only in a town or an inn; or always. Click for the next choice, right-click for the one before.",
+    TIP_WHEN_STOCK:
+        "When the reminder may show: always, only in combat, only out of combat, only while a living enemy is targeted, only in a town or an inn (cities and inns), or glowing anywhere with its message and repeat only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
     KIND_BUFF: "Missing buff",
     KIND_WEAPON: "Weapon buff",
