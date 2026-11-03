@@ -36,7 +36,7 @@ It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in 
 Type **/gb** to open the table. Every reminder type has the same settings, and every spell of your class can have its own:
 
 *   **Color** of the glow and of the message
-*   **Glow opacity**, 1 to 100 %
+*   **Glow %**, 1 to 100
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds
 *   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)

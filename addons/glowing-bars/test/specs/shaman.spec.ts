@@ -200,7 +200,7 @@ describe("a shaman who switched Flametongue off in the table", () => {
                 state.bars[3] = ROCKBITER_WEAPON.id;
                 state.equippedItems[MAIN_HAND] = 1234;
             },
-            { glowOn: { [String(FLAMETONGUE.id)]: false } },
+            { enabledSpells: { [String(FLAMETONGUE.id)]: false } },
         );
         world.advance(2);
         expect(world.glowsOn(3)).toBe(1);

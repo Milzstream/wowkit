@@ -76,7 +76,7 @@ describe("a miner who added Find Minerals as a missing buff before it was on the
                 playAs(state, HUNTER);
                 learnSpell(state, FIND_MINERALS);
             },
-            { customCues: [{ id: FIND_MINERALS.id, kind: "buff" }] },
+            { addedSpells: [{ id: FIND_MINERALS.id, reminderType: "buff" }] },
         );
         SlashCmdList["GLOWINGBARS"]!("", undefined as never);
         const rows = world.frames.filter((frame) => frame.fontStrings.some((text) => text.text === "Find Minerals"));

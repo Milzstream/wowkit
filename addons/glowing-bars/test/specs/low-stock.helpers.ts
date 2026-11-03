@@ -13,7 +13,7 @@ export function createArcher(count: number, savedSettings: Record<string, unknow
             if (isOnBars) state.barItems[1] = ARROW;
             state.isResting = isInTown;
         },
-        { customCues: [{ id: ARROW, kind: "stock" }], ...savedSettings },
+        { addedSpells: [{ id: ARROW, reminderType: "stock" }], ...savedSettings },
     );
     world.advance(1);
     return world;

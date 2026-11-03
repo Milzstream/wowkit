@@ -30,14 +30,14 @@ describe("the spells of the table, fixed and added by the player", () => {
     let world!: World;
 
     /** The widgets of the row at the end of the table that adds a spell. */
-    function findAddRow(): { box: FakeFrame; kind: FakeFrame; add: FakeFrame } {
+    function findAddRow(): { box: FakeFrame; reminderType: FakeFrame; add: FakeFrame } {
         const box = world.frames.find(
             (frame) =>
                 frame.frameType === "EditBox" &&
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
         const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
-        return { box, kind: buttons[0]!, add: buttons[1]! };
+        return { box, reminderType: buttons[0]!, add: buttons[1]! };
     }
 
     function findIdBox(label: string): FakeFrame {
@@ -100,7 +100,7 @@ describe("the spells of the table, fixed and added by the player", () => {
         const { box, add } = findAddRow();
         box.text = "72";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([{ id: 72, kind: "cooldown" }]);
+        expect(readSettings().addedSpells).toEqual([{ id: 72, reminderType: "cooldown" }]);
         expect(findLabel(world, "Shield Bash")).toBeDefined();
         world.state.isInCombat = true;
         world.state.cooldowns[SHIELD_BASH.id] = { start: 0, duration: 99999 };
@@ -110,19 +110,19 @@ describe("the spells of the table, fixed and added by the player", () => {
         expect(world.glowsOn(4)).toBe(1);
     });
 
-    it("adds a spell as a proc once the kind button is clicked", () => {
-        const { box, kind, add } = findAddRow();
-        kind.scripts.OnClick!(kind);
+    it("adds a spell as a proc once the type button is clicked", () => {
+        const { box, reminderType, add } = findAddRow();
+        reminderType.scripts.OnClick!(reminderType);
         box.text = "72";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([{ id: 72, kind: "proc" }]);
+        expect(readSettings().addedSpells).toEqual([{ id: 72, reminderType: "proc" }]);
     });
 
     it("does not add a spell that is in the list already, and says so", () => {
         const { box, add } = findAddRow();
         box.text = "1719";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([]);
+        expect(readSettings().addedSpells).toEqual([]);
         expect(world.notice()).toContain("Recklessness is already in the list.");
     });
 
@@ -131,29 +131,29 @@ describe("the spells of the table, fixed and added by the player", () => {
         state().spells[687] = { id: 687, name: "Demon Skin", rank: 1, icon: 136185, isHelpful: true };
         box.text = "687";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([]);
+        expect(readSettings().addedSpells).toEqual([]);
         expect(world.notice()).toContain("Demon Skin has no cooldown, pick another type.");
     });
 
-    it("does not add a spell as another kind than the one picked, even one with a reagent", () => {
-        const { box, kind, add } = findAddRow();
-        const picked = kind.text;
+    it("does not add a spell as another type than the one picked, even one with a reagent", () => {
+        const { box, reminderType, add } = findAddRow();
+        const picked = reminderType.text;
         state().spells[29893] = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
         state().reagentTexts[29893] = "Soul Shard";
         box.text = "29893";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([]);
+        expect(readSettings().addedSpells).toEqual([]);
         expect(world.notice()).toContain("Ritual of Souls has no cooldown, pick another type.");
-        expect(kind.text).toBe(picked);
+        expect(reminderType.text).toBe(picked);
         expect(box.text).toBe("29893");
     });
 
     it("does not add a spell with a cooldown and no reagent as a low reagent, and says so", () => {
-        const { box, kind, add } = findAddRow();
-        for (let click = 0; click < 10 && kind.text !== "Low reagent"; click++) kind.scripts.OnClick!(kind);
+        const { box, reminderType, add } = findAddRow();
+        for (let click = 0; click < 10 && reminderType.text !== "Low reagent"; click++) reminderType.scripts.OnClick!(reminderType);
         box.text = "72";
         add.scripts.OnClick!(add);
-        expect(readSettings().customCues).toEqual([]);
+        expect(readSettings().addedSpells).toEqual([]);
         expect(world.notice()).toContain("Shield Bash uses no reagent, pick another type.");
     });
 
@@ -164,25 +164,27 @@ describe("the spells of the table, fixed and added by the player", () => {
         const row = findLabel(world, "Shield Bash")!.parent;
         const remove = world.frames.filter((frame) => frame.parent === row && frame.template === "UIPanelButtonTemplate")[2]!;
         remove.scripts.OnClick!(remove);
-        expect(readSettings().customCues).toEqual([]);
+        expect(readSettings().addedSpells).toEqual([]);
     });
 });
 
-describe("the spells of other kinds a player adds", () => {
+describe("the spells of other types a player adds", () => {
     const DEMON_SKIN: SpellDefinition = { id: 687, name: "Demon Skin", rank: 1, icon: 136185, isHelpful: true };
     const SHARPEN: SpellDefinition = { id: 2828, name: "Sharpen Blade", rank: 1, icon: 135248, isHelpful: true };
     const RITUAL: SpellDefinition = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
     let world!: World;
 
-    /** Adds a spell in the table as the kind the kind button shows after `clicks` clicks. */
+    /** Adds a spell in the table as the type the type button shows after `clicks` clicks. */
     function addAs(spellId: number, clicks: number): void {
         const box = world.frames.find(
             (frame) =>
                 frame.frameType === "EditBox" &&
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
-        const [kind, add] = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
-        for (let i = 0; i < clicks; i++) kind!.scripts.OnClick!(kind!);
+        const [reminderType, add] = world.frames.filter(
+            (frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate",
+        );
+        for (let i = 0; i < clicks; i++) reminderType!.scripts.OnClick!(reminderType!);
         box.text = string.format("%d", spellId);
         add!.scripts.OnClick!(add!);
         world.advance(0.5);
@@ -243,7 +245,7 @@ describe("the old rank of a spell, switched off in the table", () => {
         enabled.scripts.OnClick!(enabled);
         world.advance(0.5);
         expect(world.glowsOn(1)).toBe(0);
-        expect((world.getSavedSettings()?.rankOff as Record<string, boolean>).Smite).toBe(true);
+        expect((world.getSavedSettings()?.enabledRanks as Record<string, boolean>).Smite).toBe(false);
     });
 });
 

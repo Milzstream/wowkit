@@ -9,7 +9,7 @@ export interface Reminders {
     /** The weapon buff that needs attention: its button glows. */
     weaponSpell?: number;
     /** Weapon buffs the player added, when the main-hand weapon has no temporary enchant: their buttons glow. */
-    customWeaponSpells: number[];
+    addedWeaponSpells: number[];
     /** A paladin with no seal up: the seal to put on. */
     seals: number[];
     /** A miner or a herbalist with no tracking on: the gathering trackings to put on. */

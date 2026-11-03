@@ -18,7 +18,7 @@ import {
 } from "@wowkit/wow";
 import { Consumable } from "@wowkit/wow-data";
 import type { BuffStateService } from "../character/buff-state.service";
-import type { CustomCuesService } from "../glows/custom-cues.service";
+import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 
 /** The buff of eating may take this long to show after the cast; a spell with no eating after it is no food. */
@@ -43,7 +43,7 @@ export class FedBuffsService {
     private seen: LuaSet<number> | undefined;
 
     constructor(
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
         private readonly spells: SpellsService,
         private readonly buffState: BuffStateService,
         private readonly player: PlayerService,
@@ -56,7 +56,7 @@ export class FedBuffsService {
     noteUse(cast: PlayerSpellCast): void {
         const spellId = cast.spellId;
         if (spellId === undefined) return;
-        const isAdded = this.customCues.listCustom("buff").some((id) => id === spellId || this.spells.resolve(id) === spellId);
+        const isAdded = this.addedSpells.listAdded("buff").some((id) => id === spellId || this.spells.resolve(id) === spellId);
         if (isAdded) this.used.push({ spellId, usedAt: this.clock.getCurrentTime() });
     }
 

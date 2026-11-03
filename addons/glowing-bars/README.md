@@ -40,14 +40,14 @@ Your Rotation.
   Counterattack, Mongoose Bite, Hammer of Wrath.
 - **Old ranks**: a spell on your action bars that is a lower rank than the one you know glows, quietly.
 - Quiet while dead, mounted, on a taxi, or (unless switched off) resting in town.
-- The glow runs around the button; in the table's Animation column, for each kind or spell, it can breathe (stand still,
+- The glow runs around the button; in the table's Animation column, for each type or spell, it can breathe (stand still,
   slowly fading out and in) or stand still, fading in and out only as it comes and goes. A round button cannot have a
   glow running around it: there circling breathes, or stands still, as the Settings page says.
 - Each of the eight action bars can be switched off, for example to have the glow only on a big bar of cooldowns next to
   your character. Each of them can also be faded until its buttons glow (50% by default), so such a bar shows only
   what is due.
 
-Every kind of reminder has the same four settings: the **color** of its glow and message, the **opacity** of the glow
+Every type of reminder has the same four settings: the **color** of its glow and message, the **glow %**
 (1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each also has a **glow time**: how long the glow and the message show once it is due
 (1, 2, 3, 5 or 10 seconds; until done, the default, keeps them until you cast the buff or press the cooldown; the ready
 cooldowns 3 seconds). And each can **repeat** every 5, 10, 30 or 60 seconds: the glow, the message and the sound come
@@ -57,9 +57,9 @@ stock can also be Alert in town, the low reagents' default: the glow anywhere, t
 buffs blue, weapon buffs orange, ready cooldowns white, procs red, old ranks and low reagents yellow (and a quieter glow
 than the others), low stock a quieter red. By default only the old ranks, the reagents and the low stock show a message; the buff messages (including the ones that name a
 buff on no bar and the party members who miss one) are there to switch on. They are set in a table, and every spell of your class can have a look of its own in the same table.
-It opens with `/gb` or from the Settings page, and shows only the kinds your character has spells of. Its Enabled column
-switches a whole kind or a single spell on and off. There you can also fix the spell ID of a spell of the lists, and add
-spells of your own by their ID, as any type but an old rank (those are found for every spell), a seal of Forever too; a kind the game says is
+It opens with `/gb` or from the Settings page, and shows only the types your character has spells of. Its Enabled column
+switches a whole type or a single spell on and off. There you can also fix the spell ID of a spell of the lists, and add
+spells of your own by their ID, as any type but an old rank (those are found for every spell), a seal of Forever too; a type the game says is
 wrong for the spell is refused or put right. To find a spell's ID, switch on the spell IDs in the tooltips on the Settings
 page: every spell tooltip then shows its ID, and an elixir's, potion's, food's or drink's the spell it casts. Added as a missing buff, such an item glows only on its own button, under its own name in the table, and not when none is left; a food or drink stops glowing once you have its Well Fed buff. Like the other
 settings, the looks are kept per character.

@@ -1,12 +1,12 @@
-// The look of a reminder: the default of its kind, what the player changed for the kind, and what the player changed for the
-// spell, in that order of weight. A spell's look belongs to one kind of it: a buff that also has ranks keeps the quiet yellow
+// The look of a reminder: the default of its type, what the player changed for the type, and what the player changed for the
+// spell, in that order of weight. A spell's look belongs to one type of it: a buff that also has ranks keeps the quiet yellow
 // of its old rank when the player colors the buff.
 import type { Rgb, SpellsService } from "@wowkit/wow";
 import { STYLE_DEFAULTS } from "./settings.constants";
-import type { AddonSettingsService, ColorKey, Style, StyleOverride } from "./settings.interface";
+import type { AddonSettingsService, ReminderType, Style, StyleOverride } from "./settings.interface";
 
 /** The parts of a look. */
-const PARTS: (keyof Style)[] = ["color", "opacity", "isTextOn", "sound", "repeat", "when", "glowSeconds", "animation"];
+const PARTS: (keyof Style)[] = ["color", "glowPercent", "isMessageOn", "sound", "repeat", "when", "glowTime", "animation"];
 
 export class StyleService {
     /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
@@ -22,44 +22,44 @@ export class StyleService {
         this.hasOwnLook = hasOwnLook;
     }
 
-    /** The look of a kind of reminder, or of one spell of it: the spell's own, else the kind's, else the default. */
-    getStyle(kind: ColorKey, spellId?: number): Style {
+    /** The look of a type of reminder, or of one spell of it: the spell's own, else the type's, else the default. */
+    getStyle(reminderType: ReminderType, spellId?: number): Style {
         const layers: StyleOverride[] = [
-            spellId !== undefined ? this.getOverride(kind, spellId) : {},
-            this.getOverride(kind),
-            STYLE_DEFAULTS[kind],
+            spellId !== undefined ? this.getOverride(reminderType, spellId) : {},
+            this.getOverride(reminderType),
+            STYLE_DEFAULTS[reminderType],
         ];
         return {
             color: this.pickPart(layers, "color"),
-            opacity: this.pickPart(layers, "opacity"),
-            isTextOn: this.pickPart(layers, "isTextOn"),
+            glowPercent: this.pickPart(layers, "glowPercent"),
+            isMessageOn: this.pickPart(layers, "isMessageOn"),
             sound: this.pickPart(layers, "sound"),
             repeat: this.pickPart(layers, "repeat"),
             when: this.pickPart(layers, "when"),
-            glowSeconds: this.pickPart(layers, "glowSeconds"),
+            glowTime: this.pickPart(layers, "glowTime"),
             animation: this.pickPart(layers, "animation"),
         };
     }
 
-    /** What the player changed for a kind or a spell (nothing inherited). */
-    getOverride(kind: ColorKey, spellId?: number): StyleOverride {
-        if (spellId === undefined) return this.settings.get("styles")[kind] ?? {};
-        return this.settings.get("spellStyles")[this.getStyleKey(kind, spellId)] ?? {};
+    /** What the player changed for a type or a spell (nothing inherited). */
+    getOverride(reminderType: ReminderType, spellId?: number): StyleOverride {
+        if (spellId === undefined) return this.settings.get("styles")[reminderType] ?? {};
+        return this.settings.get("spellStyles")[this.getStyleKey(reminderType, spellId)] ?? {};
     }
 
-    /** Did the player change anything of the look of this kind or spell? */
-    isOverridden(kind: ColorKey, spellId?: number): boolean {
-        const override = this.getOverride(kind, spellId);
+    /** Did the player change anything of the look of this type or spell? */
+    isOverridden(reminderType: ReminderType, spellId?: number): boolean {
+        const override = this.getOverride(reminderType, spellId);
         return PARTS.some((part) => override[part] !== undefined);
     }
 
     /**
-     * Changes part of the look of a kind (no spell) or of one spell. A part set to what it would inherit anyway is not
-     * kept: it follows the kind (or the default) again.
+     * Changes part of the look of a type (no spell) or of one spell. A part set to what it would inherit anyway is not
+     * kept: it follows the type (or the default) again.
      */
-    changeStyle(kind: ColorKey, spellId: number | undefined, change: StyleOverride): void {
-        const inherited = spellId === undefined ? STYLE_DEFAULTS[kind] : this.getStyle(kind);
-        const merged: StyleOverride = { ...this.getOverride(kind, spellId) };
+    changeStyle(reminderType: ReminderType, spellId: number | undefined, change: StyleOverride): void {
+        const inherited = spellId === undefined ? STYLE_DEFAULTS[reminderType] : this.getStyle(reminderType);
+        const merged: StyleOverride = { ...this.getOverride(reminderType, spellId) };
         for (const part of PARTS) {
             const value = change[part];
             if (value === undefined) continue;
@@ -68,25 +68,25 @@ export class StyleService {
         }
         const isEmpty = !PARTS.some((part) => merged[part] !== undefined);
         if (spellId === undefined) {
-            const styles = this.copyWithout(this.settings.get("styles"), kind);
-            if (!isEmpty) styles[kind] = merged;
+            const styles = this.copyWithout(this.settings.get("styles"), reminderType);
+            if (!isEmpty) styles[reminderType] = merged;
             this.settings.change("styles", styles);
         } else {
-            const key = this.getStyleKey(kind, spellId);
+            const key = this.getStyleKey(reminderType, spellId);
             const spellStyles = this.copyWithout(this.settings.get("spellStyles"), key);
             if (!isEmpty) spellStyles[key] = merged;
             this.settings.change("spellStyles", spellStyles);
         }
     }
 
-    /** All the player's changes for the kind are forgotten: its spells follow the default again. */
-    resetKind(kind: ColorKey): void {
-        this.settings.change("styles", this.copyWithout(this.settings.get("styles"), kind));
+    /** All the player's changes for the type are forgotten: its spells follow the default again. */
+    resetType(reminderType: ReminderType): void {
+        this.settings.change("styles", this.copyWithout(this.settings.get("styles"), reminderType));
     }
 
-    /** All the player's changes for the spell in this kind are forgotten: it follows the kind again. */
-    resetSpell(kind: ColorKey, spellId: number): void {
-        this.settings.change("spellStyles", this.copyWithout(this.settings.get("spellStyles"), this.getStyleKey(kind, spellId)));
+    /** All the player's changes for the spell in this type are forgotten: it follows the type again. */
+    resetSpell(reminderType: ReminderType, spellId: number): void {
+        this.settings.change("spellStyles", this.copyWithout(this.settings.get("spellStyles"), this.getStyleKey(reminderType, spellId)));
     }
 
     /** A spell is told apart by its name, so a new rank keeps what the player chose. */
@@ -100,9 +100,9 @@ export class StyleService {
         return string.format("|cff%02x%02x%02x%s|r", math.floor(r * 255 + 0.5), math.floor(g * 255 + 0.5), math.floor(b * 255 + 0.5), text);
     }
 
-    /** The key of a spell's look: its kind and its name ("rank:Smite"). */
-    private getStyleKey(kind: ColorKey, spellId: number): string {
-        return `${kind}:${this.hasOwnLook(spellId) ? string.format("%d", spellId) : this.getSpellKey(spellId)}`;
+    /** The key of a spell's look: its type and its name ("rank:Smite"). */
+    private getStyleKey(reminderType: ReminderType, spellId: number): string {
+        return `${reminderType}:${this.hasOwnLook(spellId) ? string.format("%d", spellId) : this.getSpellKey(spellId)}`;
     }
 
     private isSameValue(a: unknown, b: unknown): boolean {

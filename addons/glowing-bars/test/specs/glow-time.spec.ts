@@ -32,7 +32,7 @@ function startPriest(buff: Record<string, unknown>): World {
 
 describe("a missing buff with a glow time", () => {
     it("glows for that long, then keeps quiet while it is still missing", () => {
-        const world = startPriest({ glowSeconds: 3 });
+        const world = startPriest({ glowTime: 3 });
         expect(world.glowsOn(1)).toBe(1);
         world.advance(3);
         expect(world.glowsOn(1)).toBe(0);
@@ -41,7 +41,7 @@ describe("a missing buff with a glow time", () => {
     });
 
     it("glows longer with a longer glow time", () => {
-        const world = startPriest({ glowSeconds: 10 });
+        const world = startPriest({ glowTime: 10 });
         world.advance(5);
         expect(world.glowsOn(1)).toBe(1);
         world.advance(6);
@@ -49,7 +49,7 @@ describe("a missing buff with a glow time", () => {
     });
 
     it("glows again for that long with each repeat", () => {
-        const world = startPriest({ glowSeconds: 3, repeat: 10 });
+        const world = startPriest({ glowTime: 3, repeat: 10 });
         world.advance(4);
         expect(world.glowsOn(1)).toBe(0);
         world.advance(6);
@@ -59,7 +59,7 @@ describe("a missing buff with a glow time", () => {
     });
 
     it("has its message and sound come and go with the glow", () => {
-        const world = startPriest({ glowSeconds: 3, repeat: 10, isTextOn: true, sound: "raidwarning" });
+        const world = startPriest({ glowTime: 3, repeat: 10, isMessageOn: true, sound: "raidwarning" });
         expect(world.notice()).toContain("Missing buff");
         expect(world.sounds.length).toBe(1);
         world.advance(4);
@@ -71,7 +71,7 @@ describe("a missing buff with a glow time", () => {
     });
 
     it("starts over once the buff was cast and runs out again", () => {
-        const world = startPriest({ glowSeconds: 3 });
+        const world = startPriest({ glowTime: 3 });
         world.advance(5);
         world.state.auras.push(world.makeAura(FORTITUDE.name, FORTITUDE.id, 1800));
         world.fire("UNIT_AURA", "player");
@@ -122,7 +122,7 @@ describe("a low reagent with a glow time and Alert in town", () => {
     }
 
     it("glows for that long out of town, and again for that long on arriving in one", () => {
-        const world = createWorld(setUp, { styles: { reagent: { glowSeconds: 3 } } });
+        const world = createWorld(setUp, { styles: { reagent: { glowTime: 3 } } });
         world.advance(1);
         expect(world.glowsOn(1)).toBe(1);
         world.advance(5);
@@ -202,14 +202,14 @@ describe("the message of a low reagent", () => {
     }
 
     it("goes with its glow time, like any other message", () => {
-        const world = startInTown({ glowSeconds: 3 });
+        const world = startInTown({ glowTime: 3 });
         expect(world.notice()).toContain("Running low: Holy Candle (1)");
         world.advance(2);
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("comes again with its repeat, for its glow time", () => {
-        const world = startInTown({ glowSeconds: 1, repeat: 5 });
+        const world = startInTown({ glowTime: 1, repeat: 5 });
         const seen: boolean[] = [];
         for (let step = 0; step < 16; step++) {
             world.advance(0.5);

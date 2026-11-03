@@ -2,16 +2,16 @@
 // long, and a color from the game's picker.
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { ANIMATION_CHOICES, GLOW_SECONDS_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
-import { STYLE_TEXTS } from "./glow-style.section";
-import type { ColorKey, When } from "../settings/settings.interface";
+import { ANIMATION_CHOICES, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { ANIMATION_TEXTS } from "./animation.section";
+import type { ReminderType, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
 import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
 
-/** The kinds whose When has choices of their own, and so a tooltip of its own. */
-const WHEN_TIPS: { [kind in ColorKey]?: TextKey } = { reagent: "TIP_WHEN_TOWN", stock: "TIP_WHEN_TOWN" };
+/** The types whose When has choices of their own, and so a tooltip of its own. */
+const WHEN_TIPS: { [reminderType in ReminderType]?: TextKey } = { reagent: "TIP_WHEN_TOWN", stock: "TIP_WHEN_TOWN" };
 
 /** The buttons of a row that click through choices. */
 export interface ChoiceButtons {
@@ -27,7 +27,7 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     combat: "WHEN_COMBAT",
     noCombat: "WHEN_NO_COMBAT",
     target: "WHEN_TARGET",
-    townText: "WHEN_TOWN_TEXT",
+    townAlert: "WHEN_TOWN_TEXT",
 };
 
 export class StyleChoicesService {
@@ -39,13 +39,13 @@ export class StyleChoicesService {
 
     /** The sound after (or, with a negative step, before) the current one; it plays once as a preview. */
     chooseNextSound(row: StyleRow, step: number): void {
-        const current = this.styles.getStyle(row.kind, row.spellId).sound;
+        const current = this.styles.getStyle(row.reminderType, row.spellId).sound;
         const index = math.max(
             0,
             SOUNDS.findIndex((sound) => sound.key === current),
         );
         const chosen: SoundKey = SOUNDS[(index + step + SOUNDS.length) % SOUNDS.length]!.key;
-        this.styles.changeStyle(row.kind, row.spellId, { sound: chosen });
+        this.styles.changeStyle(row.reminderType, row.spellId, { sound: chosen });
         this.messages.playAlertSound(chosen);
     }
 
@@ -63,9 +63,9 @@ export class StyleChoicesService {
     fillChoices(buttons: ChoiceButtons, row: StyleRow): void {
         this.fillRepeat(buttons.repeat, row);
         this.fillWhen(buttons.when, row);
-        const style = this.styles.getStyle(row.kind, row.spellId);
-        buttons.animation.SetText(this.locale.getText(STYLE_TEXTS[style.animation]));
-        const seconds = style.glowSeconds;
+        const style = this.styles.getStyle(row.reminderType, row.spellId);
+        buttons.animation.SetText(this.locale.getText(ANIMATION_TEXTS[style.animation]));
+        const seconds = style.glowTime;
         buttons.glowTime.SetText(
             seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds),
         );
@@ -90,7 +90,7 @@ export class StyleChoicesService {
         return button;
     }
 
-    /** The When button of a row: left click the next choice of its kind, right click the one before. */
+    /** The When button of a row: left click the next choice of its type, right click the one before. */
     private createWhenButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
         const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         button.SetSize(104, 24);
@@ -99,14 +99,14 @@ export class StyleChoicesService {
         button.SetScript("OnClick", (_button, mouseButton) => {
             const row = getRow();
             if (row === undefined) return;
-            const choices = listWhenChoices(row.kind);
-            const index = math.max(0, choices.indexOf(this.styles.getStyle(row.kind, row.spellId).when));
+            const choices = listWhenChoices(row.reminderType);
+            const index = math.max(0, choices.indexOf(this.styles.getStyle(row.reminderType, row.spellId).when));
             const step = mouseButton === "RightButton" ? -1 : 1;
-            this.styles.changeStyle(row.kind, row.spellId, { when: choices[(index + step + choices.length) % choices.length]! });
+            this.styles.changeStyle(row.reminderType, row.spellId, { when: choices[(index + step + choices.length) % choices.length]! });
         });
         button.SetScript("OnEnter", () => {
             GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.kind ?? "buff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
+            GameTooltip.SetText(this.locale.getText(WHEN_TIPS[getRow()?.reminderType ?? "buff"] ?? "TIP_WHEN"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
         button.SetScript("OnLeave", () => GameTooltip.Hide());
@@ -115,7 +115,7 @@ export class StyleChoicesService {
 
     /** What the When button shows. */
     private fillWhen(button: Button, row: StyleRow): void {
-        button.SetText(this.locale.getText(WHEN_TEXTS[this.styles.getStyle(row.kind, row.spellId).when]));
+        button.SetText(this.locale.getText(WHEN_TEXTS[this.styles.getStyle(row.reminderType, row.spellId).when]));
     }
 
     /** The glow time button of a row: left click the next choice, right click the one before. */
@@ -127,10 +127,10 @@ export class StyleChoicesService {
         button.SetScript("OnClick", (_button, mouseButton) => {
             const row = getRow();
             if (row === undefined) return;
-            const index = math.max(0, GLOW_SECONDS_CHOICES.indexOf(this.styles.getStyle(row.kind, row.spellId).glowSeconds));
+            const index = math.max(0, GLOW_TIME_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).glowTime));
             const step = mouseButton === "RightButton" ? -1 : 1;
-            const chosen = GLOW_SECONDS_CHOICES[(index + step + GLOW_SECONDS_CHOICES.length) % GLOW_SECONDS_CHOICES.length]!;
-            this.styles.changeStyle(row.kind, row.spellId, { glowSeconds: chosen });
+            const chosen = GLOW_TIME_CHOICES[(index + step + GLOW_TIME_CHOICES.length) % GLOW_TIME_CHOICES.length]!;
+            this.styles.changeStyle(row.reminderType, row.spellId, { glowTime: chosen });
         });
         this.addTooltip(button, () => "TIP_GLOW_TIME");
         return button;
@@ -145,10 +145,10 @@ export class StyleChoicesService {
         button.SetScript("OnClick", (_button, mouseButton) => {
             const row = getRow();
             if (row === undefined) return;
-            const index = math.max(0, ANIMATION_CHOICES.indexOf(this.styles.getStyle(row.kind, row.spellId).animation));
+            const index = math.max(0, ANIMATION_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).animation));
             const step = mouseButton === "RightButton" ? -1 : 1;
             const chosen = ANIMATION_CHOICES[(index + step + ANIMATION_CHOICES.length) % ANIMATION_CHOICES.length]!;
-            this.styles.changeStyle(row.kind, row.spellId, { animation: chosen });
+            this.styles.changeStyle(row.reminderType, row.spellId, { animation: chosen });
         });
         this.addTooltip(button, () => "TIP_ANIMATION");
         return button;
@@ -164,16 +164,16 @@ export class StyleChoicesService {
         button.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 
-    /** The name and type of a low reagent's row say where it works; the other kinds need no words. */
-    addKindTooltip(frame: Frame, getRow: () => StyleRow | undefined): void {
+    /** The name and type of a low reagent's row say where it works; the other types need no words. */
+    addTypeTooltip(frame: Frame, getRow: () => StyleRow | undefined): void {
         const hover = CreateFrame("Frame", undefined, frame);
         hover.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x, 0);
-        hover.SetSize(COLUMN.kind.x + COLUMN.kind.width - COLUMN.name.x, ROW_HEIGHT);
+        hover.SetSize(COLUMN.type.x + COLUMN.type.width - COLUMN.name.x, ROW_HEIGHT);
         hover.EnableMouse(true);
         hover.SetScript("OnEnter", () => {
-            if (getRow()?.kind !== "reagent") return;
+            if (getRow()?.reminderType !== "reagent") return;
             GameTooltip.SetOwner(hover, "ANCHOR_RIGHT");
-            GameTooltip.SetText(this.locale.getText("TIP_KIND_REAGENT"), 1, 1, 1, 1, true);
+            GameTooltip.SetText(this.locale.getText("TIP_TYPE_REAGENT"), 1, 1, 1, 1, true);
             GameTooltip.Show();
         });
         hover.SetScript("OnLeave", () => GameTooltip.Hide());
@@ -181,15 +181,15 @@ export class StyleChoicesService {
 
     /** What the repeat button shows. */
     private fillRepeat(button: Button, row: StyleRow): void {
-        const seconds = this.styles.getStyle(row.kind, row.spellId).repeat;
+        const seconds = this.styles.getStyle(row.reminderType, row.spellId).repeat;
         button.SetText(seconds === 0 ? this.locale.getText("REPEAT_OFF") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds));
     }
 
     /** The repeat after (or, with a negative step, before) the current one. */
     private chooseNextRepeat(row: StyleRow, step: number): void {
-        const index = math.max(0, REPEAT_CHOICES.indexOf(this.styles.getStyle(row.kind, row.spellId).repeat));
+        const index = math.max(0, REPEAT_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).repeat));
         const chosen = REPEAT_CHOICES[(index + step + REPEAT_CHOICES.length) % REPEAT_CHOICES.length]!;
-        this.styles.changeStyle(row.kind, row.spellId, { repeat: chosen });
+        this.styles.changeStyle(row.reminderType, row.spellId, { repeat: chosen });
     }
 
     /** The game's color picker; every move of it changes the color, and cancelling puts the old one back. */
@@ -199,7 +199,7 @@ export class StyleChoicesService {
             this.messages.say(this.locale.getText("NO_COLOR_PICKER"));
             return;
         }
-        const [r, g, b] = this.styles.getStyle(row.kind, row.spellId).color;
+        const [r, g, b] = this.styles.getStyle(row.reminderType, row.spellId).color;
         picker.SetupColorPickerAndShow({
             r,
             g,
@@ -207,9 +207,9 @@ export class StyleChoicesService {
             hasOpacity: false,
             swatchFunc: () => {
                 const [pickedR, pickedG, pickedB] = picker.GetColorRGB();
-                this.styles.changeStyle(row.kind, row.spellId, { color: [pickedR, pickedG, pickedB] });
+                this.styles.changeStyle(row.reminderType, row.spellId, { color: [pickedR, pickedG, pickedB] });
             },
-            cancelFunc: () => this.styles.changeStyle(row.kind, row.spellId, { color: [r, g, b] }),
+            cancelFunc: () => this.styles.changeStyle(row.reminderType, row.spellId, { color: [r, g, b] }),
         });
     }
 }

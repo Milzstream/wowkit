@@ -4,7 +4,7 @@
 import type { ActionBarsService, SpellsService } from "@wowkit/wow";
 import { Tracking } from "@wowkit/wow-data";
 import type { BuffStateService } from "../character/buff-state.service";
-import type { CustomCuesService } from "../glows/custom-cues.service";
+import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 
 /** The trackings of the gathering professions, in the order the table lists them (their wow-data IDs). */
@@ -16,7 +16,7 @@ export class TrackingReminderService {
         private readonly actionBars: ActionBarsService,
         private readonly buffState: BuffStateService,
         private readonly settings: AddonSettingsService,
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
     ) {}
 
     /** The gathering trackings the player has learned (their wow-data IDs). */
@@ -27,13 +27,13 @@ export class TrackingReminderService {
     /** With no tracking on: the gathering trackings to put on, when they are on a button and switched on. */
     findMissingTrackings(): number[] {
         if (!this.settings.get("showTracking")) return [];
-        const glowOn = this.settings.get("glowOn");
+        const enabledSpells = this.settings.get("enabledSpells");
         const onBars: number[] = [];
-        for (const listId of [...this.listTrackings(), ...this.customCues.listCustom("tracking")]) {
+        for (const listId of [...this.listTrackings(), ...this.addedSpells.listAdded("tracking")]) {
             const id = this.spells.resolve(listId) ?? listId;
             // Any tracking counts for every other (one category)
             if (this.buffState.hasAura(id)) return [];
-            if (glowOn[string.format("%d", listId)] !== false && this.actionBars.isOnBars(id)) onBars.push(id);
+            if (enabledSpells[string.format("%d", listId)] !== false && this.actionBars.isOnBars(id)) onBars.push(id);
         }
         return onBars;
     }

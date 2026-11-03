@@ -2,7 +2,7 @@ import { createWorld, describe, expect, it, playAs, PRIEST, type FakeFrame, type
 import { ARROW, createArcher } from "./low-stock.helpers";
 import { findLabel, toggleTable } from "./table.helpers";
 
-describe("the Low at column and the low stock in the table", () => {
+describe("the Below column and the low stock in the table", () => {
     function findBoxes(world: World, label: string): FakeFrame[] {
         const row = findLabel(world, label)!.parent;
         return world.frames.filter((frame) => frame.parent === row && frame.frameType === "EditBox");
@@ -37,7 +37,7 @@ describe("the Low at column and the low stock in the table", () => {
         expect(buttons[0]!.text).toBe("Low stock");
         box.text = `${ARROW}`;
         buttons[1]!.scripts.OnClick!(buttons[1]!);
-        expect(world.getSavedSettings()?.customCues).toEqual([{ id: ARROW, kind: "stock" }]);
+        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: ARROW, reminderType: "stock" }]);
     });
 
     it("removes the item of the row", () => {
@@ -45,34 +45,34 @@ describe("the Low at column and the low stock in the table", () => {
         const row = findLabel(world, "Rough Arrow")!.parent;
         const remove = world.frames.filter((frame) => frame.parent === row && frame.template === "UIPanelButtonTemplate")[2]!;
         remove.scripts.OnClick!(remove);
-        expect(world.getSavedSettings()?.customCues).toEqual([]);
+        expect(world.getSavedSettings()?.addedSpells).toEqual([]);
     });
 
     it("sets the limit of the row", () => {
         const world = createOpenTable();
-        const lowAt = findBoxes(world, "Rough Arrow")[2]!;
-        expect(lowAt.text).toBe("20");
-        enter(lowAt, "200");
+        const belowLimits = findBoxes(world, "Rough Arrow")[2]!;
+        expect(belowLimits.text).toBe("20");
+        enter(belowLimits, "200");
         world.advance(1);
-        expect(world.getSavedSettings()?.lowAt).toEqual({ [`stock:${ARROW}`]: 200 });
+        expect(world.getSavedSettings()?.belowLimits).toEqual({ [`stock:${ARROW}`]: 200 });
         expect(world.glowsOn(1)).toBe(1);
     });
 
     it("keeps the old number when the box is left empty", () => {
-        const lowAt = findBoxes(createOpenTable(), "Rough Arrow")[2]!;
-        enter(lowAt, "");
-        expect(lowAt.text).toBe("20");
+        const belowLimits = findBoxes(createOpenTable(), "Rough Arrow")[2]!;
+        enter(belowLimits, "");
+        expect(belowLimits.text).toBe("20");
     });
 
-    it("sets the limit of the kind on the kind's row", () => {
+    it("sets the limit of the type on the type's row", () => {
         const world = createOpenTable();
         enter(findBoxes(world, "Low stock")[2]!, "200");
         world.advance(1);
-        expect(world.getSavedSettings()?.stockLow).toBe(200);
+        expect(world.getSavedSettings()?.stockBelow).toBe(200);
         expect(findBoxes(world, "Rough Arrow")[2]!.text).toBe("200");
     });
 
-    it("has no Low at on a row of another kind", () => {
+    it("has no Below on a row of another type", () => {
         const world = createOpenTable();
         const boxes = findBoxes(world, "Missing buff");
         expect(boxes[boxes.length - 1]!.isShown).toBe(false);
@@ -106,7 +106,7 @@ describe("the tooltips of the low stock in the table", () => {
         expect(readTooltip(world, findEnabled(world, "Rough Arrow"))).toBe("Turns the reminder for this item on or off.");
     });
 
-    it("speak of items on the kind's row", () => {
+    it("speak of items on the type's row", () => {
         const world = createOpenTable();
         expect(readTooltip(world, findEnabled(world, "Low stock"))).toContain("none of its items glow");
     });
@@ -118,15 +118,15 @@ describe("the tooltips of the low stock in the table", () => {
                 frame.frameType === "EditBox" &&
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
-        const kind = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate")[0]!;
+        const reminderType = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate")[0]!;
         expect(readTooltip(world, box)).toContain("Add a spell");
-        for (let click = 0; click < 10 && kind.text !== "Low stock"; click++) kind.scripts.OnClick!(kind);
+        for (let click = 0; click < 10 && reminderType.text !== "Low stock"; click++) reminderType.scripts.OnClick!(reminderType);
         expect(readTooltip(world, box)).toContain("Add an item");
     });
 });
 
-describe("the tooltip of Low at", () => {
-    function readLowAtTip(world: World, label: string): string | undefined {
+describe("the tooltip of Below", () => {
+    function readBelowTip(world: World, label: string): string | undefined {
         const row = findLabel(world, label)!.parent;
         const box = world.frames.filter((frame) => frame.parent === row && frame.frameType === "EditBox")[2]!;
         box.scripts.OnEnter!(box);
@@ -136,12 +136,12 @@ describe("the tooltip of Low at", () => {
     it("says what the number does on a row", () => {
         const world = createArcher(100);
         toggleTable();
-        expect(readLowAtTip(world, "Rough Arrow")).toBe("Reminds you when you have fewer than this.");
+        expect(readBelowTip(world, "Rough Arrow")).toBe("Reminds you when you have fewer than this.");
     });
 
-    it("says on the kind's row that it is for all its rows", () => {
+    it("says on the type's row that it is for all its rows", () => {
         const world = createArcher(100);
         toggleTable();
-        expect(readLowAtTip(world, "Low stock")).toContain("Used for every row of this type");
+        expect(readBelowTip(world, "Low stock")).toContain("Used for every row of this type");
     });
 });

@@ -1,5 +1,5 @@
 // The controls every reminder has on the Reminders page, in this addon's words: a switch, and the number of members a
-// group buff waits for. Built on the generic controls of @wowkit/ui. The look of a reminder (color, opacity, message,
+// group buff waits for. Built on the generic controls of @wowkit/ui. The look of a reminder (color, glow %, message,
 // sound) is the table's.
 import type { ControlsService } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";

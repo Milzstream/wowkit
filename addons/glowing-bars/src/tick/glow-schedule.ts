@@ -19,16 +19,16 @@ export class GlowSchedule {
     /** Does the due reminder show now? `isStartingOver`: its time starts again, as if it had just become due. */
     isShowing(key: string, style: Style, now: number, isInTown: boolean, isStartingOver: boolean): boolean {
         this.seen.add(key);
-        const isTownAlert = style.when === "townText";
+        const isTownAlert = style.when === "townAlert";
         let since = this.dueSince.get(key);
         if (since === undefined || isStartingOver) {
             since = now;
             this.dueSince.set(key, since);
         }
-        if (style.glowSeconds === 0) return true;
+        if (style.glowTime === 0) return true;
         const elapsed = now - since;
-        if (elapsed < style.glowSeconds) return true;
+        if (elapsed < style.glowTime) return true;
         const repeat = isTownAlert && !isInTown ? 0 : style.repeat;
-        return repeat > 0 && elapsed % repeat < style.glowSeconds;
+        return repeat > 0 && elapsed % repeat < style.glowTime;
     }
 }

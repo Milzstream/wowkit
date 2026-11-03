@@ -1,11 +1,11 @@
-// The notice at the top of the screen: one message with a short line for each kind of reminder whose message the player
-// switched on, in the color of its glow. A line says what kind of reminder it is, not which spell; only a reminder with
+// The notice at the top of the screen: one message with a short line for each type of reminder whose message the player
+// switched on, in the color of its glow. A line says what type of reminder it is, not which spell; only a reminder with
 // no button to glow (a buff on no bar, a party member) names what it is about. A line comes once, as what it is about
 // starts, and again only where the player chose it to repeat, together with the sound.
 
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
-import type { ColorKey, Style } from "../settings/settings.interface";
+import type { ReminderType, Style } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import { NOTICE_SECONDS, type ActionBarsService, type ClockService, type NoticeService, type Rgb, type SpellsService } from "@wowkit/wow";
 import type { Reminders } from "./tick.interface";
@@ -82,18 +82,18 @@ export class NoticesService {
 
     private listLines(reminders: Reminders): Line[] {
         const lines: Line[] = [];
-        this.addKindLines(lines, "buff", reminders.buffsToCast, "TEXT_BUFF");
-        this.addKindLines(
+        this.addTypeLines(lines, "buff", reminders.buffsToCast, "TEXT_BUFF");
+        this.addTypeLines(
             lines,
             "weapon",
-            [...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []), ...reminders.customWeaponSpells],
+            [...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []), ...reminders.addedWeaponSpells],
             "TEXT_WEAPON",
         );
-        this.addKindLines(lines, "seal", reminders.seals, "TEXT_SEAL");
-        this.addKindLines(lines, "tracking", reminders.trackings, "TEXT_TRACKING");
-        this.addKindLines(lines, "cooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
-        this.addKindLines(lines, "proc", reminders.procs, "TEXT_PROC");
-        this.addKindLines(
+        this.addTypeLines(lines, "seal", reminders.seals, "TEXT_SEAL");
+        this.addTypeLines(lines, "tracking", reminders.trackings, "TEXT_TRACKING");
+        this.addTypeLines(lines, "cooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
+        this.addTypeLines(lines, "proc", reminders.procs, "TEXT_PROC");
+        this.addTypeLines(
             lines,
             "rank",
             reminders.outdatedRanks.map((rank) => rank.id),
@@ -128,7 +128,7 @@ export class NoticesService {
 
     /** Is the message on, and may it show here? An Alert in town's only in a town. */
     private isTold(style: Style, reminders: Reminders): boolean {
-        return style.isTextOn && (style.when !== "townText" || reminders.isInTown === true);
+        return style.isMessageOn && (style.when !== "townAlert" || reminders.isInTown === true);
     }
 
     /** One line that names the reagents running low, in the color of the first; it repeats with the row that repeats soonest. */
@@ -148,12 +148,12 @@ export class NoticesService {
         });
     }
 
-    /** A line for a kind of reminder: one for each color its spells (whose message is on) are shown in. */
-    private addKindLines(lines: Line[], kind: ColorKey, spellIds: number[], text: TextKey): void {
+    /** A line for a reminderType of reminder: one for each color its spells (whose message is on) are shown in. */
+    private addTypeLines(lines: Line[], reminderType: ReminderType, spellIds: number[], text: TextKey): void {
         const groups: { color: Rgb; ids: number[]; repeat: number }[] = [];
         for (const id of spellIds) {
-            const style = this.styles.getStyle(kind, id);
-            if (!style.isTextOn) continue;
+            const style = this.styles.getStyle(reminderType, id);
+            if (!style.isMessageOn) continue;
             const group = groups.find((candidate) => candidate.color.join(",") === style.color.join(","));
             if (group === undefined) {
                 groups.push({ color: style.color, ids: [id], repeat: style.repeat });
@@ -165,13 +165,13 @@ export class NoticesService {
         }
         for (const group of groups) {
             const lineText = this.styles.applyTextColor(group.color, this.locale.getText(text));
-            lines.push({ parts: group.ids.map((id) => `${kind}:${id}`), text: lineText, repeat: group.repeat });
+            lines.push({ parts: group.ids.map((id) => `${reminderType}:${id}`), text: lineText, repeat: group.repeat });
         }
     }
 
     /** A line that names what it is about, in the buff color of the spell. */
     private addNamedLine(lines: Line[], spellId: number, parts: string[], text: string): void {
         const style = this.styles.getStyle("buff", spellId);
-        if (style.isTextOn) lines.push({ parts, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
+        if (style.isMessageOn) lines.push({ parts, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
     }
 }

@@ -101,21 +101,21 @@ export class StyleWindowService {
     }
 
     private addColumnHeaders(window: Frame): void {
-        // The name and the kind read from the left; the other headers are centered over their controls
+        // The name and the type read from the left; the other headers are centered over their controls
         const columns: [column: Column, text: TextKey, isCentered: boolean][] = [
             [COLUMN.name, "COL_SPELL", false],
-            [COLUMN.kind, "COL_KIND", false],
+            [COLUMN.type, "COL_TYPE", false],
             [COLUMN.id, "COL_ID", true],
             [COLUMN.color, "COL_COLOR", true],
-            [COLUMN.opacity, "COL_OPACITY", true],
+            [COLUMN.glowPercent, "COL_GLOW_PERCENT", true],
             [COLUMN.message, "COL_MESSAGE", true],
             [COLUMN.sound, "COL_SOUND", true],
             [COLUMN.repeat, "COL_REPEAT", true],
             [COLUMN.when, "COL_WHEN", true],
             [COLUMN.glowTime, "COL_GLOW_TIME", true],
             [COLUMN.animation, "COL_ANIMATION", true],
-            [COLUMN.lowAt, "COL_LOW_AT", true],
-            [COLUMN.enabled, "COL_ON", true],
+            [COLUMN.belowLimits, "COL_BELOW", true],
+            [COLUMN.enabled, "COL_ENABLED", true],
         ];
         for (const [column, text, isCentered] of columns) {
             const header = window.CreateFontString(undefined, "OVERLAY", "GameFontNormalSmall");

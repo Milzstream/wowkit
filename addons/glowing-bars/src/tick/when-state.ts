@@ -11,6 +11,6 @@ export function readWhenState(player: PlayerService): { [when in When]: boolean 
         combat: isInCombat,
         noCombat: !isInCombat,
         target: player.hasEnemyTarget(),
-        townText: true,
+        townAlert: true,
     };
 }

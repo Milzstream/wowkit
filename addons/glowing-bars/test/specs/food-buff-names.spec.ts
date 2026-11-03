@@ -12,7 +12,7 @@ describe("a second food of one name, added in the table", () => {
                 state.spells[FIRST] = { id: FIRST, name: "Nutritious Food", rank: 1, icon: 1 };
                 state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
             },
-            { customCues: [{ id: FIRST, kind: "buff" }] },
+            { addedSpells: [{ id: FIRST, reminderType: "buff" }] },
         );
         world.advance(1);
         toggleTable();
@@ -38,9 +38,9 @@ describe("a second food of one name, added in the table", () => {
     it("can be added, with a row of its own, before either is seen on a bar", () => {
         const world = createWorldWithFirst();
         addById(world, SECOND);
-        expect(world.getSavedSettings()?.customCues).toEqual([
-            { id: FIRST, kind: "buff" },
-            { id: SECOND, kind: "buff" },
+        expect(world.getSavedSettings()?.addedSpells).toEqual([
+            { id: FIRST, reminderType: "buff" },
+            { id: SECOND, reminderType: "buff" },
         ]);
         expect(world.notice()).not.toContain("already in the list");
         expect(countIdBoxes(world, FIRST)).toBe(1);
@@ -55,13 +55,13 @@ describe("a second food of one name, added in the table", () => {
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
         const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
-        for (const kind of ["Ready cooldown", "Low reagent", "Proc"]) {
-            for (let click = 0; click < 10 && buttons[0]!.text !== kind; click++) buttons[0]!.scripts.OnClick!(buttons[0]!);
+        for (const reminderType of ["Ready cooldown", "Low reagent", "Proc"]) {
+            for (let click = 0; click < 10 && buttons[0]!.text !== reminderType; click++) buttons[0]!.scripts.OnClick!(buttons[0]!);
             box.text = `${SECOND}`;
             buttons[1]!.scripts.OnClick!(buttons[1]!);
             expect(world.notice()).toContain("Nutritious Food is a food or drink, add it as Missing buff.");
         }
-        expect(world.getSavedSettings()?.customCues).toEqual([{ id: FIRST, kind: "buff" }]);
+        expect(world.getSavedSettings()?.addedSpells).toEqual([{ id: FIRST, reminderType: "buff" }]);
     });
 
     it("is refused when its very ID is in the list", () => {
@@ -83,9 +83,9 @@ describe("the look of two foods of one name", () => {
                 state.spells[SECOND] = { id: SECOND, name: "Nutritious Food", rank: 1, icon: 1 };
             },
             {
-                customCues: [
-                    { id: FIRST, kind: "buff" },
-                    { id: SECOND, kind: "buff" },
+                addedSpells: [
+                    { id: FIRST, reminderType: "buff" },
+                    { id: SECOND, reminderType: "buff" },
                 ],
                 ...savedSettings,
             },
@@ -106,7 +106,7 @@ describe("the look of two foods of one name", () => {
         const message = findMessageBox(world, FIRST);
         message.isChecked = true;
         message.scripts.OnClick!(message);
-        expect(world.getSavedSettings()?.spellStyles).toEqual({ [`buff:${FIRST}`]: { isTextOn: true } });
+        expect(world.getSavedSettings()?.spellStyles).toEqual({ [`buff:${FIRST}`]: { isMessageOn: true } });
         expect(findMessageBox(world, FIRST).isChecked).toBe(true);
         expect(findMessageBox(world, SECOND).isChecked).toBe(false);
     });
@@ -132,9 +132,9 @@ describe("the glow of two foods of one name, each with a color of its own", () =
                 state.bags[SECOND_ITEM] = 5;
             },
             {
-                customCues: [
-                    { id: FIRST, kind: "buff" },
-                    { id: SECOND, kind: "buff" },
+                addedSpells: [
+                    { id: FIRST, reminderType: "buff" },
+                    { id: SECOND, reminderType: "buff" },
                 ],
                 spellStyles: looks,
             },

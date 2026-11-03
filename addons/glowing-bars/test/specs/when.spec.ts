@@ -105,7 +105,7 @@ describe("a missing buff that shows only with an enemy targeted", () => {
 });
 
 describe("a spell with a When of its own", () => {
-    it("goes by its own, while the kind keeps the default", () => {
+    it("goes by its own, while the type keeps the default", () => {
         const world = startPriest();
         toggleTable();
         const button = findWhenButton(world, FORTITUDE.name);
@@ -149,8 +149,8 @@ describe("the When button of the table", () => {
     });
 });
 
-describe("a When saved that the kind does not have", () => {
-    it("is the kind's default again", () => {
+describe("a When saved that the type does not have", () => {
+    it("is the type's default again", () => {
         const world = startPriest({ styles: { buff: { when: "town" }, reagent: { when: "sometimes" } } });
         expect(readSaved(world, "styles").buff?.when).toBeUndefined();
         expect(readSaved(world, "styles").reagent?.when).toBeUndefined();
@@ -195,7 +195,7 @@ describe("a low stock", () => {
     });
 
     it("that alerts in town glows anywhere, and tells only in a town", () => {
-        const world = createArcher(12, { styles: { stock: { when: "townText" } } }, true, false);
+        const world = createArcher(12, { styles: { stock: { when: "townAlert" } } }, true, false);
         expect(world.glowsOn(1)).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
@@ -223,7 +223,7 @@ describe("arriving in a town with an Alert in town and no repeat", () => {
     }
 
     it("plays the low stock's sound and shows its message on arriving, and no more while there", () => {
-        const world = createArcher(12, { styles: { stock: { sound: "raidwarning", when: "townText" } } }, true, false);
+        const world = createArcher(12, { styles: { stock: { sound: "raidwarning", when: "townAlert" } } }, true, false);
         expect(world.sounds.length).toBe(0);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);

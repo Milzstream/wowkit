@@ -69,7 +69,7 @@ describe("the repeat of a sound", () => {
     });
 
     it("shows the message of a low reagent again in a town, with what is left by then", () => {
-        const world = createLowOnCandles({ isTextOn: true, repeat: 10 }, true);
+        const world = createLowOnCandles({ isMessageOn: true, repeat: 10 }, true);
         expect(world.notice()).toContain("Running low: Holy Candle (0)");
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(11);
@@ -77,23 +77,23 @@ describe("the repeat of a sound", () => {
     });
 
     it("never says only that a reagent is low", () => {
-        expect(createLowOnCandles({ isTextOn: true, repeat: 10 }, true).notice()).not.toContain("Low reagent");
+        expect(createLowOnCandles({ isMessageOn: true, repeat: 10 }, true).notice()).not.toContain("Low reagent");
     });
 
     it("shows no message of a low reagent out of a town", () => {
-        const world = createLowOnCandles({ isTextOn: true, repeat: 10 }, false);
+        const world = createLowOnCandles({ isMessageOn: true, repeat: 10 }, false);
         world.advance(11);
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("shows no message of a low reagent with the text off", () => {
-        const world = createLowOnCandles({ isTextOn: false, repeat: 10 }, true);
+        const world = createLowOnCandles({ isMessageOn: false, repeat: 10 }, true);
         world.advance(11);
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("does not show the message again without a repeat", () => {
-        const world = createLowOnCandles({ isTextOn: true }, true);
+        const world = createLowOnCandles({ isMessageOn: true }, true);
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(11);
         expect(world.notice()).not.toContain("Holy Candle (3)");
@@ -106,7 +106,7 @@ describe("the repeat of a sound", () => {
                 learnSpell(state, RECKLESSNESS);
                 state.bars[1] = RECKLESSNESS.id;
             },
-            { styles: { cooldown: { sound: "raidwarning", repeat: 5, glowSeconds: 0 } } },
+            { styles: { cooldown: { sound: "raidwarning", repeat: 5, glowTime: 0 } } },
         );
         world.advance(1);
         world.state.isInCombat = true;
@@ -138,8 +138,8 @@ describe("the message of a low reagent that repeats in a town", () => {
 
     it("goes by the repeat and the text set on the reagent's own row", () => {
         const world = createPriest(0, {
-            styles: { reagent: { isTextOn: false } },
-            spellStyles: { [`reagent:${PRAYER_OF_FORTITUDE.name}`]: { isTextOn: true, repeat: 5 } },
+            styles: { reagent: { isMessageOn: false } },
+            spellStyles: { [`reagent:${PRAYER_OF_FORTITUDE.name}`]: { isMessageOn: true, repeat: 5 } },
         });
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(6);
@@ -147,7 +147,7 @@ describe("the message of a low reagent that repeats in a town", () => {
     });
 
     it("comes also when the reagent ran low after the arrival, where no first message came", () => {
-        const world = createPriest(100, { styles: { reagent: { isTextOn: true, repeat: 5 } } });
+        const world = createPriest(100, { styles: { reagent: { isMessageOn: true, repeat: 5 } } });
         expect(world.notice()).not.toContain("Running low");
         world.state.bags[HOLY_CANDLE] = 3;
         world.advance(2);
@@ -155,7 +155,7 @@ describe("the message of a low reagent that repeats in a town", () => {
     });
 
     it("comes also when its text was off on arrival and is switched on later", () => {
-        const world = createPriest(0, { styles: { reagent: { isTextOn: false, repeat: 5 } } });
+        const world = createPriest(0, { styles: { reagent: { isMessageOn: false, repeat: 5 } } });
         expect(world.notice()).not.toContain("Running low");
         switchMessageOn(world);
         world.advance(2);
@@ -202,7 +202,7 @@ describe("the tooltip of a low reagent's row", () => {
         expect(readTip(createOpenTable(), "Low reagent", "message")).toBe("");
     });
 
-    it("is not on a row of another kind", () => {
+    it("is not on a row of another type", () => {
         expect(readTip(createOpenTable(), "Missing buff", "hover")).toBe("");
     });
 });
@@ -220,7 +220,7 @@ describe("the town message of a reagent spell the player added", () => {
                 state.bags[6265] = 2;
                 state.isResting = true;
             },
-            { customCues: [{ id: RITUAL.id, kind: "reagent" }], ...savedSettings },
+            { addedSpells: [{ id: RITUAL.id, reminderType: "reagent" }], ...savedSettings },
         );
         world.advance(2);
         return world;
@@ -231,7 +231,7 @@ describe("the town message of a reagent spell the player added", () => {
     });
 
     it("leaves it out when its row is switched off", () => {
-        expect(createWarlock({ glowOn: { [`${RITUAL.id}`]: false } }).notice()).not.toContain("Soul Shard");
+        expect(createWarlock({ enabledSpells: { [`${RITUAL.id}`]: false } }).notice()).not.toContain("Soul Shard");
     });
 
     it("names a reagent of the addon's list only once", () => {
@@ -245,7 +245,7 @@ describe("the town message of a reagent spell the player added", () => {
                 state.bags[HOLY_CANDLE] = 1;
                 state.isResting = true;
             },
-            { customCues: [{ id: PRAYER_OF_FORTITUDE.id, kind: "reagent" }] },
+            { addedSpells: [{ id: PRAYER_OF_FORTITUDE.id, reminderType: "reagent" }] },
         );
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (1)");
@@ -270,7 +270,7 @@ describe("a reagent that runs low after the town message came", () => {
                 state.bags[6265] = 100;
                 state.isResting = true;
             },
-            { customCues: [{ id: RITUAL.id, kind: "reagent" }] },
+            { addedSpells: [{ id: RITUAL.id, reminderType: "reagent" }] },
         );
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (1)");

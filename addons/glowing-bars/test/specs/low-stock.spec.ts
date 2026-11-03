@@ -40,11 +40,11 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("goes by the limit of its own row", () => {
-        expect(createArcher(150, { lowAt: { [`stock:${ARROW}`]: 200 } }).glowsOn(1)).toBe(1);
+        expect(createArcher(150, { belowLimits: { [`stock:${ARROW}`]: 200 } }).glowsOn(1)).toBe(1);
     });
 
-    it("goes by the limit of the kind's row, where its own has none", () => {
-        expect(createArcher(150, { stockLow: 200 }).glowsOn(1)).toBe(1);
+    it("goes by the limit of the type's row, where its own has none", () => {
+        expect(createArcher(150, { stockBelow: 200 }).glowsOn(1)).toBe(1);
     });
 
     it("stops when there are enough again", () => {
@@ -57,12 +57,12 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("stays quiet when its row is switched off", () => {
-        const world = createArcher(10, { glowOn: { [`${ARROW_KEY}`]: false } });
+        const world = createArcher(10, { enabledSpells: { [`${ARROW_KEY}`]: false } });
         expect(world.glowsOn(1)).toBe(0);
         expect(world.notice()).not.toContain("Running low");
     });
 
-    it("stays quiet when the kind is switched off", () => {
+    it("stays quiet when the type is switched off", () => {
         expect(createArcher(10, { showStock: false }).glowsOn(1)).toBe(0);
     });
 
@@ -82,7 +82,7 @@ describe("an item added as low stock by its ID", () => {
                 state.bags[other] = 5;
                 state.barItems[1] = other;
             },
-            { customCues: [{ id: ARROW, kind: "stock" }] },
+            { addedSpells: [{ id: ARROW, reminderType: "stock" }] },
         );
         world.advance(1);
         expect(world.glowsOn(1)).toBe(0);
@@ -109,16 +109,16 @@ describe("the limit of a low reagent", () => {
         expect(createPriest(10).glowsOn(1)).toBe(0);
     });
 
-    it("keeps what the character chose on the old Settings page, as the kind's", () => {
-        expect(createPriest(8, { reagentLow: 10 }).glowsOn(1)).toBe(1);
+    it("keeps what the character chose on the old Settings page, as the type's", () => {
+        expect(createPriest(8, { reagentBelow: 10 }).glowsOn(1)).toBe(1);
     });
 
     it("can be set on the row of the reagent", () => {
-        expect(createPriest(8, { lowAt: { [`reagent:${HOLY_CANDLE}`]: 10 } }).glowsOn(1)).toBe(1);
+        expect(createPriest(8, { belowLimits: { [`reagent:${HOLY_CANDLE}`]: 10 } }).glowsOn(1)).toBe(1);
     });
 
     it("takes a limit that is not one of the old choices", () => {
-        expect(createPriest(30, { reagentLow: 33 }).glowsOn(1)).toBe(1);
+        expect(createPriest(30, { reagentBelow: 33 }).glowsOn(1)).toBe(1);
     });
 });
 
@@ -146,7 +146,7 @@ describe("the message of a low stock", () => {
                 state.itemNames[ARROW] = "Rough Arrow";
                 state.bags[ARROW] = 12;
             },
-            { customCues: [{ id: ARROW, kind: "stock" }], styles: { buff: { isTextOn: true } } },
+            { addedSpells: [{ id: ARROW, reminderType: "stock" }], styles: { buff: { isMessageOn: true } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
@@ -179,9 +179,9 @@ describe("two items running low one after the other", () => {
                 state.bags[WATER] = 100;
             },
             {
-                customCues: [
-                    { id: ARROW, kind: "stock" },
-                    { id: WATER, kind: "stock" },
+                addedSpells: [
+                    { id: ARROW, reminderType: "stock" },
+                    { id: WATER, reminderType: "stock" },
                 ],
             },
         );

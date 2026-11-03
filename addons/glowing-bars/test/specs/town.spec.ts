@@ -31,7 +31,7 @@ describe("a priest who arrives in a town", () => {
     let world!: World;
 
     beforeEach(() => {
-        world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isTextOn: true } } });
+        world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isMessageOn: true } } });
     });
 
     it("is told on the screen which reagents run low", () => {
@@ -57,13 +57,13 @@ describe("a priest who arrives in a town", () => {
 
 describe("the reagent message out of a town", () => {
     it("does not come by default", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true } } });
         world.advance(2);
         expect(world.notice()).not.toContain("Running low");
     });
 
     it("follows the other choices of When too: out of combat, but not in a fight", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "noCombat" } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true, when: "noCombat" } } });
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (0)");
         const inFight = createWorld(
@@ -71,14 +71,14 @@ describe("the reagent message out of a town", () => {
                 setUpPriest(state, false);
                 state.isInCombat = true;
             },
-            { styles: { reagent: { isTextOn: true, when: "noCombat" } } },
+            { styles: { reagent: { isMessageOn: true, when: "noCombat" } } },
         );
         inFight.advance(2);
         expect(inFight.notice()).not.toContain("Running low");
     });
 
     it("comes when the player chose the reagents to show always", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "always" } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true, when: "always" } } });
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (0)");
     });
@@ -87,7 +87,7 @@ describe("the reagent message out of a town", () => {
 describe("the reagent message on the screen", () => {
     it("is on unless the player switched it off", () => {
         expect(createWorld((state) => setUpPriest(state, true)).notice()).toContain("Running low");
-        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isTextOn: false } } });
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isMessageOn: false } } });
         expect(world.notice()).not.toContain("Running low");
     });
 });
@@ -187,7 +187,7 @@ describe("the reagents of a priest in the table", () => {
     });
 
     it("silence the message of a reagent that is switched off", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true } } });
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isMessageOn: true } } });
         switchInTable(world, "Prayer of Fortitude (Holy Candle)", false);
         arriveInTown(world);
         expect(world.notice()).not.toContain("Running low");
@@ -196,10 +196,10 @@ describe("the reagents of a priest in the table", () => {
     it("are stored only where they differ from the default", () => {
         const world = createWorld((state) => setUpPriest(state, false));
         switchInTable(world, "Prayer of Fortitude (Holy Candle)", false);
-        const reagentOn = world.getSavedSettings()?.reagentOn as Record<string, boolean | undefined>;
-        expect(reagentOn["17028"]).toBe(false);
+        const enabledReagents = world.getSavedSettings()?.enabledReagents as Record<string, boolean | undefined>;
+        expect(enabledReagents["17028"]).toBe(false);
         switchInTable(world, "Prayer of Fortitude (Holy Candle)", true);
-        const afterwards = world.getSavedSettings()?.reagentOn as Record<string, boolean | undefined>;
+        const afterwards = world.getSavedSettings()?.enabledReagents as Record<string, boolean | undefined>;
         expect(afterwards["17028"]).toBeUndefined();
     });
 });
@@ -219,7 +219,7 @@ describe("a priest with an old rank on the bar who arrives in a town", () => {
                 for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
                 state.bars[3] = SMITE_RANK_1.id;
             },
-            { styles: { reagent: { isTextOn: true } } },
+            { styles: { reagent: { isMessageOn: true } } },
         );
         world.advance(3);
         expect(world.notice()).toContain("Old spell rank");

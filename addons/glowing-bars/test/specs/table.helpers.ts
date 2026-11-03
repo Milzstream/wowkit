@@ -28,7 +28,7 @@ export function setUpWarrior(state: ClientState): void {
 /** The widgets of the row with this label in the open table. */
 export interface Row {
     swatch: FakeFrame;
-    opacity: FakeFrame;
+    glowPercent: FakeFrame;
     message: FakeFrame;
     enabled: FakeFrame;
     sound: FakeFrame;
@@ -51,7 +51,7 @@ export function findRow(world: World, label: string): Row {
     const buttons = parts.filter((frame) => frame.frameType === "Button" && frame.template === "UIPanelButtonTemplate");
     return {
         swatch: parts.find((frame) => frame.frameType === "Button" && frame.template === undefined)!,
-        opacity: parts.find((frame) => frame.frameType === "EditBox")!,
+        glowPercent: parts.find((frame) => frame.frameType === "EditBox")!,
         message: parts.filter((frame) => frame.frameType === "CheckButton")[0]!,
         enabled: parts.filter((frame) => frame.frameType === "CheckButton")[1]!,
         sound: buttons[0]!,
@@ -67,7 +67,7 @@ export function readSaved(world: World, section: "styles" | "spellStyles"): Reco
     return world.getSavedSettings()?.[section] as Record<string, Record<string, unknown> | undefined>;
 }
 
-/** Switches a kind or a spell on or off in the Enabled column of the table, the way a click does (the table is opened). */
+/** Switches a type or a spell on or off in the Enabled column of the table, the way a click does (the table is opened). */
 export function switchInTable(world: World, label: string, isOn: boolean): void {
     const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks");
     if (window?.isShown !== true) toggleTable();

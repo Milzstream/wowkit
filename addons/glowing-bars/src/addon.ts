@@ -43,12 +43,12 @@ import { EquipmentService } from "./character/equipment.service";
 import { IdleService } from "./character/idle.service";
 import { RosterService } from "./character/roster.service";
 import { CooldownTrackerService } from "./glows/cooldown-tracker.service";
-import { CustomCuesService } from "./glows/custom-cues.service";
+import { AddedSpellsService } from "./glows/added-spells.service";
 import { GlowCuesService } from "./glows/glow-cues.service";
 import { BuffKnowledgeService } from "./knowledge/buff-knowledge.service";
 import { TEXTS } from "./locale/texts.constants";
 import { BarsSection } from "./options/bars.section";
-import { GlowStyleSection } from "./options/glow-style.section";
+import { AnimationSection } from "./options/animation.section";
 import { GlowsSection } from "./options/glows.section";
 import { IdTooltipService } from "./options/id-tooltip.service";
 import { ReminderControlsService } from "./options/reminder-controls.service";
@@ -63,9 +63,9 @@ import { WeaponSection } from "./options/weapon.section";
 import { ReagentsService } from "./reagents/reagents.service";
 import { BuffReminderService } from "./reminders/buff-reminder.service";
 import { ClassBuffsService } from "./reminders/class-buffs.service";
-import { CustomRemindersService } from "./reminders/custom-reminders.service";
+import { AddedRemindersService } from "./reminders/added-reminders.service";
 import { FedBuffsService } from "./reminders/fed-buffs.service";
-import { LowLimitsService } from "./reminders/low-limits.service";
+import { BelowLimitsService } from "./reminders/below-limits.service";
 import { LowStockService } from "./reminders/low-stock.service";
 import { OutdatedRanksService } from "./reminders/outdated-ranks.service";
 import { SealReminderService } from "./reminders/seal-reminder.service";
@@ -78,7 +78,7 @@ import { WeaponReminderService } from "./reminders/weapon/weapon-reminder.servic
 import { SAVED_VARIABLES_NAME, createDefaultSettings, repairSettings } from "./settings/settings.constants";
 import type { AddonSettings } from "./settings/settings.interface";
 import { StyleService } from "./settings/style.service";
-import { SwitchesService } from "./settings/switches.service";
+import { EnabledService } from "./settings/enabled.service";
 import { DisplayService } from "./tick/display.service";
 import { FindRemindersService } from "./tick/find-reminders.service";
 import { NoticesService } from "./tick/notices.service";
@@ -171,7 +171,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     const buff = addon.register(
         new BuffReminderService(buffs.state, game.spells, game.player, game.actionBars, buffs.classBuffs, settings),
     );
-    const limits = addon.register(new LowLimitsService(settings));
+    const limits = addon.register(new BelowLimitsService(settings));
     const reagents = addon.register(new ReagentsService(game.bags, game.spells, limits));
     const party = addon.register(
         new PartyBuffsService(buffs.state, game.spells, game.clock, game.party, game.player, buffs.classBuffs, reagents, settings, buff),
@@ -181,24 +181,24 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     const weaponReading = addon.register(new WeaponReadingService(buffs.state, game.weaponEnchants, weaponChoice));
     const weapon = addon.register(new WeaponReminderService(game.clock, game.weaponEnchants, weaponChoice, weaponMemory, weaponReading));
     const outdatedRanks = addon.register(new OutdatedRanksService(game.actionBars, game.spells, settings));
-    const customCues = addon.register(new CustomCuesService(game.spells, settings, game.cooldowns, reagents));
+    const addedSpells = addon.register(new AddedSpellsService(game.spells, settings, game.cooldowns, reagents));
     // A spell the player gave another ID is asked of that ID everywhere: buffs, weapon buffs, reagents, cooldowns, procs
-    game.spells.useIdAlias((spellId) => customCues.getEffectiveId(spellId));
+    game.spells.useIdAlias((spellId) => addedSpells.getEffectiveId(spellId));
     const tracker = addon.register(new CooldownTrackerService(game.spells, game.cooldowns, game.clock));
     const glowCues = addon.register(
-        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, customCues),
+        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, addedSpells),
     );
     const fedBuffs = addon.register(
-        new FedBuffsService(customCues, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
+        new FedBuffsService(addedSpells, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
     );
     texts.styles.useOwnLooks((spellId) => fedBuffs.isFedSpell(spellId));
     const { spells, actionBars, weaponEnchants, bags } = game;
-    const custom = addon.register(
-        new CustomRemindersService(customCues, spells, actionBars, buffs.state, weaponEnchants, bags, settings, reagents, fedBuffs),
+    const added = addon.register(
+        new AddedRemindersService(addedSpells, spells, actionBars, buffs.state, weaponEnchants, bags, settings, reagents, fedBuffs),
     );
-    const seal = addon.register(new SealReminderService(game.spells, game.actionBars, buffs.state, game.player, settings, customCues));
-    const tracking = addon.register(new TrackingReminderService(game.spells, game.actionBars, buffs.state, settings, customCues));
-    return { buff, reagents, party, weaponChoice, weapon, outdatedRanks, glowCues, customCues, custom, fedBuffs, limits, seal, tracking };
+    const seal = addon.register(new SealReminderService(game.spells, game.actionBars, buffs.state, game.player, settings, addedSpells));
+    const tracking = addon.register(new TrackingReminderService(game.spells, game.actionBars, buffs.state, settings, addedSpells));
+    return { buff, reagents, party, weaponChoice, weapon, outdatedRanks, glowCues, addedSpells, added, fedBuffs, limits, seal, tracking };
 }
 type Reminders = ReturnType<typeof makeReminders>;
 
@@ -207,7 +207,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
     const { settings, locale, messages, styles } = texts;
     const finder = addon.register(
         new FindRemindersService(
-            addon.register(new LowStockService(reminders.customCues, game.bags, reminders.limits, settings)),
+            addon.register(new LowStockService(reminders.addedSpells, game.bags, reminders.limits, settings)),
             game.actionBars,
             buffs.idle,
             game.player,
@@ -218,7 +218,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
             reminders.outdatedRanks,
             reminders.glowCues,
             reminders.reagents,
-            reminders.custom,
+            reminders.added,
             reminders.seal,
             reminders.tracking,
             settings,
@@ -251,7 +251,7 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
             locale,
             styles,
             reminders.glowCues,
-            reminders.customCues,
+            reminders.addedSpells,
             reminders.seal,
             reminders.tracking,
             reminders.fedBuffs,
@@ -259,10 +259,10 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
     );
     const choices = addon.register(new StyleChoicesService(locale, styles, messages));
     const windows = addon.register(new StyleWindowService(locale));
-    const switches = addon.register(new SwitchesService(game.spells, buffs.classBuffs, reminders.reagents, texts.settings));
+    const switches = addon.register(new EnabledService(game.spells, buffs.classBuffs, reminders.reagents, texts.settings));
     const tableNotice = addon.register(new NoticeService(`${addonName}-table`));
     const edits = addon.register(
-        new StyleEditsService(locale, reminders.customCues, tableNotice, switches, rows, styles, reminders.limits, reminders.reagents),
+        new StyleEditsService(locale, reminders.addedSpells, tableNotice, switches, rows, styles, reminders.limits, reminders.reagents),
     );
     const table = addon.register(new StyleTableService(locale, styles, rows, messages, choices, windows, edits));
     addon.register(new TableCommand(table));
@@ -284,7 +284,7 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const glowsSection = addon.register(new GlowsSection(reminderControls, reminders.glowCues));
     const table = makeTable(addon, addonName, game, texts, buffs, reminders);
     const barsSection = addon.register(new BarsSection(locale, settings, controls, reminderControls));
-    const glowStyleSection = addon.register(new GlowStyleSection(locale, settings, controls));
+    const animationSection = addon.register(new AnimationSection(locale, settings, controls));
     const about = addon.register(
         new AboutSection(
             widgets,
@@ -309,7 +309,7 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
             widgets,
             table,
             barsSection,
-            glowStyleSection,
+            animationSection,
         ),
     );
     addon.register(new OptionsService(messages, locale.getText("TITLE"), page));

@@ -28,7 +28,7 @@ describe("a priest", () => {
                 state.bars[1] = FORTITUDE.id;
                 state.bars[2] = SMITE_RANK_2.id;
             },
-            { styles: { rank: { sound: "none" }, buff: { isTextOn: true } } },
+            { styles: { rank: { sound: "none" }, buff: { isMessageOn: true } } },
         );
     });
 
@@ -97,15 +97,15 @@ describe("a priest", () => {
     describe("the switch of a buff in the table", () => {
         it("is saved when the player switches the buff off", () => {
             switchInTable(world, "Inner Fire", false);
-            const buffOn = world.getSavedSettings()?.buffOn as Record<string, boolean | undefined>;
-            expect(buffOn.InnerFire).toBe(false);
+            const enabledBuffs = world.getSavedSettings()?.enabledBuffs as Record<string, boolean | undefined>;
+            expect(enabledBuffs.InnerFire).toBe(false);
         });
 
         it("is not stored when it is back at its default", () => {
             switchInTable(world, "Inner Fire", false);
             switchInTable(world, "Inner Fire", true);
-            const buffOn = world.getSavedSettings()?.buffOn as Record<string, boolean | undefined>;
-            expect(buffOn.InnerFire).toBeUndefined();
+            const enabledBuffs = world.getSavedSettings()?.enabledBuffs as Record<string, boolean | undefined>;
+            expect(enabledBuffs.InnerFire).toBeUndefined();
         });
     });
 
