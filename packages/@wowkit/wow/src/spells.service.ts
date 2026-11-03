@@ -2,7 +2,7 @@
 //
 // Forever remaps many spell IDs, so a spell of the buff lists is resolved to the ID the player
 // knows: by ID, by override, and finally by name through the spellbook index.
-import { type EventBus, OnEvent, type OnFirstLogin } from "@wowkit/core";
+import { type EventBus, OnEvent, type OnFirstLogin, trimText } from "@wowkit/core";
 import { type SpellBookService, isJunkSpellName } from "./spell-book.service";
 import { attempt, attemptMulti, tryCall } from "./utils/protected-call.utils";
 import { getReadable, isReadable } from "./utils/secret-value.utils";
@@ -143,6 +143,18 @@ export class SpellsService implements OnFirstLogin {
             }
         }
         return texts;
+    }
+
+    /** What the reagent line of a spell's tooltip lists, found by the client's own word for reagents; English where it has none. */
+    readTooltipReagents(spellId: number): string | undefined {
+        const word = (_G as unknown as { SPELL_REAGENTS?: unknown }).SPELL_REAGENTS;
+        // The game's text may go on with a color or a placeholder
+        const own = type(word) === "string" ? trimText(string.match(word as string, "^([^%%|]*)")[0] ?? "") : "";
+        const labels = own !== "" ? [own, "Reagents:", "Reagent:"] : ["Reagents:", "Reagent:"];
+        for (const text of this.getSpellTooltipTexts(spellId) ?? []) {
+            for (const label of labels) if (string.sub(text, 1, label.length) === label) return string.sub(text, label.length + 1);
+        }
+        return undefined;
     }
 
     /** One spell ID of each spell in the player's spell book (and the pet's); empty until the book is read. */

@@ -33,15 +33,12 @@ export class ReagentsService {
 
     /** The first item of the "Reagents:" line of the spell's tooltip (the English client's wording); undefined without one. */
     findTooltipReagent(spellId: number): string | undefined {
-        for (const text of this.spells.getSpellTooltipTexts(spellId) ?? []) {
-            const [list] = string.match(text, "^Reagents?:%s*(.+)$");
-            if (list === undefined) continue;
-            // Color codes and counts are not part of the name: "|cffff2020Holy Candle|r (2)"
-            const [plain] = string.gsub(string.gsub(list, "|c%x%x%x%x%x%x%x%x", "")[0], "|r", "");
-            const [first] = string.match(plain, "^%s*([^,%(]-)%s*[,%(]");
-            return first ?? string.match(plain, "^%s*(.-)%s*$")[0];
-        }
-        return undefined;
+        const list = this.spells.readTooltipReagents(spellId);
+        if (list === undefined) return undefined;
+        // Color codes and counts are not part of the name: "|cffff2020Holy Candle|r (2)"
+        const [plain] = string.gsub(string.gsub(list, "|c%x%x%x%x%x%x%x%x", "")[0], "|r", "");
+        const [first] = string.match(plain, "^%s*([^,%(]-)%s*[,%(]");
+        return first ?? string.match(plain, "^%s*(.-)%s*$")[0];
     }
 
     /** The reagent a group buff of the list uses; undefined for another spell. */
@@ -117,7 +114,8 @@ export class ReagentsService {
         if (texts === undefined) return true;
         const reagentName = string.lower(this.getReagentName(reagent));
         const isNeeded = texts.some((text) => contains(string.lower(text), reagentName));
-        this.tooltipNeedsReagent.set(spellId, isNeeded);
+        // Before the client has loaded the item's name, the English one proves nothing on another client: it is looked at again
+        if (this.bags.getItemName(reagent.itemId) !== undefined) this.tooltipNeedsReagent.set(spellId, isNeeded);
         return isNeeded;
     }
 

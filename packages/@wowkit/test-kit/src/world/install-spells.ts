@@ -102,7 +102,8 @@ export function installSpells(state: ClientState): void {
         GetSpellByID: (spellId) => {
             const lines = [{ leftText: state.spells[spellId as number]?.name ?? "?" }];
             const reagent = state.reagentTexts[spellId as number];
-            if (reagent !== undefined) lines.push({ leftText: `Reagents: ${reagent}` });
+            if (reagent !== undefined)
+                lines.push({ leftText: `${(_G as unknown as { SPELL_REAGENTS?: string }).SPELL_REAGENTS ?? "Reagents: "}${reagent}` });
             return fake<TooltipData>({ lines });
         },
     });
