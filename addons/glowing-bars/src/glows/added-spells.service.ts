@@ -3,9 +3,9 @@
 import { type CooldownsService, type SpellsService, isKnownItem } from "@wowkit/wow";
 import type { TextKey } from "../locale/texts.constants";
 import type { ReagentsService } from "../reagents/reagents.service";
-import type { AddonSettingsService, CueKind, CustomCue } from "../settings/settings.interface";
+import type { AddonSettingsService, AddableType, AddedSpell } from "../settings/settings.interface";
 
-export class CustomCuesService {
+export class AddedSpellsService {
     constructor(
         private readonly spells: SpellsService,
         private readonly settings: AddonSettingsService,
@@ -14,12 +14,12 @@ export class CustomCuesService {
     ) {}
 
     /**
-     * What is surely wrong with this kind for the spell, if anything? A cooldown needs a cooldown, a low reagent a
-     * reagent named in the tooltip; the game tells both. The other kinds it cannot tell apart, so they are taken as given.
+     * What is surely wrong with this type for the spell, if anything? A cooldown needs a cooldown, a low reagent a
+     * reagent named in the tooltip; the game tells both. The other types it cannot tell apart, so they are taken as given.
      */
-    findKindProblem(spellId: number, kind: CueKind): TextKey | undefined {
-        if (kind === "cooldown" && this.cooldowns.getBaseCooldown(spellId) <= 0) return "MSG_NO_COOLDOWN";
-        if (kind === "reagent" && this.reagents.findTooltipReagent(spellId) === undefined) return "MSG_NO_REAGENT";
+    findTypeProblem(spellId: number, reminderType: AddableType): TextKey | undefined {
+        if (reminderType === "cooldown" && this.cooldowns.getBaseCooldown(spellId) <= 0) return "MSG_NO_COOLDOWN";
+        if (reminderType === "reagent" && this.reagents.findTooltipReagent(spellId) === undefined) return "MSG_NO_REAGENT";
         return undefined;
     }
 
@@ -43,45 +43,51 @@ export class CustomCuesService {
         return true;
     }
 
-    /** The IDs of the spells the player added as this kind. */
-    listCustom(kind: CueKind): number[] {
+    /** The IDs of the spells the player added as this type. */
+    listAdded(reminderType: AddableType): number[] {
         return this.settings
-            .get("customCues")
-            .filter((cue) => cue.kind === kind)
-            .map((cue) => cue.id);
+            .get("addedSpells")
+            .filter((spell) => spell.reminderType === reminderType)
+            .map((spell) => spell.id);
     }
 
     /** Adds a spell by its ID. False when the client knows no spell by it; a spell added already stays as it is. */
-    addCustom(spellId: number, kind: CueKind): boolean {
+    addSpell(spellId: number, reminderType: AddableType): boolean {
         if (!this.isKnownSpell(spellId)) return false;
-        const cues = this.settings.get("customCues");
-        if (!cues.some((cue) => cue.id === spellId)) this.settings.change("customCues", [...cues, { id: spellId, kind }]);
+        const spells = this.settings.get("addedSpells");
+        if (!spells.some((spell) => spell.id === spellId)) this.settings.change("addedSpells", [...spells, { id: spellId, reminderType }]);
         return true;
     }
 
     /** Adds an item to watch by its ID. False when the client knows no item by it. */
     addItem(itemId: number): boolean {
         if (!isKnownItem(itemId)) return false;
-        const cues = this.settings.get("customCues");
-        if (!cues.some((cue) => cue.id === itemId && cue.kind === "stock"))
-            this.settings.change("customCues", [...cues, { id: itemId, kind: "stock" }]);
+        const spells = this.settings.get("addedSpells");
+        if (!spells.some((spell) => spell.id === itemId && spell.reminderType === "stock"))
+            this.settings.change("addedSpells", [...spells, { id: itemId, reminderType: "stock" }]);
         return true;
     }
 
     /** Gives an added spell another ID. False when the client knows no spell by it. */
-    changeCustom(oldId: number, spellId: number): boolean {
+    changeAdded(oldId: number, spellId: number): boolean {
         if (!this.isKnownSpell(spellId)) return false;
-        const cues: CustomCue[] = this.settings.get("customCues").map((cue) => (cue.id === oldId ? { id: spellId, kind: cue.kind } : cue));
-        this.settings.change("customCues", cues);
+        const spells: AddedSpell[] = this.settings
+            .get("addedSpells")
+            .map((spell) => (spell.id === oldId ? { id: spellId, reminderType: spell.reminderType } : spell));
+        this.settings.change("addedSpells", spells);
         return true;
     }
 
-    removeCustom(spellId: number, kind: CueKind | undefined): void {
+    removeAdded(spellId: number, reminderType: AddableType | undefined): void {
         this.settings.change(
-            "customCues",
+            "addedSpells",
             this.settings
-                .get("customCues")
-                .filter((cue) => cue.id !== spellId || (kind !== undefined && (kind === "stock") !== (cue.kind === "stock"))),
+                .get("addedSpells")
+                .filter(
+                    (spell) =>
+                        spell.id !== spellId ||
+                        (reminderType !== undefined && (reminderType === "stock") !== (spell.reminderType === "stock")),
+                ),
         );
     }
 }

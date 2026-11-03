@@ -1,20 +1,20 @@
 // The parts of the table of looks that change which spells there are: the Spell ID box of a cooldown or proc row (to fix
 // the ID the addon uses for it), and the row at the end that adds a spell by its ID. Like the table, it may call the game.
 import type { NoticeService, Rgb } from "@wowkit/wow";
-import type { CustomCuesService } from "../glows/custom-cues.service";
-import type { SwitchesService } from "../settings/switches.service";
+import type { AddedSpellsService } from "../glows/added-spells.service";
+import type { EnabledService } from "../settings/enabled.service";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
-import { CUE_KINDS } from "../settings/settings.constants";
+import { ADDABLE_TYPES } from "../settings/settings.constants";
 import { COLUMN, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.constants";
-import { KIND_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
+import { TYPE_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { LowLimitsService } from "../reminders/low-limits.service";
-import type { CueKind } from "../settings/settings.interface";
+import type { AddableType } from "../settings/settings.interface";
 
-/** How faded the spell rows of a kind that is switched off are. */
-const KIND_OFF_ALPHA = 0.4;
+/** How faded the spell rows of a type that is switched off are. */
+const TYPE_OFF_ALPHA = 0.4;
 
 /** What was typed is wrong: nothing was done, or something else than was asked. */
 const ERROR_COLOR: Rgb = [1, 0.25, 0.2];
@@ -22,29 +22,29 @@ const ERROR_COLOR: Rgb = [1, 0.25, 0.2];
 export class StyleEditsService {
     constructor(
         private readonly locale: AddonLocale,
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
         /** The table's own block of the shared notice: the tick clearing its lines must not take these with them. */
         private readonly notice: NoticeService,
-        private readonly switches: SwitchesService,
+        private readonly switches: EnabledService,
         private readonly rows: StyleRowsService,
         private readonly styles: StyleService,
         private readonly limits: LowLimitsService,
         private readonly reagents: ReagentsService,
     ) {}
 
-    /** The Enabled box of a row: it switches the kind (on a kind's row) or the spell; its tooltip says which. */
+    /** The Enabled box of a row: it switches the type (on a type's row) or the spell; its tooltip says which. */
     connectEnabled(box: CheckButton, getRow: (this: void) => StyleRow | undefined): void {
         box.SetPoint("LEFT", box.GetParent() as Frame, "LEFT", findCenteredX(COLUMN.enabled, 24), 0);
         box.SetSize(24, 24);
         box.SetScript("OnClick", () => {
             const row = getRow();
-            if (row !== undefined) this.switches.setOn(row, box.GetChecked());
+            if (row !== undefined) this.switches.setEnabled(row, box.GetChecked());
         });
         box.SetScript("OnEnter", () => {
             const row = getRow();
             if (row === undefined) return;
-            const isStock = row.kind === "stock";
-            if (row.spellId === undefined) this.showTooltip(box, isStock ? "TIP_ENABLED_KIND_ITEM" : "TIP_ENABLED_KIND");
+            const isStock = row.reminderType === "stock";
+            if (row.spellId === undefined) this.showTooltip(box, isStock ? "TIP_ENABLED_TYPE_ITEM" : "TIP_ENABLED_TYPE");
             else this.showTooltip(box, isStock ? "TIP_ENABLED_ITEM" : "TIP_ENABLED_SPELL");
         });
         box.SetScript("OnLeave", () => GameTooltip.Hide());
@@ -58,16 +58,16 @@ export class StyleEditsService {
         button.SetScript("OnClick", () => {
             const row = getRow();
             const id = row?.itemId ?? row?.spellId;
-            if (id !== undefined) this.customCues.removeCustom(id, row?.kind as CueKind);
+            if (id !== undefined) this.addedSpells.removeAdded(id, row?.reminderType as AddableType);
         });
     }
 
-    /** Shows whether the row is on, and fades the spell rows of a kind that is off: they will not glow. */
+    /** Shows whether the row is on, and fades the spell rows of a type that is off: they will not glow. */
     fillEnabled(box: CheckButton, frame: Frame, row: StyleRow): void {
         box.Show();
-        box.SetChecked(this.switches.isOn(row));
-        const isKindOff = row.spellId !== undefined && !this.switches.isKindOn(row.kind);
-        frame.SetAlpha(isKindOff ? KIND_OFF_ALPHA : 1);
+        box.SetChecked(this.switches.isEnabled(row));
+        const isTypeOff = row.spellId !== undefined && !this.switches.isTypeEnabled(row.reminderType);
+        frame.SetAlpha(isTypeOff ? TYPE_OFF_ALPHA : 1);
     }
 
     /** The Spell ID box of a row; `getRow` tells which row it shows now (the rows are reused). */
@@ -102,7 +102,7 @@ export class StyleEditsService {
         return box;
     }
 
-    /** Shows the ID of a spell's row (a kind's row has none); grayed where it cannot be changed (the ranks). */
+    /** Shows the ID of a spell's row (a type's row has none); grayed where it cannot be changed (the ranks). */
     fillIdBox(box: EditBox, row: StyleRow): void {
         box.SetShown(row.spellId !== undefined);
         if (row.spellId !== undefined) box.SetText(string.format("%d", row.itemId ?? row.spellId));
@@ -112,80 +112,81 @@ export class StyleEditsService {
         box.SetTextColor(shade, shade, shade);
     }
 
-    /** The Low at box of a row of a kind with a limit: a click out of it keeps a number, and an empty box takes back the old one. */
+    /** The Low at box of a row of a type with a limit: a click out of it keeps a number, and an empty box takes back the old one. */
     createLowAtBox(frame: Frame, getRow: (this: void) => StyleRow | undefined): EditBox {
         const box = this.createNumberBox(frame, findCenteredX(COLUMN.lowAt, 44), 44, 5);
         box.SetScript("OnEnterPressed", () => box.ClearFocus());
         box.SetScript("OnEditFocusLost", () => {
             const row = getRow();
             const limit = tonumber(box.GetText());
-            if (row !== undefined && limit !== undefined && this.limits.hasLimit(row.kind)) {
-                this.limits.setLimit(row.kind, this.findLimitEntry(row), limit);
+            if (row !== undefined && limit !== undefined && this.limits.hasLimit(row.reminderType)) {
+                this.limits.setLimit(row.reminderType, this.findLimitEntry(row), limit);
             }
             if (row !== undefined) this.fillLowAtBox(box, row);
         });
-        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_LOW_AT_KIND" : "TIP_LOW_AT"));
+        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_LOW_AT_TYPE" : "TIP_LOW_AT"));
         box.SetScript("OnLeave", () => GameTooltip.Hide());
         return box;
     }
 
     fillLowAtBox(box: EditBox, row: StyleRow): void {
-        const hasLimit = this.limits.hasLimit(row.kind);
+        const hasLimit = this.limits.hasLimit(row.reminderType);
         box.SetShown(hasLimit);
-        if (this.limits.hasLimit(row.kind)) box.SetText(string.format("%d", this.limits.getLimit(row.kind, this.findLimitEntry(row))));
+        if (this.limits.hasLimit(row.reminderType))
+            box.SetText(string.format("%d", this.limits.getLimit(row.reminderType, this.findLimitEntry(row))));
     }
 
-    /** What the limit of a row is kept under: the item, or the spell the player added; a kind's row has none. */
+    /** What the limit of a row is kept under: the item, or the spell the player added; a type's row has none. */
     private findLimitEntry(row: StyleRow): string | undefined {
         if (row.spellId === undefined) return undefined;
         if (row.itemId !== undefined) return string.format("%d", row.itemId);
-        if (row.isCustom === true) return `spell${string.format("%d", row.spellId)}`;
+        if (row.isAdded === true) return `spell${string.format("%d", row.spellId)}`;
         const reagent = this.reagents.findReagentOfSpell(row.spellId);
         return reagent !== undefined ? string.format("%d", reagent.itemId) : undefined;
     }
 
     /** A spell of the lists can be given another ID, and an added spell; a rank is the ID on the bar. */
     private isIdEditable(row: StyleRow): boolean {
-        return row.itemId === undefined && (row.listId !== undefined || row.isCustom === true);
+        return row.itemId === undefined && (row.listId !== undefined || row.isAdded === true);
     }
 
-    /** The row at the end of the list: an ID, the kind (a click goes to the next one), and the button that adds it. */
+    /** The row at the end of the list: an ID, the type (a click goes to the next one), and the button that adds it. */
     createAddRow(content: Frame): Frame {
         const frame = CreateFrame("Frame", undefined, content);
         frame.SetSize(TABLE_WIDTH, ROW_HEIGHT);
         const box = this.createNumberBox(frame, COLUMN.name.x, 90, 7);
-        let kindIndex = 0;
-        box.SetScript("OnEnter", () => this.showTooltip(box, CUE_KINDS[kindIndex] === "stock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
+        let typeIndex = 0;
+        box.SetScript("OnEnter", () => this.showTooltip(box, ADDABLE_TYPES[typeIndex] === "stock" ? "TIP_ADD_ITEM" : "TIP_ADD_ID"));
         box.SetScript("OnLeave", () => GameTooltip.Hide());
-        const kindButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
-        kindButton.SetSize(136, 24);
-        kindButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
-        const showKind = () => kindButton.SetText(this.locale.getText(KIND_TEXTS[CUE_KINDS[kindIndex]!]));
-        kindButton.SetScript("OnClick", () => {
-            kindIndex = (kindIndex + 1) % CUE_KINDS.length;
-            showKind();
+        const typeButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
+        typeButton.SetSize(136, 24);
+        typeButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
+        const showType = () => typeButton.SetText(this.locale.getText(TYPE_TEXTS[ADDABLE_TYPES[typeIndex]!]));
+        typeButton.SetScript("OnClick", () => {
+            typeIndex = (typeIndex + 1) % ADDABLE_TYPES.length;
+            showType();
         });
-        showKind();
+        showType();
         const addButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         addButton.SetSize(80, 24);
         addButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 262, 0);
         addButton.SetText(this.locale.getText("BTN_ADD"));
         addButton.SetScript("OnClick", () => {
             const spellId = tonumber(box.GetText());
-            if (spellId !== undefined && this.addSpell(spellId, CUE_KINDS[kindIndex]!)) box.SetText("");
+            if (spellId !== undefined && this.addSpell(spellId, ADDABLE_TYPES[typeIndex]!)) box.SetText("");
             box.ClearFocus();
         });
         return frame;
     }
 
-    /** Adds a spell or item as the kind picked, or says why not (unknown ID, listed already, surely wrong kind). */
-    private addSpell(spellId: number, kind: CueKind): boolean {
-        if (kind === "stock") {
-            if (this.customCues.addItem(spellId)) return true;
+    /** Adds a spell or item as the type picked, or says why not (unknown ID, listed already, surely wrong type). */
+    private addSpell(spellId: number, reminderType: AddableType): boolean {
+        if (reminderType === "stock") {
+            if (this.addedSpells.addItem(spellId)) return true;
             this.showProblem(string.format(this.locale.getText("MSG_UNKNOWN_ITEM"), spellId), ERROR_COLOR);
             return false;
         }
-        if (!this.customCues.isKnownSpell(spellId)) {
+        if (!this.addedSpells.isKnownSpell(spellId)) {
             this.showUnknown(spellId);
             return false;
         }
@@ -194,13 +195,13 @@ export class StyleEditsService {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return false;
         }
-        const isWrongForFood = this.rows.isSharingName(spellId) && kind !== "buff";
-        const problem = isWrongForFood ? "MSG_FOOD_IS_BUFF" : this.customCues.findKindProblem(spellId, kind);
+        const isWrongForFood = this.rows.isSharingName(spellId) && reminderType !== "buff";
+        const problem = isWrongForFood ? "MSG_FOOD_IS_BUFF" : this.addedSpells.findTypeProblem(spellId, reminderType);
         if (problem !== undefined) {
             this.showProblem(string.format(this.locale.getText(problem), name), ERROR_COLOR);
             return false;
         }
-        this.customCues.addCustom(spellId, kind);
+        this.addedSpells.addSpell(spellId, reminderType);
         return true;
     }
 
@@ -216,23 +217,28 @@ export class StyleEditsService {
             .listSpellRows()
             .some(
                 (row) =>
-                    row.kind !== "rank" &&
+                    row.reminderType !== "rank" &&
                     row.spellId !== undefined &&
                     (isSharingName ? row.spellId === spellId : this.styles.getSpellKey(row.spellId) === name) &&
-                    !(except !== undefined && row.kind === except.kind && row.listId === except.listId && row.spellId === except.spellId),
+                    !(
+                        except !== undefined &&
+                        row.reminderType === except.reminderType &&
+                        row.listId === except.listId &&
+                        row.spellId === except.spellId
+                    ),
             );
     }
 
     private changeId(row: StyleRow, spellId: number): void {
-        const name = this.customCues.isKnownSpell(spellId) ? this.styles.getSpellKey(spellId) : undefined;
+        const name = this.addedSpells.isKnownSpell(spellId) ? this.styles.getSpellKey(spellId) : undefined;
         if (name !== undefined && this.isListedElsewhere(spellId, row)) {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return;
         }
         const isChanged =
-            row.isCustom === true
-                ? row.spellId !== undefined && this.customCues.changeCustom(row.spellId, spellId)
-                : row.listId !== undefined && this.customCues.changeOverride(row.listId, spellId);
+            row.isAdded === true
+                ? row.spellId !== undefined && this.addedSpells.changeAdded(row.spellId, spellId)
+                : row.listId !== undefined && this.addedSpells.changeOverride(row.listId, spellId);
         if (!isChanged) this.showUnknown(spellId);
     }
 

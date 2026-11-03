@@ -28,7 +28,7 @@ describe("a mage in a party", () => {
                     { name: "Far", classToken: "DRUID", power: POWER.Mana, auras: [], isOutOfRange: true },
                 ];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
     });
 

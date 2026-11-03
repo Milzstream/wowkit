@@ -36,7 +36,7 @@ function setUp(state: ClientState, isPlayerBuffed: boolean, isInRaid = false): v
 }
 
 function start(isPlayerBuffed: boolean, settings: Record<string, unknown> = {}, isInRaid = false): World {
-    const world = createWorld((state) => setUp(state, isPlayerBuffed, isInRaid), { styles: { buff: { isTextOn: true } }, ...settings });
+    const world = createWorld((state) => setUp(state, isPlayerBuffed, isInRaid), { styles: { buff: { isMessageOn: true } }, ...settings });
     world.advance(1);
     return world;
 }
@@ -107,7 +107,7 @@ describe("the number of members missing a buff its group version waits for", () 
                     for (const member of state.party)
                         member.auras.push({ name: FORTITUDE.name, spellId: FORTITUDE.id, expirationTime: 99999 });
                 },
-                { styles: { buff: { isTextOn: true } }, ...settings },
+                { styles: { buff: { isMessageOn: true } }, ...settings },
             );
             world.advance(1);
             expect(world.glowsOn(1)).toBe(1);
@@ -122,7 +122,7 @@ describe("the number of members missing a buff its group version waits for", () 
                 setUp(state, true, true);
                 state.party[1]!.auras.push({ name: FORTITUDE.name, spellId: FORTITUDE.id, expirationTime: 99999 });
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Prayer of Fortitude missing on: Bob");
@@ -189,7 +189,7 @@ describe("a paladin in a raid", () => {
                 state.auras.push({ name: BLESSING_OF_KINGS.name, spellId: BLESSING_OF_KINGS.id, expirationTime: 99999 });
                 state.party = [{ name: "Healer", classToken: "PRIEST", power: POWER.Mana, auras: [] }];
             },
-            { styles: { buff: { isTextOn: true } }, showPartyBuffs: false },
+            { styles: { buff: { isMessageOn: true } }, showPartyBuffs: false },
         );
         world.advance(1);
         const healer = world.state.party[0]!;

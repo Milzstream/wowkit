@@ -4,8 +4,8 @@
 // while).
 import { OnGameEvent } from "@wowkit/core";
 import type { ActionBarsService, PlayerService, SpellDetailsService, SpellsService } from "@wowkit/wow";
-import type { AddonSettingsService, CueKind } from "../settings/settings.interface";
-import type { CustomCuesService } from "./custom-cues.service";
+import type { AddonSettingsService, AddableType } from "../settings/settings.interface";
+import type { AddedSpellsService } from "./added-spells.service";
 import { COOLDOWN_CUES, PROC_CUES, RACIAL_COOLDOWNS } from "./glow-cues.constants";
 import { READY_MARGIN, type CooldownTrackerService } from "./cooldown-tracker.service";
 
@@ -20,7 +20,7 @@ export class GlowCuesService {
         private readonly actionBars: ActionBarsService,
         private readonly tracker: CooldownTrackerService,
         private readonly settings: AddonSettingsService,
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
     ) {}
 
     /**
@@ -67,31 +67,32 @@ export class GlowCuesService {
     }
 
     /**
-     * The spells of the lists of a kind (their wow-data IDs): for cooldowns the class's and the racials the player has
+     * The spells of the lists of a type (their wow-data IDs): for cooldowns the class's and the racials the player has
      * learned, for procs the class's.
      */
-    listBuiltInIds(kind: CueKind): number[] {
+    listBuiltInIds(reminderType: AddableType): number[] {
         const classToken = this.player.getClassToken() ?? "";
-        if (kind === "proc") return PROC_CUES[classToken] ?? [];
-        const racials = RACIAL_COOLDOWNS.filter((id) => this.spells.isLearned(this.customCues.getEffectiveId(id)));
+        if (reminderType === "proc") return PROC_CUES[classToken] ?? [];
+        const racials = RACIAL_COOLDOWNS.filter((id) => this.spells.isLearned(this.addedSpells.getEffectiveId(id)));
         return [...(COOLDOWN_CUES[classToken] ?? []), ...racials];
     }
 
-    /** The spells of a kind: the lists', and the ones the player added. */
-    listCueIds(kind: CueKind): number[] {
+    /** The spells of a type: the lists', and the ones the player added. */
+    listCueIds(reminderType: AddableType): number[] {
         // Once each: a spell the player added may be on a list too (the Settings page cannot have two switches of one name)
         const ids: number[] = [];
-        for (const id of [...this.listBuiltInIds(kind), ...this.customCues.listCustom(kind)]) if (!ids.includes(id)) ids.push(id);
+        for (const id of [...this.listBuiltInIds(reminderType), ...this.addedSpells.listAdded(reminderType)])
+            if (!ids.includes(id)) ids.push(id);
         return ids;
     }
 
     /** The cues that are learned, switched on, and on an action button, as the IDs the buttons hold. */
     private listCues(ids: number[]): number[] {
-        const glowOn = this.settings.get("glowOn");
+        const enabledSpells = this.settings.get("enabledSpells");
         const found: number[] = [];
         for (const id of ids) {
-            const learned = this.spells.resolve(this.customCues.getEffectiveId(id));
-            if (learned === undefined || glowOn[String(id)] === false || !this.actionBars.isOnBars(learned)) continue;
+            const learned = this.spells.resolve(this.addedSpells.getEffectiveId(id));
+            if (learned === undefined || enabledSpells[String(id)] === false || !this.actionBars.isOnBars(learned)) continue;
             found.push(learned);
         }
         return found;

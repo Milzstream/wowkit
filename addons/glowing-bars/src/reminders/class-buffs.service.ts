@@ -33,14 +33,14 @@ export class ClassBuffsService {
     }
 
     isBuffEnabled(classBuff: ClassBuff): boolean {
-        return this.settings.get("buffOn")[classBuff.key] ?? classBuff.isOnByDefault;
+        return this.settings.get("enabledBuffs")[classBuff.key] ?? classBuff.isOnByDefault;
     }
 
     /** Switches one buff on or off; the default is not stored. */
     setBuffEnabled(classBuff: ClassBuff, isOn: boolean): void {
-        const buffOn = { ...this.settings.get("buffOn") };
-        buffOn[classBuff.key] = isOn === classBuff.isOnByDefault ? undefined : isOn;
-        this.settings.change("buffOn", buffOn);
+        const enabledBuffs = { ...this.settings.get("enabledBuffs") };
+        enabledBuffs[classBuff.key] = isOn === classBuff.isOnByDefault ? undefined : isOn;
+        this.settings.change("enabledBuffs", enabledBuffs);
     }
 
     /** Of the buffs of a group that could glow: the one cast last, else the main talent tree's, else the first. */

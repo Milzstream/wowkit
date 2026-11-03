@@ -96,7 +96,7 @@ export class ReagentsService {
         return spellIds;
     }
 
-    /** This many of a reagent in the bags is running low: the limit of its row (`entry`), else the kind's, or fewer. */
+    /** This many of a reagent in the bags is running low: the limit of its row (`entry`), else the type's, or fewer. */
     isLow(count: number, entry?: string): boolean {
         return count <= this.limits.getLimit("reagent", entry);
     }

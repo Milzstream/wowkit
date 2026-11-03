@@ -173,7 +173,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("lights no cooldown the player switched off", () => {
-        world = createWorld(setUpWarrior, { glowOn: { "1719": false } });
+        world = createWorld(setUpWarrior, { enabledSpells: { "1719": false } });
         world.advance(1);
         world.state.isInCombat = true;
         world.advance(0.5);
@@ -219,9 +219,9 @@ describe("an orc warrior with Blood Fury on the bars", () => {
 describe("a warrior who added Recklessness as a cooldown and as a proc", () => {
     it("still has the page in the Settings panel", () => {
         const world = createWorld((state) => playAs(state, WARRIOR), {
-            customCues: [
-                { id: 1719, kind: "cooldown" },
-                { id: 1719, kind: "proc" },
+            addedSpells: [
+                { id: 1719, reminderType: "cooldown" },
+                { id: 1719, reminderType: "proc" },
             ],
         });
         expect(world.proxySettings["GlowingBars_isMuted"]).toBeDefined();

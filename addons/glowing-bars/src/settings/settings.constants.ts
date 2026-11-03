@@ -1,6 +1,6 @@
 import { isSoundKey } from "@wowkit/ui";
-import type { GlowStyle } from "@wowkit/wow";
-import type { AddonSettings, ColorKey, CueKind, Style, StyleOverride, When } from "./settings.interface";
+import type { GlowAnimation } from "@wowkit/wow";
+import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, When } from "./settings.interface";
 
 /** The global the TOC saves per character (## SavedVariablesPerCharacter). */
 export const SAVED_VARIABLES_NAME = "GlowingBarsCharDB";
@@ -9,7 +9,7 @@ export function createDefaultSettings(): AddonSettings {
     return {
         isMuted: false,
         hideResting: true,
-        roundGlowStyle: "breathing",
+        roundAnimation: "breathing",
         showBuff: true,
         showWeapon: true,
         showPartyBuffs: true,
@@ -29,28 +29,28 @@ export function createDefaultSettings(): AddonSettings {
         showTracking: true,
         styles: {},
         spellStyles: {},
-        buffOn: {},
+        enabledBuffs: {},
         barOff: {},
         barFaded: {},
         fadedOpacity: 50,
         showTooltipIds: false,
         idOverrides: {},
-        customCues: [],
-        reagentOn: {},
-        rankOff: {},
-        glowOn: {},
+        addedSpells: [],
+        enabledReagents: {},
+        enabledRanks: {},
+        enabledSpells: {},
         lastBuffs: {},
         fedBuffs: {},
         fedItems: {},
     };
 }
 
-/** The look of each kind of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
-export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
+/** The look of each type of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
+export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
     buff: {
         color: [0.2, 0.55, 1],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
@@ -60,7 +60,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     weapon: {
         color: [1, 0.55, 0.1],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "alarm2",
         repeat: 0,
         when: "always",
@@ -71,7 +71,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     seal: {
         color: [1, 0.85, 0.2],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "combat",
@@ -82,7 +82,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     tracking: {
         color: [0.1, 0.65, 0.75],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
@@ -92,7 +92,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     cooldown: {
         color: [1, 1, 1],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "combat",
@@ -102,7 +102,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     proc: {
         color: [1, 0.12, 0.08],
         opacity: 100,
-        isTextOn: false,
+        isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
@@ -112,7 +112,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     rank: {
         color: [1, 0.85, 0.2],
         opacity: 50,
-        isTextOn: true,
+        isMessageOn: true,
         sound: "alarm1",
         repeat: 0,
         when: "always",
@@ -123,10 +123,10 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     reagent: {
         color: [1, 0.85, 0.2],
         opacity: 50,
-        isTextOn: true,
+        isMessageOn: true,
         sound: "none",
         repeat: 0,
-        when: "townText",
+        when: "townAlert",
         glowSeconds: 0,
         animation: "circling",
     },
@@ -134,22 +134,22 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     stock: {
         color: [1, 0.12, 0.08],
         opacity: 50,
-        isTextOn: true,
+        isMessageOn: true,
         sound: "none",
         repeat: 0,
-        when: "townText",
+        when: "townAlert",
         glowSeconds: 0,
         animation: "circling",
     },
 };
 
 /**
- * When a reminder of the kind may show: by combat or a target; the low reagents and the low stock, bought in a town, also
+ * When a reminder of the type may show: by combat or a target; the low reagents and the low stock, bought in a town, also
  * in a town only, or with only their message there.
  */
-export function listWhenChoices(kind: ColorKey): When[] {
+export function listWhenChoices(reminderType: ReminderType): When[] {
     const choices: When[] = ["always", "combat", "noCombat", "target"];
-    return kind === "reagent" || kind === "stock" ? [...choices, "town", "townText"] : choices;
+    return reminderType === "reagent" || reminderType === "stock" ? [...choices, "town", "townAlert"] : choices;
 }
 
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */
@@ -159,7 +159,7 @@ export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 /** The choices of how a glow moves. */
-export const ANIMATION_CHOICES: GlowStyle[] = ["circling", "breathing", "still"];
+export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "breathing", "still"];
 
 /** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
 export const GLOW_SECONDS_CHOICES = [0, 1, 2, 3, 5, 10];
@@ -167,29 +167,29 @@ export const GLOW_SECONDS_CHOICES = [0, 1, 2, 3, 5, 10];
 /** The choices of from how many missing a buff its group version is asked for. */
 export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
 
-/** The kinds a spell can be added as, in the order the add button goes through them. */
-export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reagent", "stock", "seal", "tracking"];
+/** The types a spell can be added as, in the order the add button goes through them. */
+export const ADDABLE_TYPES: AddableType[] = ["cooldown", "proc", "buff", "weapon", "reagent", "stock", "seal", "tracking"];
 
-/** The kinds in the order the tables list them. */
-export const KIND_ORDER: ColorKey[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
+/** The types in the order the tables list them. */
+export const TYPE_ORDER: ReminderType[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
 
 /** A saved value that is one of the choices; undefined for any other. */
 function pickChoice<T>(value: T | undefined, choices: T[]): T | undefined {
     return value !== undefined && choices.includes(value) ? value : undefined;
 }
 
-/** A saved When that the kind has; undefined for any other (the kind of a spell look not known: none). */
-function repairWhen(when: unknown, kind: ColorKey | undefined): When | undefined {
-    return kind !== undefined && listWhenChoices(kind).includes(when as When) ? (when as When) : undefined;
+/** A saved When that the type has; undefined for any other (the type of a spell look not known: none). */
+function repairWhen(when: unknown, reminderType: ReminderType | undefined): When | undefined {
+    return reminderType !== undefined && listWhenChoices(reminderType).includes(when as When) ? (when as When) : undefined;
 }
 
 /** The part of a saved look that can be used: a sound that is no longer in the list, or a color that is no color, is dropped. */
-function repairStyle(style: StyleOverride | undefined, kind: ColorKey | undefined): StyleOverride | undefined {
+function repairStyle(style: StyleOverride | undefined, reminderType: ReminderType | undefined): StyleOverride | undefined {
     if (style === undefined || type(style) !== "table") return undefined;
     const repaired: StyleOverride = {};
-    repaired.when = repairWhen(style.when, kind);
+    repaired.when = repairWhen(style.when, reminderType);
     if (isSoundKey(style.sound)) repaired.sound = style.sound;
-    if (type(style.isTextOn) === "boolean") repaired.isTextOn = style.isTextOn;
+    if (type(style.isMessageOn) === "boolean") repaired.isMessageOn = style.isMessageOn;
     repaired.repeat = pickChoice(style.repeat, REPEAT_CHOICES);
     repaired.glowSeconds = pickChoice(style.glowSeconds, GLOW_SECONDS_CHOICES);
     repaired.animation = pickChoice(style.animation, ANIMATION_CHOICES);
@@ -211,11 +211,11 @@ function repairLimit(limit: unknown, byDefault: number): number {
 export function repairSettings(values: AddonSettings): void {
     // A style no longer known (or circling on a round button) is the default again
     const defaults = createDefaultSettings();
-    if (!["breathing", "still"].includes(values.roundGlowStyle)) values.roundGlowStyle = defaults.roundGlowStyle;
+    if (!["breathing", "still"].includes(values.roundAnimation)) values.roundAnimation = defaults.roundAnimation;
     if (!FADED_OPACITY_CHOICES.includes(values.fadedOpacity)) values.fadedOpacity = defaults.fadedOpacity;
-    // An added spell that is not a number and a kind is dropped
-    values.customCues = (values.customCues ?? []).filter(
-        (cue) => type(cue) === "table" && tonumber(cue.id) !== undefined && CUE_KINDS.includes(cue.kind),
+    // An added spell that is not a number and a type is dropped
+    values.addedSpells = (values.addedSpells ?? []).filter(
+        (cue) => type(cue) === "table" && tonumber(cue.id) !== undefined && ADDABLE_TYPES.includes(cue.reminderType),
     );
     values.reagentLow = repairLimit(values.reagentLow, defaults.reagentLow);
     values.stockLow = repairLimit(values.stockLow, defaults.stockLow);
@@ -225,13 +225,13 @@ export function repairSettings(values: AddonSettings): void {
     old.showGreaterForOne = undefined;
     if (!GROUP_MIN_CHOICES.includes(values.partyGroupMin)) values.partyGroupMin = defaults.partyGroupMin;
     if (!GROUP_MIN_CHOICES.includes(values.raidGroupMin)) values.raidGroupMin = defaults.raidGroupMin;
-    for (const kind of KIND_ORDER) values.styles[kind] = repairStyle(values.styles[kind], kind);
-    // A spell's look is kept under its kind and name ("buff:Arcane Intellect")
+    for (const reminderType of TYPE_ORDER) values.styles[reminderType] = repairStyle(values.styles[reminderType], reminderType);
+    // A spell's look is kept under its type and name ("buff:Arcane Intellect")
     for (const [key, style] of pairs(values.spellStyles)) {
-        const [kind] = string.match(key as string, "^(%a+):");
+        const [reminderType] = string.match(key as string, "^(%a+):");
         values.spellStyles[key as string] = repairStyle(
             style,
-            KIND_ORDER.find((known) => known === kind),
+            TYPE_ORDER.find((known) => known === reminderType),
         );
     }
 }

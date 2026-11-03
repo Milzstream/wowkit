@@ -67,7 +67,7 @@ export function readSaved(world: World, section: "styles" | "spellStyles"): Reco
     return world.getSavedSettings()?.[section] as Record<string, Record<string, unknown> | undefined>;
 }
 
-/** Switches a kind or a spell on or off in the Enabled column of the table, the way a click does (the table is opened). */
+/** Switches a type or a spell on or off in the Enabled column of the table, the way a click does (the table is opened). */
 export function switchInTable(world: World, label: string, isOn: boolean): void {
     const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks");
     if (window?.isShown !== true) toggleTable();

@@ -7,7 +7,7 @@ import type { BuffReminderService } from "../reminders/buff-reminder.service";
 import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { OutdatedRanksService } from "../reminders/outdated-ranks.service";
 import type { ReagentsService } from "../reagents/reagents.service";
-import type { CustomRemindersService } from "../reminders/custom-reminders.service";
+import type { AddedRemindersService } from "../reminders/added-reminders.service";
 import type { LowStockService } from "../reminders/low-stock.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
@@ -32,7 +32,7 @@ export class FindRemindersService {
         private readonly outdatedRanks: OutdatedRanksService,
         private readonly glowCues: GlowCuesService,
         private readonly reagents: ReagentsService,
-        private readonly customReminders: CustomRemindersService,
+        private readonly addedReminders: AddedRemindersService,
         private readonly sealReminder: SealReminderService,
         private readonly trackingReminder: TrackingReminderService,
         private readonly settings: AddonSettingsService,
@@ -57,10 +57,10 @@ export class FindRemindersService {
         return {
             buffsToCast: [
                 ...this.findBuffsToCast(missingBuffs.glow, partySuggestions),
-                ...(showBuff ? this.customReminders.findMissingBuffs() : []),
+                ...(showBuff ? this.addedReminders.findMissingBuffs() : []),
             ],
             weaponSpell: weaponCheck?.isNeeded ? weaponCheck.spellId : undefined,
-            customWeaponSpells: this.settings.get("showWeapon") ? this.customReminders.findWeaponSpells() : [],
+            addedWeaponSpells: this.settings.get("showWeapon") ? this.addedReminders.findWeaponSpells() : [],
             seals: this.sealReminder.findMissingSeal(),
             trackings: this.trackingReminder.findMissingTrackings(),
             buffsNotOnBars: missingBuffs.notOnBars,
@@ -79,11 +79,11 @@ export class FindRemindersService {
      */
     private findReagentSpells(): number[] {
         if (!this.settings.get("showReagents")) return [];
-        const reagentOn = this.settings.get("reagentOn");
+        const enabledReagents = this.settings.get("enabledReagents");
         const listed = this.reagents
-            .findSpellsWithLowReagent((reagent) => reagentOn[String(reagent.itemId)] !== false)
+            .findSpellsWithLowReagent((reagent) => enabledReagents[String(reagent.itemId)] !== false)
             .filter((id) => this.actionBars.isOnBars(id));
-        return [...listed, ...this.customReminders.findReagentSpells()];
+        return [...listed, ...this.addedReminders.findReagentSpells()];
     }
 
     /**
@@ -104,7 +104,7 @@ export class FindRemindersService {
         return {
             buffsToCast: [],
             weaponSpell: undefined,
-            customWeaponSpells: [],
+            addedWeaponSpells: [],
             seals: [],
             trackings: [],
             buffsNotOnBars: [],

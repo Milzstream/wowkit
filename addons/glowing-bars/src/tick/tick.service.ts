@@ -2,7 +2,7 @@
 // something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look says it
 // may (the When column of the table): always, in combat, out of combat, with a living enemy targeted, or (the low
 // reagents and stock) in a town or an inn; and then for its glow time, again with its repeat (GlowSchedule). What is due
-// is the finders' to say; when it shows is the player's, for each kind and spell.
+// is the finders' to say; when it shows is the player's, for each type and spell.
 import { Interval, type OnFirstLogin, type OnLogout, type OnReady } from "@wowkit/core";
 import type { ClockService, PlayerService } from "@wowkit/wow";
 import type { StyleService } from "../settings/style.service";
@@ -53,15 +53,15 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
      */
     private filterShowing(reminders: Reminders): Reminders {
         const now = readWhenState(this.player, false);
-        const byWhen = filterReminders(reminders, (kind, id) => now[this.styles.getStyle(kind, id).when]);
+        const byWhen = filterReminders(reminders, (reminderType, id) => now[this.styles.getStyle(reminderType, id).when]);
         const time = this.clock.getCurrentTime();
         const isInTown = now.town;
         const hasArrivedInTown = isInTown && !this.wasInTown;
         this.wasInTown = isInTown;
         this.schedule.startTick();
         return {
-            ...filterReminders(byWhen, (kind, id) =>
-                this.schedule.isShowing(`${kind}:${id}`, this.styles.getStyle(kind, id), time, isInTown, hasArrivedInTown),
+            ...filterReminders(byWhen, (reminderType, id) =>
+                this.schedule.isShowing(`${reminderType}:${id}`, this.styles.getStyle(reminderType, id), time, isInTown, hasArrivedInTown),
             ),
             isInTown,
         };

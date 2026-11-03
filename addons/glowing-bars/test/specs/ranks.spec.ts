@@ -128,7 +128,7 @@ describe("the look of the old rank of a spell", () => {
         expect(world.glowAlphasOn(1)).toEqual([0.8]);
     });
 
-    it("does not change with a look the spell has in another kind", () => {
+    it("does not change with a look the spell has in another type", () => {
         const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "buff:Smite": { opacity: 90 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.5]);

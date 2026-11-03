@@ -59,7 +59,7 @@ describe("a missing buff with a glow time", () => {
     });
 
     it("has its message and sound come and go with the glow", () => {
-        const world = startPriest({ glowSeconds: 3, repeat: 10, isTextOn: true, sound: "raidwarning" });
+        const world = startPriest({ glowSeconds: 3, repeat: 10, isMessageOn: true, sound: "raidwarning" });
         expect(world.notice()).toContain("Missing buff");
         expect(world.sounds.length).toBe(1);
         world.advance(4);

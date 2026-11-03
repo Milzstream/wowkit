@@ -13,6 +13,6 @@ export function readWhenState(player: PlayerService, isForMessage: boolean): { [
         noCombat: !isInCombat,
         target: player.hasEnemyTarget(),
         town: isInTown,
-        townText: !isForMessage || isInTown,
+        townAlert: !isForMessage || isInTown,
     };
 }

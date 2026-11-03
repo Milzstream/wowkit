@@ -7,7 +7,7 @@ import { OnEvent } from "@wowkit/core";
 import type { ActionBarsService, PlayerService, PlayerSpellCast, SpellsService } from "@wowkit/wow";
 import { Paladin } from "@wowkit/wow-data";
 import type { BuffStateService } from "../character/buff-state.service";
-import type { CustomCuesService } from "../glows/custom-cues.service";
+import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 
 /** The seals, in the order the table lists them (their wow-data IDs). */
@@ -41,7 +41,7 @@ export class SealReminderService {
         private readonly buffState: BuffStateService,
         private readonly player: PlayerService,
         private readonly settings: AddonSettingsService,
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
     ) {}
 
     /** The seals the player has learned (their wow-data IDs). */
@@ -51,7 +51,7 @@ export class SealReminderService {
 
     /** The learned seals of the list, and the ones the player added (by their IDs). */
     private listAllSeals(): number[] {
-        return [...this.listSeals(), ...this.customCues.listCustom("seal")];
+        return [...this.listSeals(), ...this.addedSpells.listAdded("seal")];
     }
 
     /** A seal cast is the one to glow next time (kept per character). */
@@ -76,13 +76,13 @@ export class SealReminderService {
      */
     findMissingSeal(): number[] {
         if (!this.settings.get("showSeals")) return [];
-        const glowOn = this.settings.get("glowOn");
+        const enabledSpells = this.settings.get("enabledSpells");
         const onBars: number[] = [];
         for (const listId of this.listAllSeals()) {
             const id = this.spells.resolve(listId) ?? listId;
             // Any seal counts for every other (one category)
             if (this.buffState.hasAura(id, SEAL_LEAD)) return [];
-            if (glowOn[string.format("%d", listId)] !== false && this.actionBars.isOnBars(id)) onBars.push(listId);
+            if (enabledSpells[string.format("%d", listId)] !== false && this.actionBars.isOnBars(id)) onBars.push(listId);
         }
         const picked = this.pickSeal(onBars);
         return picked !== undefined ? [this.spells.resolve(picked) ?? picked] : [];

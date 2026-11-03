@@ -1,8 +1,8 @@
-// The rows of the table of looks: the kinds of reminder (their default look), and the spells of the player's class that
+// The rows of the table of looks: the types of reminder (their default look), and the spells of the player's class that
 // can have a look of their own: the buffs, the weapon buffs, the seals, the gathering trackings, the cooldowns, the procs, the group buffs with a reagent, and
 // every spell of the book that has ranks. Plain lists; the window draws them.
 import { type PlayerService, type SpellsService, getItemButtonKey, readItemLook } from "@wowkit/wow";
-import type { CustomCuesService } from "../glows/custom-cues.service";
+import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
@@ -12,36 +12,36 @@ import type { FedBuffsService } from "../reminders/fed-buffs.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { WeaponChoiceService } from "../reminders/weapon/weapon-choice.service";
-import { CUE_KINDS, KIND_ORDER } from "../settings/settings.constants";
-import type { ColorKey, CueKind } from "../settings/settings.interface";
+import { ADDABLE_TYPES, TYPE_ORDER } from "../settings/settings.constants";
+import type { ReminderType, AddableType } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 
-/** One row of the table: a kind (no spell), or a spell of a kind. */
+/** One row of the table: a type (no spell), or a spell of a type. */
 export interface StyleRow {
-    kind: ColorKey;
+    reminderType: ReminderType;
     spellId: number | undefined;
     label: string;
-    /** The spell's icon; none for a kind. */
+    /** The spell's icon; none for a type. */
     iconId: number | undefined;
     /** For a cooldown or proc of the lists: its ID there (the player may give it another). */
     listId?: number;
     /** A spell the player added. */
-    isCustom?: boolean;
+    isAdded?: boolean;
     /** The low stock: the item the row is about (its `spellId` is what the item's buttons are found by). */
     itemId?: number;
 }
 
-/** The words that name each kind of reminder. */
-export const KIND_TEXTS: { [kind in ColorKey]: TextKey } = {
-    buff: "KIND_BUFF",
-    weapon: "KIND_WEAPON",
-    seal: "KIND_SEAL",
-    tracking: "KIND_TRACKING",
-    cooldown: "KIND_COOLDOWN",
-    proc: "KIND_PROC",
-    rank: "KIND_RANK",
-    reagent: "KIND_REAGENT",
-    stock: "KIND_STOCK",
+/** The words that name each type of reminder. */
+export const TYPE_TEXTS: { [reminderType in ReminderType]: TextKey } = {
+    buff: "TYPE_BUFF",
+    weapon: "TYPE_WEAPON",
+    seal: "TYPE_SEAL",
+    tracking: "TYPE_TRACKING",
+    cooldown: "TYPE_COOLDOWN",
+    proc: "TYPE_PROC",
+    rank: "TYPE_RANK",
+    reagent: "TYPE_REAGENT",
+    stock: "TYPE_STOCK",
 };
 
 export class StyleRowsService {
@@ -54,18 +54,18 @@ export class StyleRowsService {
         private readonly locale: AddonLocale,
         private readonly styles: StyleService,
         private readonly glowCues: GlowCuesService,
-        private readonly customCues: CustomCuesService,
+        private readonly addedSpells: AddedSpellsService,
         private readonly sealReminder: SealReminderService,
         private readonly trackingReminder: TrackingReminderService,
         private readonly fedBuffs: FedBuffsService,
     ) {}
 
-    /** The default look of each kind of reminder this character has spells of (a warrior has no weapon buff to remind of). */
-    listKindRows(spellRows: StyleRow[]): StyleRow[] {
-        return KIND_ORDER.filter((kind) => spellRows.some((row) => row.kind === kind)).map((kind) => ({
-            kind,
+    /** The default look of each type of reminder this character has spells of (a warrior has no weapon buff to remind of). */
+    listTypeRows(spellRows: StyleRow[]): StyleRow[] {
+        return TYPE_ORDER.filter((reminderType) => spellRows.some((row) => row.reminderType === reminderType)).map((reminderType) => ({
+            reminderType,
             spellId: undefined,
-            label: this.locale.getText(KIND_TEXTS[kind]),
+            label: this.locale.getText(TYPE_TEXTS[reminderType]),
             iconId: undefined,
         }));
     }
@@ -76,64 +76,64 @@ export class StyleRowsService {
     }
 
     /** How a row shows a spell. A food or drink the player added goes by its item: the spell's name is the same for all of them. */
-    private readLook(spellId: number, name: string, isCustom: boolean): { key: string; label: string; iconId: number | undefined } {
-        const item = isCustom ? this.fedBuffs.findItemLook(spellId) : undefined;
+    private readLook(spellId: number, name: string, isAdded: boolean): { key: string; label: string; iconId: number | undefined } {
+        const item = isAdded ? this.fedBuffs.findItemLook(spellId) : undefined;
         return {
-            key: isCustom && this.isSharingName(spellId) ? string.format("%d", spellId) : name,
+            key: isAdded && this.isSharingName(spellId) ? string.format("%d", spellId) : name,
             label: item?.name ?? this.spells.getSpellLabel(spellId) ?? name,
             iconId: item?.iconId ?? this.spells.getSpellInfo(spellId)?.iconID,
         };
     }
 
     /** What the player added; an item of the low stock goes by what its buttons are found by, and under its own name. */
-    private listAddedRows(): { kind: CueKind; id: number; extra: Partial<StyleRow> }[] {
-        const added: { kind: CueKind; id: number; extra: Partial<StyleRow> }[] = [];
-        for (const kind of CUE_KINDS) {
-            for (const id of this.customCues.listCustom(kind)) {
-                if (kind !== "stock") {
-                    added.push({ kind, id, extra: { isCustom: true } });
+    private listAddedRows(): { reminderType: AddableType; id: number; extra: Partial<StyleRow> }[] {
+        const added: { reminderType: AddableType; id: number; extra: Partial<StyleRow> }[] = [];
+        for (const reminderType of ADDABLE_TYPES) {
+            for (const id of this.addedSpells.listAdded(reminderType)) {
+                if (reminderType !== "stock") {
+                    added.push({ reminderType, id, extra: { isAdded: true } });
                     continue;
                 }
                 const { name, iconId } = readItemLook(id);
-                const extra = { isCustom: true, itemId: id, label: name ?? string.format("%d", id), iconId };
-                added.push({ kind, id: getItemButtonKey(id), extra });
+                const extra = { isAdded: true, itemId: id, label: name ?? string.format("%d", id), iconId };
+                added.push({ reminderType, id: getItemButtonKey(id), extra });
             }
         }
         return added;
     }
 
-    /** The spells of the class that can have a look of their own, by kind, then by name. A spell is listed once. */
+    /** The spells of the class that can have a look of their own, by type, then by name. A spell is listed once. */
     listSpellRows(): StyleRow[] {
         const rows: StyleRow[] = [];
         const keys = new LuaSet<string>();
         /** A spell is listed once, unless `suffix` tells two rows of one name apart (the ranks of a group buff with their reagents). */
-        const add = (kind: ColorKey, spellId: number | undefined, extra: Partial<StyleRow> = {}, suffix?: string) => {
+        const add = (reminderType: ReminderType, spellId: number | undefined, extra: Partial<StyleRow> = {}, suffix?: string) => {
             if (spellId === undefined) return;
             const name = this.styles.getSpellKey(spellId);
-            const look = this.readLook(spellId, name, extra.isCustom === true);
-            // A spell the player added has a row of its own even when a list has it as another kind: it glows on its own too
-            const key = extra.isCustom === true ? `${kind}:${look.key}` : suffix !== undefined ? `${name}|${suffix}` : name;
+            const look = this.readLook(spellId, name, extra.isAdded === true);
+            // A spell the player added has a row of its own even when a list has it as another type: it glows on its own too
+            const key = extra.isAdded === true ? `${reminderType}:${look.key}` : suffix !== undefined ? `${name}|${suffix}` : name;
             if (keys.has(key)) return;
             keys.add(key);
             rows.push({
-                kind,
+                reminderType,
                 spellId,
                 label: suffix !== undefined ? `${look.label} (${suffix})` : look.label,
                 iconId: look.iconId,
                 ...extra,
             });
         };
-        const addListed = (kind: ColorKey, listId: number | undefined, suffix?: string) => {
-            if (listId !== undefined) add(kind, this.customCues.getEffectiveId(listId), { listId }, suffix);
+        const addListed = (reminderType: ReminderType, listId: number | undefined, suffix?: string) => {
+            if (listId !== undefined) add(reminderType, this.addedSpells.getEffectiveId(listId), { listId }, suffix);
         };
         for (const classBuff of this.classBuffs.getClassBuffs()) addListed("buff", classBuff.id);
         for (const entry of this.weaponChoice.getWeaponChoices()) addListed("weapon", entry.id);
         for (const id of this.sealReminder.listSeals()) addListed("seal", id);
         for (const id of this.trackingReminder.listTrackings()) addListed("tracking", id);
-        for (const kind of ["cooldown", "proc"] as const) {
-            for (const id of this.glowCues.listBuiltInIds(kind)) addListed(kind, id);
+        for (const reminderType of ["cooldown", "proc"] as const) {
+            for (const id of this.glowCues.listBuiltInIds(reminderType)) addListed(reminderType, id);
         }
-        for (const { kind, id, extra } of this.listAddedRows()) add(kind, id, extra);
+        for (const { reminderType, id, extra } of this.listAddedRows()) add(reminderType, id, extra);
         // A group buff whose ranks take different reagents (Holy Candle, Sacred Candle) has a row for each reagent
         for (const reagent of this.reagents.getReagentsOfClass(this.player.getClassToken())) {
             addListed("reagent", reagent.spells[0], this.reagents.getReagentName(reagent));
@@ -146,8 +146,8 @@ export class StyleRowsService {
     }
 
     private compareRows(a: StyleRow, b: StyleRow): number {
-        const byKind = KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind);
-        if (byKind !== 0) return byKind;
+        const byType = TYPE_ORDER.indexOf(a.reminderType) - TYPE_ORDER.indexOf(b.reminderType);
+        if (byType !== 0) return byType;
         return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
     }
 }

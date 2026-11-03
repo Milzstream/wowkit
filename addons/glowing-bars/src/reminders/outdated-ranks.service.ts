@@ -34,7 +34,7 @@ export class OutdatedRanksService {
         }
         outdated.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
         // The spells the player switched off
-        const rankOff = this.settings.get("rankOff");
-        return outdated.filter((rank) => rankOff[rank.name] !== true);
+        const enabledRanks = this.settings.get("enabledRanks");
+        return outdated.filter((rank) => enabledRanks[rank.name] !== false);
     }
 }

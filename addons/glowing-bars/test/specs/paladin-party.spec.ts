@@ -49,7 +49,7 @@ describe("a paladin in a party", () => {
                     { name: "Caster", classToken: "MAGE", power: POWER.Mana, auras: [] },
                 ];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
     });
 
@@ -87,7 +87,7 @@ describe("a paladin in a party who knows Might and Wisdom", () => {
                     { name: "Tank", classToken: "WARRIOR", power: POWER.Rage, auras: [] },
                 ];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
     }
 
@@ -191,7 +191,7 @@ describe("a paladin in a raid", () => {
                     { name: "Tank", classToken: "WARRIOR", power: POWER.Rage, auras: [] },
                 ];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
         world.advance(1);
     });
@@ -223,7 +223,7 @@ describe("a paladin in a raid", () => {
                 state.isInRaid = true;
                 state.party = [{ name: "Healer", classToken: "PRIEST", power: POWER.Mana, auras: [] }];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
         world.advance(1);
         world.state.party[0]!.auras.push({ name: WISDOM.name, spellId: WISDOM.id, expirationTime: 99999, sourceUnit: "player" });
@@ -250,7 +250,7 @@ describe("a paladin's party blessings, by class and by group", () => {
                 state.bags[SYMBOL_OF_KINGS] = 10;
                 state.party = [{ name: "Friend", classToken, power: POWER.Mana, auras: [] }];
             },
-            { styles: { buff: { isTextOn: true } } },
+            { styles: { buff: { isMessageOn: true } } },
         );
         world.advance(1);
         return world;

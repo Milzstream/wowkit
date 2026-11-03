@@ -5,13 +5,13 @@
 
 import type { MessagesService, SoundKey } from "@wowkit/ui";
 import type { StyleService } from "../settings/style.service";
-import type { AddonSettingsService, ColorKey, Style } from "../settings/settings.interface";
+import type { AddonSettingsService, ReminderType, Style } from "../settings/settings.interface";
 import {
     type ActionBarsService,
     type BarFadeService,
     type ClockService,
     type GlowService,
-    type GlowStyle,
+    type GlowAnimation,
     type ButtonGlow,
     type Rgb,
     isOutOfItem,
@@ -20,9 +20,9 @@ import type { NoticesService } from "./notices.service";
 import type { FedBuffsService } from "../reminders/fed-buffs.service";
 import type { Reminders } from "./tick.interface";
 
-/** One kind of reminder: the setting that switches it on, and the spells of the reminders that make it glow. */
-interface GlowKind {
-    category: ColorKey;
+/** One type of reminder: the setting that switches it on, and the spells of the reminders that make it glow. */
+interface GlowType {
+    category: ReminderType;
     isOnSetting:
         | "showBuff"
         | "showWeapon"
@@ -36,14 +36,14 @@ interface GlowKind {
     findSpells: (this: void, reminders: Reminders) => number[];
 }
 
-const KINDS: GlowKind[] = [
+const TYPES: GlowType[] = [
     { category: "buff", isOnSetting: "showBuff", findSpells: (reminders) => reminders.buffsToCast },
     {
         category: "weapon",
         isOnSetting: "showWeapon",
         findSpells: (reminders) => [
             ...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []),
-            ...reminders.customWeaponSpells,
+            ...reminders.addedWeaponSpells,
         ],
     },
     { category: "seal", isOnSetting: "showSeals", findSpells: (reminders) => reminders.seals },
@@ -61,15 +61,15 @@ interface GlowGroup {
     key: string;
     color: Rgb;
     opacity: number;
-    animation: GlowStyle;
+    animation: GlowAnimation;
     spells: number[];
 }
 
 export class ShowRemindersService {
     /** The glows made so far, by the look they give (color, opacity and animation); one that is not needed any more is cleared, not dropped. */
     private readonly glows = new LuaMap<string, ButtonGlow>();
-    /** The spells of each kind in the previous tick, to tell what is new. */
-    private previous: number[][] = KINDS.map(() => []);
+    /** The spells of each type in the previous tick, to tell what is new. */
+    private previous: number[][] = TYPES.map(() => []);
     /** When the sound of each glowing spell last played ("buff:21562"), for the ones that repeat. */
     private soundPlayedAt = new LuaMap<string, number>();
     /** Was the player in a town at the previous tick: arriving, an Alert in town sounds once more. */
@@ -123,9 +123,9 @@ export class ShowRemindersService {
             key !== "spellStyles" &&
             key !== "barOff" &&
             key !== "idOverrides" &&
-            key !== "customCues" &&
-            key !== "roundGlowStyle" &&
-            !KINDS.some((kind) => kind.isOnSetting === key)
+            key !== "addedSpells" &&
+            key !== "roundAnimation" &&
+            !TYPES.some((reminderType) => reminderType.isOnSetting === key)
         )
             return;
         for (const [, glow] of this.glows) glow.clear();
@@ -142,14 +142,14 @@ export class ShowRemindersService {
         this.wasInTown = reminders.isInTown === true;
         const playedAt = new LuaMap<string, number>();
         const sounds: SoundKey[] = [];
-        KINDS.forEach((kind, index) => {
-            const spells = kind.findSpells(reminders);
+        TYPES.forEach((reminderType, index) => {
+            const spells = reminderType.findSpells(reminders);
             for (const id of spells) {
-                const key = `${kind.category}:${id}`;
-                const style = this.styles.getStyle(kind.category, id);
+                const key = `${reminderType.category}:${id}`;
+                const style = this.styles.getStyle(reminderType.category, id);
                 const lastAt = this.soundPlayedAt.get(key);
                 const isNew =
-                    !this.previous[index]!.includes(id) || lastAt === undefined || (hasArrivedInTown && style.when === "townText");
+                    !this.previous[index]!.includes(id) || lastAt === undefined || (hasArrivedInTown && style.when === "townAlert");
                 const isDue = !isNew && this.isRepeatDue(style, lastAt!, now, reminders.isInTown === true);
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
                 if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
@@ -163,7 +163,7 @@ export class ShowRemindersService {
 
     /** Is the sound due again? Only where it repeats, and an Alert in town only in a town. */
     private isRepeatDue(style: Style, lastAt: number, now: number, isInTown: boolean): boolean {
-        const isRepeating = style.repeat > 0 && (style.when !== "townText" || isInTown);
+        const isRepeating = style.repeat > 0 && (style.when !== "townAlert" || isInTown);
         return isRepeating && now - lastAt >= style.repeat;
     }
 
@@ -172,10 +172,10 @@ export class ShowRemindersService {
         this.groupSpells = new LuaMap<string, number[]>();
         for (const group of groups) this.groupSpells.set(group.key, group.spells);
         const weaponSpells = reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : [];
-        this.usedUpShown = [...weaponSpells, ...reminders.customWeaponSpells, ...reminders.lowStock.map((stock) => stock.key)];
+        this.usedUpShown = [...weaponSpells, ...reminders.addedWeaponSpells, ...reminders.lowStock.map((stock) => stock.key)];
         const glowKey = groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";");
         if (glowKey === this.shownGlowKey) return;
-        this.glow.setRoundStyle(this.settings.get("roundGlowStyle"));
+        this.glow.setRoundAnimation(this.settings.get("roundAnimation"));
         // A look that no spell has now: its glow goes out
         for (const [key, glow] of this.glows) if (!groups.some((group) => group.key === key)) glow.clear();
         for (const group of groups) {
@@ -207,9 +207,9 @@ export class ShowRemindersService {
     /** The spells to glow, in groups of the same look. */
     private listGroups(reminders: Reminders): GlowGroup[] {
         const groups: GlowGroup[] = [];
-        for (const kind of KINDS) {
-            for (const id of kind.findSpells(reminders)) {
-                const style = this.styles.getStyle(kind.category, id);
+        for (const reminderType of TYPES) {
+            for (const id of reminderType.findSpells(reminders)) {
+                const style = this.styles.getStyle(reminderType.category, id);
                 const key = `${style.color.join(",")}|${style.opacity}|${style.animation}`;
                 const group = groups.find((candidate) => candidate.key === key);
                 const { color, opacity, animation } = style;

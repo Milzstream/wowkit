@@ -17,13 +17,13 @@ export interface Column {
 }
 
 /**
- * The columns, side by side. The spell's name and its kind read from the left of their column; every other control is
+ * The columns, side by side. The spell's name and its type read from the left of their column; every other control is
  * centered in its column, under its header, so the two check box columns line up the same way.
  */
 export const COLUMN = {
     icon: { x: 4, width: 34 },
     name: { x: 38, width: 146 },
-    kind: { x: 184, width: 86 },
+    type: { x: 184, width: 86 },
     id: { x: 270, width: 90 },
     color: { x: 360, width: 56 },
     opacity: { x: 416, width: 60 },
@@ -52,7 +52,7 @@ export function findWindowWidth(tableWidth: number): number {
 export function findCenteredX(column: Column, controlWidth: number): number {
     return column.x + (column.width - controlWidth) / 2;
 }
-/** The name of an overridden spell, against the gray of one that follows its kind. */
+/** The name of an overridden spell, against the gray of one that follows its type. */
 export const OVERRIDDEN_COLOR: [number, number, number] = [1, 0.82, 0];
 /** The window border: the silver dialog art, tinted bronze. */
 export const BORDER_COLOR: Rgb = [0.85, 0.6, 0.3];

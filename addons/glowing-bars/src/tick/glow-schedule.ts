@@ -19,7 +19,7 @@ export class GlowSchedule {
     /** Does the due reminder show now? `hasArrivedInTown`: an Alert in town starts over. */
     isShowing(key: string, style: Style, now: number, isInTown: boolean, hasArrivedInTown: boolean): boolean {
         this.seen.add(key);
-        const isTownAlert = style.when === "townText";
+        const isTownAlert = style.when === "townAlert";
         let since = this.dueSince.get(key);
         if (since === undefined || (isTownAlert && hasArrivedInTown)) {
             since = now;

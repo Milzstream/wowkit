@@ -46,13 +46,13 @@ describe("the opacity of a glow", () => {
         expect(world.glowAlphasOn(2)).toEqual([1]);
     });
 
-    it("follows the percent the player set for the kind", () => {
+    it("follows the percent the player set for the type", () => {
         const world = start({ styles: { proc: { opacity: 30 } } });
         expect(world.glowAlphasOn(1)).toEqual([0.3]);
         expect(world.glowAlphasOn(2)).toEqual([1]);
     });
 
-    it("follows the percent the player set for the spell, over the one of the kind", () => {
+    it("follows the percent the player set for the spell, over the one of the type", () => {
         const world = start({ styles: { proc: { opacity: 30 } }, spellStyles: { "proc:Overpower": { opacity: 70 } } });
         expect(world.glowAlphasOn(1)).toEqual([0.7]);
     });
@@ -70,23 +70,23 @@ describe("the message of a reminder", () => {
         expect(world.notice()).toBe("");
     });
 
-    it("is in the color of the glow when the player switched it on for the kind", () => {
-        const world = start({ styles: { proc: { isTextOn: true } } });
+    it("is in the color of the glow when the player switched it on for the type", () => {
+        const world = start({ styles: { proc: { isMessageOn: true } } });
         expect(world.notice()).toBe("|cffff1f14Proc|r");
     });
 
     it("is in the color the player picked for the spell", () => {
-        const world = start({ styles: { proc: { isTextOn: true } }, spellStyles: { "proc:Overpower": { color: [0, 1, 0] } } });
+        const world = start({ styles: { proc: { isMessageOn: true } }, spellStyles: { "proc:Overpower": { color: [0, 1, 0] } } });
         expect(world.notice()).toBe("|cff00ff00Proc|r");
     });
 
-    it("can be off for one spell although the kind has it on", () => {
-        const world = start({ styles: { proc: { isTextOn: true } }, spellStyles: { "proc:Overpower": { isTextOn: false } } });
+    it("can be off for one spell although the type has it on", () => {
+        const world = start({ styles: { proc: { isMessageOn: true } }, spellStyles: { "proc:Overpower": { isMessageOn: false } } });
         expect(world.notice()).toBe("");
     });
 
-    it("can be on for one spell although the kind has it off", () => {
-        const world = start({ spellStyles: { "cooldown:Recklessness": { isTextOn: true } } });
+    it("can be on for one spell although the type has it off", () => {
+        const world = start({ spellStyles: { "cooldown:Recklessness": { isMessageOn: true } } });
         expect(world.notice()).toBe("|cffffffffCooldown ready|r");
     });
 });
@@ -109,7 +109,7 @@ describe("the sound of a reminder", () => {
         useAndRecoverRecklessness(world);
     });
 
-    it("is the sound of the spell, over the one of the kind", () => {
+    it("is the sound of the spell, over the one of the type", () => {
         // Recklessness is ready in combat; Overpower is not usable yet
         expect(world.sounds).toEqual([12889]);
         world.state.unusableSpells[OVERPOWER.id] = undefined;

@@ -24,7 +24,7 @@ describe("the table of looks", () => {
         toggleTable();
     });
 
-    it("opens with /gb, a row for each kind and for each spell of the class", () => {
+    it("opens with /gb, a row for each type and for each spell of the class", () => {
         const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks");
         expect(window?.isShown).toBe(true);
         for (const label of ["Missing buff", "Ready cooldown", "Proc", "Recklessness"]) {
@@ -32,7 +32,7 @@ describe("the table of looks", () => {
         }
     });
 
-    it("shows no kind the character has no spell of: a warrior has no weapon buff and no reagent", () => {
+    it("shows no type the character has no spell of: a warrior has no weapon buff and no reagent", () => {
         expect(findLabel(world, "Weapon buff")).toBeUndefined();
         expect(findLabel(world, "Low reagent")).toBeUndefined();
     });
@@ -42,16 +42,16 @@ describe("the table of looks", () => {
         expect(row.enabled.isChecked).toBe(true);
         row.enabled.isChecked = false;
         row.enabled.scripts.OnClick!(row.enabled);
-        expect((world.getSavedSettings()?.glowOn as Record<string, boolean>)["1719"]).toBe(false);
+        expect((world.getSavedSettings()?.enabledSpells as Record<string, boolean>)["1719"]).toBe(false);
         expect(world.glowsOn(2)).toBe(0);
     });
 
-    it("switches a whole kind off in the On column", () => {
+    it("switches a whole type off in the On column", () => {
         const row = findRow(world, "Ready cooldown");
         row.enabled.isChecked = false;
         row.enabled.scripts.OnClick!(row.enabled);
         expect(world.getSavedSettings()?.showCooldowns).toBe(false);
-        // The spells of the kind are faded: they will not glow, whatever their own box says
+        // The spells of the type are faded: they will not glow, whatever their own box says
         expect(findLabel(world, "Recklessness")!.parent!.alpha).toBe(0.4);
     });
 
@@ -79,7 +79,7 @@ describe("the table of looks", () => {
         expect(world.glowAlphasOn(2)).toEqual([0.4]);
     });
 
-    it("changes the opacity of a kind for all of its spells", () => {
+    it("changes the opacity of a type for all of its spells", () => {
         const row = findRow(world, "Ready cooldown");
         row.opacity.text = "60";
         row.opacity.scripts.OnEnterPressed!(row.opacity);
@@ -91,7 +91,7 @@ describe("the table of looks", () => {
         const row = findRow(world, "Recklessness");
         row.message.isChecked = true;
         row.message.scripts.OnClick!(row.message);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.isTextOn).toBe(true);
+        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.isMessageOn).toBe(true);
         expect(world.notice()).toContain("Cooldown ready");
     });
 

@@ -149,15 +149,15 @@ describe("a priest who chose how the glow moves", () => {
             (frame) => frame.parent === buttonFrame && frame.template === "ActionButtonSpellAlertTemplate" && frame.isShown,
         )!;
         expect(shown.ProcStartFlipbook!.isShown).toBe(false);
-        const kindRow = findLabel(world, "Missing buff")!.parent;
-        expect(world.frames.some((frame) => frame.parent === kindRow && frame.text === "Circling")).toBe(true);
+        const typeRow = findLabel(world, "Missing buff")!.parent;
+        expect(world.frames.some((frame) => frame.parent === typeRow && frame.text === "Circling")).toBe(true);
     });
 
     it("keeps, on the Settings page, only what a circling glow does on a round button: breathing by default", () => {
         const world = createWorld(setUp);
-        expect(world.getSavedSettings()?.roundGlowStyle).toBe("breathing");
-        world.setOption("roundGlowStyle", "still");
-        expect(world.getSavedSettings()?.roundGlowStyle).toBe("still");
+        expect(world.getSavedSettings()?.roundAnimation).toBe("breathing");
+        world.setOption("roundAnimation", "still");
+        expect(world.getSavedSettings()?.roundAnimation).toBe("still");
         const [hasGlowStyle] = pcall(() => world.setOption("glowStyle", "still"));
         expect(hasGlowStyle).toBe(false);
     });

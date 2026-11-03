@@ -7,7 +7,7 @@ import type { ReagentsService } from "../reagents/reagents.service";
 import type { ClockService, NoticeService, PlayerService } from "@wowkit/wow";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { LowReagent } from "../reagents/reagent.interface";
-import type { CustomRemindersService } from "./custom-reminders.service";
+import type { AddedRemindersService } from "./added-reminders.service";
 import type { AddonSettingsService, Style } from "../settings/settings.interface";
 import { readWhenState } from "../tick/when-state";
 
@@ -18,7 +18,7 @@ export class TownVisitService implements OnReady {
     constructor(
         private readonly player: PlayerService,
         private readonly reagents: ReagentsService,
-        private readonly customReminders: CustomRemindersService,
+        private readonly addedReminders: AddedRemindersService,
         private readonly settings: AddonSettingsService,
         private readonly notice: NoticeService,
         private readonly locale: AddonLocale,
@@ -52,13 +52,13 @@ export class TownVisitService implements OnReady {
     /** The reagents running low whose message is on and may show here, by the look of their own row. */
     private listTold(): { stock: LowReagent; style: Style }[] {
         if (this.settings.get("isMuted") || !this.settings.get("showReagents")) return [];
-        const reagentOn = this.settings.get("reagentOn");
-        const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false);
-        const added = this.customReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
+        const enabledReagents = this.settings.get("enabledReagents");
+        const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => enabledReagents[String(reagent.itemId)] !== false);
+        const added = this.addedReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
         const now = readWhenState(this.player, true);
         return [...listed, ...added]
             .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
-            .filter((entry) => entry.style.isTextOn && now[entry.style.when]);
+            .filter((entry) => entry.style.isMessageOn && now[entry.style.when]);
     }
 
     private show(told: { stock: LowReagent; style: Style }[]): void {
