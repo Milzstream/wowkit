@@ -1,5 +1,5 @@
-// The low reagents' message: it names the reagents running low, if the reagent's message is on, where their look's When
-// lets it (in a town or an inn by default, where reagents are sold; or anywhere), and again while there if it repeats.
+// The low reagents' message: it names the reagents running low, if the reagent's message is on, where and when their
+// look's When lets it (in a town or an inn by default, where reagents are sold), and again while it does if it repeats.
 // Their glow, on the group buffs, is the finder's.
 import { Interval, OnGameEvent, type OnReady } from "@wowkit/core";
 import type { StyleService } from "../settings/style.service";
@@ -9,6 +9,7 @@ import type { AddonLocale } from "../locale/locale.interface";
 import type { LowReagent } from "../reagents/reagent.interface";
 import type { CustomRemindersService } from "./custom-reminders.service";
 import type { AddonSettingsService, Style } from "../settings/settings.interface";
+import { readWhenState } from "../tick/when-state";
 
 export class TownVisitService implements OnReady {
     /** When the message last showed; undefined while it has not since the reagents it names could be told (a new visit). */
@@ -54,10 +55,10 @@ export class TownVisitService implements OnReady {
         const reagentOn = this.settings.get("reagentOn");
         const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false);
         const added = this.customReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
-        const isResting = this.player.isResting();
+        const now = readWhenState(this.player, true);
         return [...listed, ...added]
             .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
-            .filter((entry) => entry.style.isTextOn && (entry.style.when === "always" || isResting));
+            .filter((entry) => entry.style.isTextOn && now[entry.style.when]);
     }
 
     private show(told: { stock: LowReagent; style: Style }[]): void {

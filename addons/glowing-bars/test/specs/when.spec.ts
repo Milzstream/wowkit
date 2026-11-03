@@ -18,7 +18,7 @@ import { findLabel, readSaved, toggleTable } from "./table.helpers";
 import { createArcher } from "./low-stock.helpers";
 
 const RIGHTEOUSNESS: SpellDefinition = { id: 20154, name: "Seal of Righteousness", rank: 1, icon: 132325, isHelpful: true };
-const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Message in town"];
+const WHEN_LABELS = ["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Alert in town"];
 
 /** A priest missing Fortitude, which sits on button 1. */
 function setUpPriest(state: ClientState): void {
@@ -133,23 +133,23 @@ describe("the When button of the table", () => {
         expect(button.text).toBe("Enemy targeted");
     });
 
-    it("has In town, Message in town and Always for the low reagents, Message in town by default", () => {
+    it("has every choice for the low reagents, as for the low stock, Alert in town by default", () => {
         const world = startPriest();
         toggleTable();
         const button = findWhenButton(world, "Low reagent");
         const seen: string[] = [];
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
             seen.push(button.text!);
             button.scripts.OnClick!(button, "LeftButton");
         }
-        expect(seen).toEqual(["Message in town", "Always", "In town"]);
-        expect(button.text).toBe("Message in town");
+        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
+        expect(button.text).toBe("Alert in town");
     });
 });
 
 describe("a When saved that the kind does not have", () => {
     it("is the kind's default again", () => {
-        const world = startPriest({ styles: { buff: { when: "town" }, reagent: { when: "combat" } } });
+        const world = startPriest({ styles: { buff: { when: "town" }, reagent: { when: "sometimes" } } });
         expect(readSaved(world, "styles").buff?.when).toBeUndefined();
         expect(readSaved(world, "styles").reagent?.when).toBeUndefined();
         expect(world.glowsOn(1)).toBe(1);
@@ -186,7 +186,7 @@ describe("a low stock", () => {
     }
 
     it("that shows in town glows and tells nothing out of one, both in one", () => {
-        const world = createArcher(12, { styles: { stock: { when: "town" } } });
+        const world = createArcher(12, { styles: { stock: { when: "town" } } }, true, false);
         expect(world.glowsOn(1)).toBe(0);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
@@ -194,15 +194,15 @@ describe("a low stock", () => {
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
     });
 
-    it("that shows its message in town glows anywhere, and tells only in one", () => {
-        const world = createArcher(12, { styles: { stock: { when: "townText" } } });
+    it("glows anywhere by default, and tells only in a town (Alert in town)", () => {
+        const world = createArcher(12, {}, true, false);
         expect(world.glowsOn(1)).toBe(1);
         expect(world.notice()).not.toContain("Running low");
         arriveInTown(world);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
     });
 
-    it("has every choice of the When column", () => {
+    it("has every choice of the When column, Alert in town by default", () => {
         const world = createArcher(12);
         toggleTable();
         const button = findWhenButton(world, "Low stock");
@@ -211,6 +211,6 @@ describe("a low stock", () => {
             seen.push(button.text!);
             button.scripts.OnClick!(button, "LeftButton");
         }
-        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted", "In town", "Message in town"]);
+        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
     });
 });

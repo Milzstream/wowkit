@@ -8,9 +8,8 @@ export type ColorKey = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "p
 export type AddonSettingsService = SettingsService<AddonSettings>;
 
 /**
- * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted, or (the low
- * reagents) only in a town or an inn; or (the low reagents and the low stock) glowing anywhere, but its message and its
- * repeat only in a town or an inn.
+ * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted; or (the low
+ * reagents and the low stock) only in a town or an inn, or glowing anywhere with its message and repeat only there.
  */
 export type When = "always" | "combat" | "noCombat" | "target" | "town" | "townText";
 

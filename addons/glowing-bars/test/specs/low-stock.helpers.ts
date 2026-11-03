@@ -4,13 +4,15 @@ import { createWorld, playAs, PRIEST, type World } from "@wowkit/test-kit";
 export const ARROW = 2512;
 export const ARROW_KEY = 1000000000 + ARROW;
 
-export function createArcher(count: number, savedSettings: Record<string, unknown> = {}, isOnBars = true): World {
+/** In a town by default, where its message comes (Alert in town). */
+export function createArcher(count: number, savedSettings: Record<string, unknown> = {}, isOnBars = true, isInTown = true): World {
     const world = createWorld(
         (state) => {
             playAs(state, PRIEST);
             state.itemNames[ARROW] = "Rough Arrow";
             state.bags[ARROW] = count;
             if (isOnBars) state.barItems[1] = ARROW;
+            state.isResting = isInTown;
         },
         { customCues: [{ id: ARROW, kind: "stock" }], ...savedSettings },
     );

@@ -1,14 +1,16 @@
 // One tick: look at the game, then show what is due. Runs every 0.2 seconds, and sooner when
 // something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look says it
 // may (the When column of the table): always, in combat, out of combat, with a living enemy targeted, or (the low
-// reagents) in a town or an inn. What is due is the finders' to say; when it shows is the player's, for each kind and spell.
+// reagents and stock) in a town or an inn. What is due is the finders' to say; when it shows is the player's, for each kind
+// and spell.
 import { Interval, type OnFirstLogin, type OnLogout, type OnReady } from "@wowkit/core";
 import type { PlayerService } from "@wowkit/wow";
-import type { ColorKey, When } from "../settings/settings.interface";
+import type { ColorKey } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { FindRemindersService } from "./find-reminders.service";
 import type { ShowRemindersService } from "./show-reminders.service";
 import type { Reminders } from "./tick.interface";
+import { readWhenState } from "./when-state";
 
 export class TickService implements OnFirstLogin, OnLogout, OnReady {
     private isRunning = false;
@@ -41,16 +43,7 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
 
     /** The reminders that may show now; the others are left out, glow, message and sound alike. */
     private filterByWhen(reminders: Reminders): Reminders {
-        const isInCombat = this.player.isInCombat();
-        const now: { [when in When]: boolean } = {
-            always: true,
-            combat: isInCombat,
-            noCombat: !isInCombat,
-            target: this.player.hasEnemyTarget(),
-            town: this.player.isResting(),
-            // Its glow anywhere; its message and repeat are kept for a town where they are shown
-            townText: true,
-        };
+        const now = readWhenState(this.player, false);
         const isShown = (kind: ColorKey, id: number) => now[this.styles.getStyle(kind, id).when];
         const pickShown = (kind: ColorKey, ids: number[]) => ids.filter((id) => isShown(kind, id));
         const weapon = reminders.weaponSpell;

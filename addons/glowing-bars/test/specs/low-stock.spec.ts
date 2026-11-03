@@ -155,7 +155,7 @@ describe("the message of a low stock", () => {
                 state.itemNames[ARROW] = "Rough Arrow";
                 state.bags[ARROW] = 12;
             },
-            { customCues: [{ id: ARROW, kind: "stock" }], styles: { buff: { isTextOn: true } } },
+            { customCues: [{ id: ARROW, kind: "stock" }], styles: { buff: { isTextOn: true }, stock: { when: "always" } } },
         );
         world.advance(1);
         expect(world.notice()).toContain("Running low: Rough Arrow (12)");
@@ -192,6 +192,7 @@ describe("two items running low one after the other", () => {
                     { id: ARROW, kind: "stock" },
                     { id: WATER, kind: "stock" },
                 ],
+                styles: { stock: { when: "always" } },
             },
         );
         world.advance(2);

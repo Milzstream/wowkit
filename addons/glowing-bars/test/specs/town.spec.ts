@@ -62,6 +62,21 @@ describe("the reagent message out of a town", () => {
         expect(world.notice()).not.toContain("Reagents running low");
     });
 
+    it("follows the other choices of When too: out of combat, but not in a fight", () => {
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "noCombat" } } });
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        const inFight = createWorld(
+            (state) => {
+                setUpPriest(state, false);
+                state.isInCombat = true;
+            },
+            { styles: { reagent: { isTextOn: true, when: "noCombat" } } },
+        );
+        inFight.advance(2);
+        expect(inFight.notice()).not.toContain("Reagents running low");
+    });
+
     it("comes when the player chose the reagents to show always", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "always" } } });
         world.advance(2);

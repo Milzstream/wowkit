@@ -10,7 +10,7 @@ import { COLUMN, ROW_HEIGHT, findCenteredX } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
 
 /** The kinds whose When has choices of their own, and so a tooltip of its own. */
-const WHEN_TIPS: { [kind in ColorKey]?: TextKey } = { reagent: "TIP_WHEN_REAGENT", stock: "TIP_WHEN_STOCK" };
+const WHEN_TIPS: { [kind in ColorKey]?: TextKey } = { reagent: "TIP_WHEN_TOWN", stock: "TIP_WHEN_TOWN" };
 
 /** The buttons of a row that click through choices. */
 export interface ChoiceButtons {

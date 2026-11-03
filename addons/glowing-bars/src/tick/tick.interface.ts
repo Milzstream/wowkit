@@ -23,7 +23,7 @@ export interface Reminders {
     lowStock: LowStock[];
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */
     reagentSpells: number[];
-    /** In a town or an inn: only there a reminder whose When is "message in town" says so, and repeats. */
+    /** In a town or an inn: only there a reminder whose When is "alert in town" says so, and repeats. */
     isInTown?: boolean;
     /** Important cooldowns that are ready and on a button: their buttons glow. */
     readyCooldowns: number[];
