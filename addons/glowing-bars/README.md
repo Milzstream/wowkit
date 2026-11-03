@@ -32,7 +32,7 @@ Your Rotation.
   for all items or for each one) its button glows if it is on a bar, even at none, and in a town or an inn a message on the screen says how many are left.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
   Innervate...) or of your race (Blood Fury, Stoneform, Desperate Prayer...) glows when it is ready again after you used
-  it, or after it was running as the fight began: for 3 seconds by default (1, 2, 5, 10, or until you press it). If you like, the ready
+  it, or after it was running as the fight began: for 3 seconds by default (its Glow time in the table: 1, 2, 5, 10 seconds, or until you press it). If you like, the ready
   ones glow as a fight starts too, a reminder to use them. Out of
   combat they glow only if you set their When to Always or Out of combat. The list is a default you can switch off spell by spell. When the client hides a
   cooldown in combat, the addon remembers the one it saw or started with a cast.
@@ -47,8 +47,10 @@ Your Rotation.
   what is due.
 
 Every kind of reminder has the same four settings: the **color** of its glow and message, the **opacity** of the glow
-(1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each can also **repeat** their sound every 5, 10, 30 or 60 seconds while the glow is on,
-the message coming again with it (off by default). And **when** it shows: Always, In combat, Out of combat, or only with a
+(1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each also has a **glow time**: how long the glow and the message show once it is due
+(1, 2, 3, 5 or 10 seconds; until done, the default, keeps them until you cast the buff or press the cooldown; the ready
+cooldowns 3 seconds). And each can **repeat** every 5, 10, 30 or 60 seconds: the glow, the message and the sound come
+again, for the glow time (off by default). And **when** it shows: Always, In combat, Out of combat, or only with a
 living Enemy targeted (a shaman's shield glowing as you target a mob before the pull, say). The low reagents and the low
 stock can also show In town (a city or an inn), or Alert in town, their default: the glow anywhere, the message and the
 repeat of the sound only in a town. By default everything else shows always, but the ready cooldowns and the seals only in combat. The defaults: missing

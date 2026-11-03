@@ -87,7 +87,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("glows for 1 second once Recklessness is back, when the player chose the shortest", () => {
-        world.setOption("cooldownGlowSeconds", "1");
+        world = createWorld(setUpWarrior, { styles: { cooldown: { glowSeconds: 1 } } });
         world.state.isInCombat = true;
         world.state.cooldowns[RECKLESSNESS.id] = { start: 0, duration: 99999 };
         world.advance(0.5);
@@ -99,7 +99,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     });
 
     it("glows until it is pressed when the player chose so", () => {
-        world.setOption("cooldownGlowSeconds", "0");
+        world = createWorld(setUpWarrior, { styles: { cooldown: { glowSeconds: 0 } } });
         world.state.isInCombat = true;
         world.state.cooldowns[RECKLESSNESS.id] = { start: 0, duration: 99999 };
         world.advance(0.5);
@@ -228,9 +228,11 @@ describe("a warrior who added Recklessness as a cooldown and as a proc", () => {
     });
 });
 
-describe("a warrior who saved the shortest glow of a cooldown", () => {
-    it("keeps it after a reload: 1 second is one of the choices", () => {
-        const world = createWorld(setUpWarrior, { cooldownGlowSeconds: 1 });
-        expect(world.getSavedSettings()?.cooldownGlowSeconds).toBe(1);
+describe("a warrior who saved a glow time", () => {
+    it("keeps one of the choices after a reload, and drops another", () => {
+        const world = createWorld(setUpWarrior, { styles: { cooldown: { glowSeconds: 1 }, buff: { glowSeconds: 7 } } });
+        const styles = world.getSavedSettings()?.styles as Record<string, { glowSeconds?: number } | undefined>;
+        expect(styles.cooldown?.glowSeconds).toBe(1);
+        expect(styles.buff?.glowSeconds).toBeUndefined();
     });
 });

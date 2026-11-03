@@ -20,7 +20,6 @@ export function createDefaultSettings(): AddonSettings {
         showReagents: true,
         showCooldowns: true,
         showCooldownsAtFightStart: false,
-        cooldownGlowSeconds: 3,
         reagentLow: 5,
         stockLow: 20,
         showStock: true,
@@ -48,19 +47,19 @@ export function createDefaultSettings(): AddonSettings {
 
 /** The look of each kind of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
 export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
-    buff: { color: [0.2, 0.55, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always" },
-    weapon: { color: [1, 0.55, 0.1], opacity: 100, isTextOn: false, sound: "alarm2", repeat: 0, when: "always" },
+    buff: { color: [0.2, 0.55, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
+    weapon: { color: [1, 0.55, 0.1], opacity: 100, isTextOn: false, sound: "alarm2", repeat: 0, when: "always", glowSeconds: 0 },
     // The paladin's gold
-    seal: { color: [1, 0.85, 0.2], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat" },
+    seal: { color: [1, 0.85, 0.2], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat", glowSeconds: 0 },
     // #1AA6BF, a deep turquoise: a lighter cyan glows almost white
-    tracking: { color: [0.1, 0.65, 0.75], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always" },
-    cooldown: { color: [1, 1, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat" },
-    proc: { color: [1, 0.12, 0.08], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always" },
-    rank: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "alarm1", repeat: 0, when: "always" },
+    tracking: { color: [0.1, 0.65, 0.75], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
+    cooldown: { color: [1, 1, 1], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "combat", glowSeconds: 3 },
+    proc: { color: [1, 0.12, 0.08], opacity: 100, isTextOn: false, sound: "none", repeat: 0, when: "always", glowSeconds: 0 },
+    rank: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "alarm1", repeat: 0, when: "always", glowSeconds: 0 },
     // Its message is the town's: it names the reagents to buy
-    reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText" },
+    reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText", glowSeconds: 0 },
     // A quieter red than the procs'
-    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText" },
+    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText", glowSeconds: 0 },
 };
 
 /**
@@ -78,8 +77,8 @@ export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 /** The choices of how visible a faded bar's buttons are, in percent. */
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
-/** The choices of how long a cooldown glows once it is back (seconds; 0 = until it is pressed). */
-export const COOLDOWN_GLOW_CHOICES = [1, 2, 3, 5, 10, 0];
+/** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
+export const GLOW_SECONDS_CHOICES = [0, 1, 2, 3, 5, 10];
 
 /** The choices of from how many missing a buff its group version is asked for. */
 export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
@@ -89,6 +88,11 @@ export const CUE_KINDS: CueKind[] = ["cooldown", "proc", "buff", "weapon", "reag
 
 /** The kinds in the order the tables list them. */
 export const KIND_ORDER: ColorKey[] = ["buff", "weapon", "seal", "tracking", "reagent", "stock", "cooldown", "proc", "rank"];
+
+/** A saved number that is one of the choices; undefined for any other. */
+function pickChoice(value: number | undefined, choices: number[]): number | undefined {
+    return value !== undefined && choices.includes(value) ? value : undefined;
+}
 
 /** A saved When that the kind has; undefined for any other (the kind of a spell look not known: none). */
 function repairWhen(when: unknown, kind: ColorKey | undefined): When | undefined {
@@ -102,7 +106,8 @@ function repairStyle(style: StyleOverride | undefined, kind: ColorKey | undefine
     repaired.when = repairWhen(style.when, kind);
     if (isSoundKey(style.sound)) repaired.sound = style.sound;
     if (type(style.isTextOn) === "boolean") repaired.isTextOn = style.isTextOn;
-    if (REPEAT_CHOICES.includes(style.repeat as number)) repaired.repeat = style.repeat;
+    repaired.repeat = pickChoice(style.repeat, REPEAT_CHOICES);
+    repaired.glowSeconds = pickChoice(style.glowSeconds, GLOW_SECONDS_CHOICES);
     const opacity = tonumber(style.opacity);
     if (opacity !== undefined) repaired.opacity = math.max(1, math.min(100, math.floor(opacity + 0.5)));
     const color = style.color;
@@ -128,8 +133,6 @@ export function repairSettings(values: AddonSettings): void {
     values.customCues = (values.customCues ?? []).filter(
         (cue) => type(cue) === "table" && tonumber(cue.id) !== undefined && CUE_KINDS.includes(cue.kind),
     );
-    if (!COOLDOWN_GLOW_CHOICES.includes(values.cooldownGlowSeconds))
-        values.cooldownGlowSeconds = createDefaultSettings().cooldownGlowSeconds;
     values.reagentLow = repairLimit(values.reagentLow, defaults.reagentLow);
     values.stockLow = repairLimit(values.stockLow, defaults.stockLow);
     // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one

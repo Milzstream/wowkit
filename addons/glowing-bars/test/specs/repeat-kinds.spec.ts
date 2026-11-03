@@ -114,7 +114,7 @@ describe("the repeat of a sound", () => {
                 learnSpell(state, RECKLESSNESS);
                 state.bars[1] = RECKLESSNESS.id;
             },
-            { styles: { cooldown: { sound: "raidwarning", repeat: 5 } }, cooldownGlowSeconds: 0 },
+            { styles: { cooldown: { sound: "raidwarning", repeat: 5, glowSeconds: 0 } } },
         );
         world.advance(1);
         world.state.isInCombat = true;

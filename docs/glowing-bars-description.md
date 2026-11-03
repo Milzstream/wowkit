@@ -39,7 +39,8 @@ Type **/gb** to open the table. Every reminder type has the same settings, and e
 *   **Glow opacity**, 1 to 100 %
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds
-*   **Repeat**: the sound plays again every 5, 10, 30 or 60 seconds while the glow is on, and the message with it (off by default)
+*   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)
+*   **Repeat**: every 5, 10, 30 or 60 seconds the glow, the message and the sound come again, for the glow time (off by default)
 *   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock also in town, or with their message only in town
 *   **Enabled**: turn a whole type, or one spell, on or off
 

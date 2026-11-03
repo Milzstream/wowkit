@@ -112,6 +112,7 @@ export class StyleWindowService {
             [COLUMN.sound, "COL_SOUND", true],
             [COLUMN.repeat, "COL_REPEAT", true],
             [COLUMN.when, "COL_WHEN", true],
+            [COLUMN.glowTime, "COL_GLOW_TIME", true],
             [COLUMN.lowAt, "COL_LOW_AT", true],
             [COLUMN.enabled, "COL_ON", true],
         ];

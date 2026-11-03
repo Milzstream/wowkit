@@ -187,7 +187,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     game.spells.useIdAlias((spellId) => customCues.getEffectiveId(spellId));
     const tracker = addon.register(new CooldownTrackerService(game.spells, game.cooldowns, game.clock));
     const glowCues = addon.register(
-        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, game.clock, settings, customCues),
+        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, customCues),
     );
     const fedBuffs = addon.register(
         new FedBuffsService(customCues, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
@@ -233,7 +233,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
     const shower = addon.register(
         new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock, fedBuffs),
     );
-    const tick = addon.register(new TickService(finder, shower, game.player, styles));
+    const tick = addon.register(new TickService(finder, shower, game.player, styles, game.clock));
     const refresh = addon.register(new RefreshService(tick, shower, buffs.state, game.clock, game.barRefresh));
     addon.register(new DisplayService(shower, tick));
     addon.register(new EquipmentService(refresh, game.player, game.weaponEnchants, reminders.weapon));
@@ -285,7 +285,7 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const weaponSection = addon.register(
         new WeaponSection(locale, game.spells, reminders.weaponChoice, settings, controls, reminderControls),
     );
-    const glowsSection = addon.register(new GlowsSection(locale, settings, controls, reminderControls, reminders.glowCues));
+    const glowsSection = addon.register(new GlowsSection(reminderControls, reminders.glowCues));
     const table = makeTable(addon, addonName, game, texts, buffs, reminders);
     const barsSection = addon.register(new BarsSection(locale, settings, controls, reminderControls));
     const glowStyleSection = addon.register(new GlowStyleSection(locale, settings, controls));

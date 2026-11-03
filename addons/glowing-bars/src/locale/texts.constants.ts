@@ -52,11 +52,6 @@ export const TEXTS = {
     OPT_COOLDOWNS_FIGHT_START: "Also at the start of a fight",
     TIP_COOLDOWNS_FIGHT_START:
         "When a fight starts, every ready cooldown glows too, as a reminder to use it (Berserking, Recklessness...).",
-    OPT_COOLDOWN_SECONDS: "Glow time when ready",
-    TIP_COOLDOWN_SECONDS: "How long a cooldown glows in combat once it's ready again.",
-    OPT_SECOND: "%d second",
-    OPT_SECONDS: "%d seconds",
-    OPT_UNTIL_PRESSED: "Until pressed",
 
     HDR_LOOKS: "Reminders",
     OPT_TABLE: "Colors, sounds and on/off per spell",
@@ -119,7 +114,11 @@ export const TEXTS = {
     REPEAT_OFF: "Off",
     REPEAT_SECONDS: "%d s",
     TIP_REPEAT:
-        "Plays the sound again every few seconds while the glow is on, and shows the message again with it. Off plays it once, as the glow starts. Click for the next choice, right-click for the one before.",
+        "Every so many seconds, the glow, the message and the sound come again, for the glow time (with Until done the glow stays, and the sound and the message come again). Off shows them once, as the reminder starts. Click for the next choice, right-click for the one before.",
+    COL_GLOW_TIME: "Glow time",
+    GLOW_UNTIL_DONE: "Until done",
+    TIP_GLOW_TIME:
+        "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown... Click for the next choice, right-click for the one before.",
     COL_WHEN: "When",
     WHEN_ALWAYS: "Always",
     WHEN_COMBAT: "In combat",

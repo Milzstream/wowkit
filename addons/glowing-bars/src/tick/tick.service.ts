@@ -1,25 +1,31 @@
 // One tick: look at the game, then show what is due. Runs every 0.2 seconds, and sooner when
 // something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look says it
 // may (the When column of the table): always, in combat, out of combat, with a living enemy targeted, or (the low
-// reagents and stock) in a town or an inn. What is due is the finders' to say; when it shows is the player's, for each kind
-// and spell.
+// reagents and stock) in a town or an inn; and then for its glow time, again with its repeat (GlowSchedule). What is due
+// is the finders' to say; when it shows is the player's, for each kind and spell.
 import { Interval, type OnFirstLogin, type OnLogout, type OnReady } from "@wowkit/core";
-import type { PlayerService } from "@wowkit/wow";
-import type { ColorKey } from "../settings/settings.interface";
+import type { ClockService, PlayerService } from "@wowkit/wow";
 import type { StyleService } from "../settings/style.service";
 import type { FindRemindersService } from "./find-reminders.service";
 import type { ShowRemindersService } from "./show-reminders.service";
 import type { Reminders } from "./tick.interface";
 import { readWhenState } from "./when-state";
+import { filterReminders } from "./reminder-filter";
+import { GlowSchedule } from "./glow-schedule";
 
 export class TickService implements OnFirstLogin, OnLogout, OnReady {
     private isRunning = false;
+    /** When each due reminder shows: its glow time and repeat. */
+    private readonly schedule = new GlowSchedule();
+    /** Was the player in a town at the last tick: arriving, an Alert in town starts over. */
+    private wasInTown = false;
 
     constructor(
         private readonly finder: FindRemindersService,
         private readonly shower: ShowRemindersService,
         private readonly player: PlayerService,
         private readonly styles: StyleService,
+        private readonly clock: ClockService,
     ) {}
 
     onFirstLogin(): void {
@@ -38,30 +44,26 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
     @Interval(200)
     tick(): void {
         if (!this.isRunning) return;
-        this.shower.showReminders(this.filterByWhen(this.finder.findReminders()));
+        this.shower.showReminders(this.filterShowing(this.finder.findReminders()));
     }
 
-    /** The reminders that may show now; the others are left out, glow, message and sound alike. */
-    private filterByWhen(reminders: Reminders): Reminders {
+    /**
+     * The reminders that may show now: by the When of their look, then by its glow time and repeat; the others are left
+     * out, glow, message and sound alike.
+     */
+    private filterShowing(reminders: Reminders): Reminders {
         const now = readWhenState(this.player, false);
-        const isShown = (kind: ColorKey, id: number) => now[this.styles.getStyle(kind, id).when];
-        const pickShown = (kind: ColorKey, ids: number[]) => ids.filter((id) => isShown(kind, id));
-        const weapon = reminders.weaponSpell;
+        const byWhen = filterReminders(reminders, (kind, id) => now[this.styles.getStyle(kind, id).when]);
+        const time = this.clock.getCurrentTime();
+        const isInTown = now.town;
+        const hasArrivedInTown = isInTown && !this.wasInTown;
+        this.wasInTown = isInTown;
+        this.schedule.startTick();
         return {
-            ...reminders,
-            isInTown: this.player.isResting(),
-            buffsToCast: pickShown("buff", reminders.buffsToCast),
-            buffsNotOnBars: pickShown("buff", reminders.buffsNotOnBars),
-            partySuggestions: reminders.partySuggestions.filter((suggestion) => isShown("buff", suggestion.spellId)),
-            weaponSpell: weapon !== undefined && isShown("weapon", weapon) ? weapon : undefined,
-            customWeaponSpells: pickShown("weapon", reminders.customWeaponSpells),
-            seals: pickShown("seal", reminders.seals),
-            trackings: pickShown("tracking", reminders.trackings),
-            outdatedRanks: reminders.outdatedRanks.filter((rank) => isShown("rank", rank.id)),
-            lowStock: reminders.lowStock.filter((stock) => isShown("stock", stock.key)),
-            reagentSpells: pickShown("reagent", reminders.reagentSpells),
-            readyCooldowns: pickShown("cooldown", reminders.readyCooldowns),
-            procs: pickShown("proc", reminders.procs),
+            ...filterReminders(byWhen, (kind, id) =>
+                this.schedule.isShowing(`${kind}:${id}`, this.styles.getStyle(kind, id), time, isInTown, hasArrivedInTown),
+            ),
+            isInTown,
         };
     }
 }

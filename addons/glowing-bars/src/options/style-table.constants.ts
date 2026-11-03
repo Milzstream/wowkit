@@ -31,9 +31,10 @@ export const COLUMN = {
     sound: { x: 542, width: 130 },
     repeat: { x: 672, width: 62 },
     when: { x: 734, width: 108 },
-    lowAt: { x: 842, width: 56 },
-    enabled: { x: 898, width: 66 },
-    actions: { x: 964, width: 72 },
+    glowTime: { x: 842, width: 76 },
+    lowAt: { x: 918, width: 56 },
+    enabled: { x: 974, width: 66 },
+    actions: { x: 1040, width: 72 },
 } satisfies { [name: string]: Column };
 
 /** A row is as wide as its columns. The last one (Reset and X) is there only while a row shows one of its buttons. */
