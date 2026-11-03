@@ -5,7 +5,7 @@
 
 import type { MessagesService, SoundKey } from "@wowkit/ui";
 import type { StyleService } from "../settings/style.service";
-import type { AddonSettingsService, ColorKey } from "../settings/settings.interface";
+import type { AddonSettingsService, ColorKey, Style } from "../settings/settings.interface";
 import {
     type ActionBarsService,
     type BarFadeService,
@@ -149,8 +149,7 @@ export class ShowRemindersService {
                 const lastAt = this.soundPlayedAt.get(key);
                 const isNew =
                     !this.previous[index]!.includes(id) || lastAt === undefined || (hasArrivedInTown && style.when === "townText");
-                const isRepeating = style.repeat > 0 && (style.when !== "townText" || reminders.isInTown === true);
-                const isDue = isRepeating && lastAt !== undefined && now - lastAt >= style.repeat;
+                const isDue = !isNew && this.isRepeatDue(style, lastAt!, now, reminders.isInTown === true);
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
                 if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
             }
@@ -159,6 +158,12 @@ export class ShowRemindersService {
         // A spell that stopped glowing is forgotten: when it glows again, its sound is new
         this.soundPlayedAt = playedAt;
         for (const sound of sounds) this.messages.playAlertSound(sound);
+    }
+
+    /** Is the sound due again? Only where it repeats, and an Alert in town only in a town. */
+    private isRepeatDue(style: Style, lastAt: number, now: number, isInTown: boolean): boolean {
+        const isRepeating = style.repeat > 0 && (style.when !== "townText" || isInTown);
+        return isRepeating && now - lastAt >= style.repeat;
     }
 
     private updateGlows(reminders: Reminders): void {
