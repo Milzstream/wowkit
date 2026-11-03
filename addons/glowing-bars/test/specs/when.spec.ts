@@ -7,6 +7,8 @@ import {
     playAs,
     targetEnemy,
     FORTITUDE,
+    HOLY_CANDLE,
+    PRAYER_OF_FORTITUDE,
     PALADIN,
     PRIEST,
     type ClientState,
@@ -212,5 +214,50 @@ describe("a low stock", () => {
             button.scripts.OnClick!(button, "LeftButton");
         }
         expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted", "In town"]);
+    });
+});
+
+describe("arriving in a town with an Alert in town and no repeat", () => {
+    function arriveInTown(world: World): void {
+        world.state.isResting = true;
+        world.fire("PLAYER_UPDATE_RESTING");
+        world.advance(1);
+    }
+
+    it("plays the low stock's sound and shows its message once more, and no more while there", () => {
+        const world = createArcher(12, { styles: { stock: { sound: "raidwarning" } } }, true, false);
+        expect(world.sounds.length).toBe(1);
+        expect(world.notice()).not.toContain("Running low");
+        arriveInTown(world);
+        expect(world.sounds.length).toBe(2);
+        expect(world.notice()).toContain("Running low: Rough Arrow (12)");
+        world.advance(60);
+        expect(world.sounds.length).toBe(2);
+        expect(world.notice()).not.toContain("Running low");
+    });
+
+    it("plays the low reagent's sound and shows its message once more, and again on the next visit", () => {
+        const world = createWorld(
+            (state) => {
+                playAs(state, PRIEST);
+                learnSpell(state, PRAYER_OF_FORTITUDE);
+                state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
+                state.bags[HOLY_CANDLE] = 0;
+                state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            },
+            { styles: { reagent: { sound: "raidwarning" } } },
+        );
+        world.advance(2);
+        expect(world.sounds.length).toBe(1);
+        arriveInTown(world);
+        expect(world.sounds.length).toBe(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        world.advance(60);
+        expect(world.sounds.length).toBe(2);
+        world.state.isResting = false;
+        world.fire("PLAYER_UPDATE_RESTING");
+        world.advance(5);
+        arriveInTown(world);
+        expect(world.sounds.length).toBe(3);
     });
 });
