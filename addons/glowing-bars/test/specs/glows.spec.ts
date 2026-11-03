@@ -140,8 +140,8 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
         expect(world.glowsOn(2)).toBe(0);
     });
 
-    it("lights Recklessness out of combat when the player asked for it", () => {
-        world.setOption("showCooldownsOutOfCombat", true);
+    it("lights Recklessness out of combat when the player chose it to show always", () => {
+        world = createWorld(setUpWarrior, { styles: { cooldown: { when: "always" } } });
         world.advance(0.5);
         expect(world.glowsOn(2)).toBe(1);
     });

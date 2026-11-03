@@ -70,13 +70,15 @@ export class FindRemindersService {
             procs: this.glowCues.findProcs(),
             reagentSpells,
             lowStock,
-            isInTown: this.player.isResting(),
         };
     }
 
-    /** The group buffs on a button whose reagent runs low, when the player wants to hear about it. */
+    /**
+     * The group buffs on a button whose reagent runs low, when the player wants to hear about it (where: the When of their
+     * look, in a town or an inn by default).
+     */
     private findReagentSpells(): number[] {
-        if (!this.settings.get("showReagents") || this.player.isInCombat()) return [];
+        if (!this.settings.get("showReagents")) return [];
         const reagentOn = this.settings.get("reagentOn");
         const listed = this.reagents
             .findSpellsWithLowReagent((reagent) => reagentOn[String(reagent.itemId)] !== false)
@@ -112,7 +114,6 @@ export class FindRemindersService {
             reagentSpells: [],
             lowStock: [],
             procs: [],
-            isInTown: this.player.isResting(),
         };
     }
 }

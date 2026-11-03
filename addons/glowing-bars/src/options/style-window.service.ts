@@ -111,6 +111,7 @@ export class StyleWindowService {
             [COLUMN.message, "COL_MESSAGE", true],
             [COLUMN.sound, "COL_SOUND", true],
             [COLUMN.repeat, "COL_REPEAT", true],
+            [COLUMN.when, "COL_WHEN", true],
             [COLUMN.lowAt, "COL_LOW_AT", true],
             [COLUMN.enabled, "COL_ON", true],
         ];

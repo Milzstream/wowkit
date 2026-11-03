@@ -55,6 +55,35 @@ describe("a priest who arrives in a town", () => {
     });
 });
 
+describe("the reagent message out of a town", () => {
+    it("does not come by default", () => {
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true } } });
+        world.advance(2);
+        expect(world.notice()).not.toContain("Reagents running low");
+    });
+
+    it("follows the other choices of When too: out of combat, but not in a fight", () => {
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "noCombat" } } });
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        const inFight = createWorld(
+            (state) => {
+                setUpPriest(state, false);
+                state.isInCombat = true;
+            },
+            { styles: { reagent: { isTextOn: true, when: "noCombat" } } },
+        );
+        inFight.advance(2);
+        expect(inFight.notice()).not.toContain("Reagents running low");
+    });
+
+    it("comes when the player chose the reagents to show always", () => {
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "always" } } });
+        world.advance(2);
+        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+    });
+});
+
 describe("the reagent message on the screen", () => {
     it("is on unless the player switched it off", () => {
         expect(createWorld((state) => setUpPriest(state, true)).notice()).toContain("Reagents running low");
@@ -85,7 +114,7 @@ describe("the sound of the reminder", () => {
     });
 
     it("is played when the glow appears", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { sound: "raidwarning" } } });
+        const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { sound: "raidwarning" } } });
         world.state.bars[1] = PRAYER_OF_FORTITUDE.id;
         world.fire("ACTIONBAR_SLOT_CHANGED", 1);
         world.advance(2);
@@ -98,13 +127,13 @@ describe("the group buff on the bar of a priest low on candles", () => {
 
     beforeEach(() => {
         world = createWorld((state) => {
-            setUpPriest(state, false);
+            setUpPriest(state, true);
             state.bars[1] = PRAYER_OF_FORTITUDE.id;
         });
         world.advance(2);
     });
 
-    it("glows, quietly", () => {
+    it("glows, quietly, in a town, although the other reminders keep quiet there", () => {
         expect(world.glowsOn(1)).toBe(1);
         expect(world.glowAlphasOn(1)).toEqual([0.5]);
     });
@@ -116,9 +145,22 @@ describe("the group buff on the bar of a priest low on candles", () => {
         expect(world.glowsOn(1)).toBe(0);
     });
 
-    it("does not glow in combat", () => {
-        world.state.isInCombat = true;
+    it("glows out of a town too by default: only its message waits for one", () => {
+        world.state.isResting = false;
+        world.fire("PLAYER_UPDATE_RESTING");
         world.advance(1);
+        expect(world.glowsOn(1)).toBe(1);
+    });
+
+    it("does not glow out of a town when the player chose it to show only in town", () => {
+        world = createWorld(
+            (state) => {
+                setUpPriest(state, false);
+                state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            },
+            { styles: { reagent: { when: "town" } } },
+        );
+        world.advance(2);
         expect(world.glowsOn(1)).toBe(0);
     });
 
@@ -128,10 +170,16 @@ describe("the group buff on the bar of a priest low on candles", () => {
         expect(world.glowsOn(1)).toBe(0);
     });
 
-    it("glows in a town too, although the other reminders keep quiet there", () => {
-        world.state.isResting = true;
-        world.fire("PLAYER_UPDATE_RESTING");
-        world.advance(1);
+    it("glows anywhere, in combat too, when the player chose it to show always", () => {
+        world = createWorld(
+            (state) => {
+                setUpPriest(state, false);
+                state.bars[1] = PRAYER_OF_FORTITUDE.id;
+                state.isInCombat = true;
+            },
+            { styles: { reagent: { when: "always" } } },
+        );
+        world.advance(2);
         expect(world.glowsOn(1)).toBe(1);
     });
 });

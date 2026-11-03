@@ -6,7 +6,7 @@ import { STYLE_DEFAULTS } from "./settings.constants";
 import type { AddonSettingsService, ColorKey, Style, StyleOverride } from "./settings.interface";
 
 /** The parts of a look. */
-const PARTS: (keyof Style)[] = ["color", "opacity", "isTextOn", "sound", "repeat"];
+const PARTS: (keyof Style)[] = ["color", "opacity", "isTextOn", "sound", "repeat", "when"];
 
 export class StyleService {
     /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
@@ -35,6 +35,7 @@ export class StyleService {
             isTextOn: this.pickPart(layers, "isTextOn"),
             sound: this.pickPart(layers, "sound"),
             repeat: this.pickPart(layers, "repeat"),
+            when: this.pickPart(layers, "when"),
         };
     }
 

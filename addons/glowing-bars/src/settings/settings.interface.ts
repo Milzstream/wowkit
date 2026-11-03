@@ -7,7 +7,13 @@ export type ColorKey = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "p
 /** The settings service of this addon: a SettingsService that knows the shape of its settings. */
 export type AddonSettingsService = SettingsService<AddonSettings>;
 
-/** How a reminder looks and sounds. */
+/**
+ * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted; or (the low
+ * reagents and the low stock) only in a town or an inn, or glowing anywhere with its message and repeat only there.
+ */
+export type When = "always" | "combat" | "noCombat" | "target" | "town" | "townText";
+
+/** How a reminder looks and sounds, and when it shows. */
 export interface Style {
     /** Of the glow and of the message. */
     color: Rgb;
@@ -18,6 +24,7 @@ export interface Style {
     sound: SoundKey;
     /** Seconds between the sound's repeats while the glow is on; 0 plays it once, as the glow starts. */
     repeat: number;
+    when: When;
 }
 
 /** The kinds a spell can be added as by the player: every kind but the old ranks, which are found for every spell. */
@@ -57,8 +64,6 @@ export interface AddonSettings {
     showReagents: boolean;
     /** Important cooldowns that are ready. */
     showCooldowns: boolean;
-    /** Also out of combat (by default only in combat). */
-    showCooldownsOutOfCombat: boolean;
     /** As a fight starts, every ready cooldown glows too (a reminder to use it), for the same time. */
     showCooldownsAtFightStart: boolean;
     /** How long a cooldown glows in a fight once it is back, in seconds; 0 = until it is pressed. */

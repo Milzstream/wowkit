@@ -35,17 +35,8 @@ describe("an item added as low stock by its ID", () => {
     });
 
     it("says so out of a town and in one", () => {
-        const world = createWorld(
-            (state) => {
-                playAs(state, PRIEST);
-                state.itemNames[ARROW] = "Rough Arrow";
-                state.bags[ARROW] = 5;
-                state.isResting = true;
-            },
-            { customCues: [{ id: ARROW, kind: "stock" }] },
-        );
-        world.advance(1);
-        expect(world.notice()).toContain("Running low: Rough Arrow (5)");
+        expect(createArcher(5, {}, false, false).notice()).toContain("Running low: Rough Arrow (5)");
+        expect(createArcher(5, {}, false, true).notice()).toContain("Running low: Rough Arrow (5)");
     });
 
     it("goes by the limit of its own row", () => {
@@ -107,6 +98,7 @@ describe("the limit of a low reagent", () => {
             state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
             state.bags[HOLY_CANDLE] = candles;
             state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            state.isResting = true;
         }, savedSettings);
         world.advance(2);
         return world;

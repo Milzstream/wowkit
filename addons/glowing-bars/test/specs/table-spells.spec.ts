@@ -217,7 +217,8 @@ describe("the spells of other kinds a player adds", () => {
         expect(world.glowsOn(2)).toBe(1);
     });
 
-    it("lights an added spell whose reagent, named in its tooltip, runs low", () => {
+    it("lights an added spell whose reagent, named in its tooltip, runs low, in a town", () => {
+        world.state.isResting = true;
         addAs(RITUAL.id, 4);
         expect(world.glowsOn(3)).toBe(1);
         world.state.bags[6265] = 20;

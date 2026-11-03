@@ -16,7 +16,6 @@ type FeatureKey =
     | "showRanks"
     | "showReagents"
     | "showCooldowns"
-    | "showCooldownsOutOfCombat"
     | "showCooldownsAtFightStart"
     | "showProcs";
 

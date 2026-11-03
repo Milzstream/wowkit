@@ -49,8 +49,6 @@ export const TEXTS = {
     OPT_AUTOMATIC: "Automatic",
 
     HDR_COOLDOWNS: "Ready cooldowns",
-    OPT_COOLDOWNS_OUT_OF_COMBAT: "Also out of combat",
-    TIP_COOLDOWNS_OUT_OF_COMBAT: "By default, cooldowns only glow in combat.",
     OPT_COOLDOWNS_FIGHT_START: "Also at the start of a fight",
     TIP_COOLDOWNS_FIGHT_START:
         "When a fight starts, every ready cooldown glows too, as a reminder to use it (Berserking, Recklessness...).",
@@ -114,13 +112,25 @@ export const TEXTS = {
         "Reminds you when you have this many or fewer. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
-    TIP_KIND_REAGENT: "Its message and repeat work only in a town or an inn. The glow shows everywhere.",
+    TIP_KIND_REAGENT:
+        "Its glow, message and repeat follow its When column. By default (Alert in town) it glows anywhere, and its message and repeat come only in a town or an inn.",
     COL_SOUND: "Sound (click)",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
     REPEAT_SECONDS: "%d s",
     TIP_REPEAT:
         "Plays the sound again every few seconds while the glow is on, and shows the message again with it. Off plays it once, as the glow starts. Click for the next choice, right-click for the one before.",
+    COL_WHEN: "When",
+    WHEN_ALWAYS: "Always",
+    WHEN_COMBAT: "In combat",
+    WHEN_NO_COMBAT: "Out of combat",
+    WHEN_TARGET: "Enemy targeted",
+    WHEN_TOWN: "In town",
+    WHEN_TOWN_TEXT: "Alert in town",
+    TIP_WHEN:
+        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Click for the next choice, right-click for the one before.",
+    TIP_WHEN_TOWN:
+        "When the reminder may show: always, only in combat, only out of combat, only while a living enemy is targeted, or only in a town or an inn. Alert in town: the button glows anywhere and the sound plays once as it starts, but the message on the screen, and the repeat of the sound, come only in a town or an inn. Click for the next choice, right-click for the one before.",
     NO_COLOR_PICKER: "No color picker available on this client.",
     KIND_BUFF: "Missing buff",
     KIND_WEAPON: "Weapon buff",

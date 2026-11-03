@@ -5,7 +5,7 @@
 
 import type { MessagesService, SoundKey } from "@wowkit/ui";
 import type { StyleService } from "../settings/style.service";
-import type { AddonSettingsService, ColorKey } from "../settings/settings.interface";
+import type { AddonSettingsService, ColorKey, Style } from "../settings/settings.interface";
 import {
     type ActionBarsService,
     type BarFadeService,
@@ -70,6 +70,8 @@ export class ShowRemindersService {
     private previous: number[][] = KINDS.map(() => []);
     /** When the sound of each glowing spell last played ("buff:21562"), for the ones that repeat. */
     private soundPlayedAt = new LuaMap<string, number>();
+    /** Was the player in a town at the previous tick: arriving, an Alert in town sounds once more. */
+    private wasInTown = false;
     /** The glows of the previous tick as one text; undefined makes the next tick set the glows again. */
     private shownGlowKey: string | undefined;
     /** The weapon buffs due and the low stock: their items glow also when used up, as what is to be made or bought. */
@@ -135,6 +137,8 @@ export class ShowRemindersService {
      */
     private playSoundsForNewReminders(reminders: Reminders): void {
         const now = this.clock.getCurrentTime();
+        const hasArrivedInTown = reminders.isInTown === true && !this.wasInTown;
+        this.wasInTown = reminders.isInTown === true;
         const playedAt = new LuaMap<string, number>();
         const sounds: SoundKey[] = [];
         KINDS.forEach((kind, index) => {
@@ -143,9 +147,9 @@ export class ShowRemindersService {
                 const key = `${kind.category}:${id}`;
                 const style = this.styles.getStyle(kind.category, id);
                 const lastAt = this.soundPlayedAt.get(key);
-                const isNew = !this.previous[index]!.includes(id) || lastAt === undefined;
-                const isRepeating = style.repeat > 0 && (kind.category !== "reagent" || reminders.isInTown);
-                const isDue = isRepeating && lastAt !== undefined && now - lastAt >= style.repeat;
+                const isNew =
+                    !this.previous[index]!.includes(id) || lastAt === undefined || (hasArrivedInTown && style.when === "townText");
+                const isDue = !isNew && this.isRepeatDue(style, lastAt!, now, reminders.isInTown === true);
                 playedAt.set(key, isNew || isDue ? now : lastAt!);
                 if ((isNew || isDue) && !sounds.includes(style.sound)) sounds.push(style.sound);
             }
@@ -154,6 +158,12 @@ export class ShowRemindersService {
         // A spell that stopped glowing is forgotten: when it glows again, its sound is new
         this.soundPlayedAt = playedAt;
         for (const sound of sounds) this.messages.playAlertSound(sound);
+    }
+
+    /** Is the sound due again? Only where it repeats, and an Alert in town only in a town. */
+    private isRepeatDue(style: Style, lastAt: number, now: number, isInTown: boolean): boolean {
+        const isRepeating = style.repeat > 0 && (style.when !== "townText" || isInTown);
+        return isRepeating && now - lastAt >= style.repeat;
     }
 
     private updateGlows(reminders: Reminders): void {

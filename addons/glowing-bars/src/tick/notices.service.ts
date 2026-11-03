@@ -105,7 +105,8 @@ export class NoticesService {
                 style.color,
                 string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
             );
-            if (style.isTextOn) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
+            const isTold = style.isTextOn && (style.when !== "townText" || reminders.isInTown === true);
+            if (isTold) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
         }
         for (const spellId of reminders.buffsNotOnBars) {
             const name = this.spells.getSpellName(spellId) ?? "?";
