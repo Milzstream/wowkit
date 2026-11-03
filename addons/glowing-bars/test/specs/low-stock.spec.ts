@@ -15,9 +15,9 @@ import { findLabel, toggleTable } from "./table.helpers";
 import { ARROW, ARROW_KEY, createArcher } from "./low-stock.helpers";
 
 describe("an item added as low stock by its ID", () => {
-    it("glows on its button once 20 or fewer are left, by default", () => {
-        expect(createArcher(21).glowsOn(1)).toBe(0);
-        expect(createArcher(20).glowsOn(1)).toBe(1);
+    it("glows on its button once fewer than 20 are left, by default", () => {
+        expect(createArcher(20).glowsOn(1)).toBe(0);
+        expect(createArcher(19).glowsOn(1)).toBe(1);
     });
 
     it("glows when none is left too", () => {
@@ -104,9 +104,9 @@ describe("the limit of a low reagent", () => {
         return world;
     }
 
-    it("is 5 by default", () => {
-        expect(createPriest(5).glowsOn(1)).toBe(1);
-        expect(createPriest(6).glowsOn(1)).toBe(0);
+    it("is below 10 by default", () => {
+        expect(createPriest(9).glowsOn(1)).toBe(1);
+        expect(createPriest(10).glowsOn(1)).toBe(0);
     });
 
     it("keeps what the character chose on the old Settings page, as the kind's", () => {

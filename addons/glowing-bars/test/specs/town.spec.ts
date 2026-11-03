@@ -35,11 +35,11 @@ describe("a priest who arrives in a town", () => {
     });
 
     it("is told on the screen which reagents run low", () => {
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
     });
 
     it("is told nothing in the chat", () => {
-        expect(world.chat.join("\n")).not.toContain("Reagents running low");
+        expect(world.chat.join("\n")).not.toContain("Running low");
     });
 
     it("is told nothing when the player muted the addon", () => {
@@ -47,7 +47,7 @@ describe("a priest who arrives in a town", () => {
         world.setOption("isMuted", true);
         world.state.isResting = true;
         world.fire("PLAYER_UPDATE_RESTING");
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("keeps its settings in the character's saved variables", () => {
@@ -59,13 +59,13 @@ describe("the reagent message out of a town", () => {
     it("does not come by default", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true } } });
         world.advance(2);
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("follows the other choices of When too: out of combat, but not in a fight", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "noCombat" } } });
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
         const inFight = createWorld(
             (state) => {
                 setUpPriest(state, false);
@@ -74,28 +74,28 @@ describe("the reagent message out of a town", () => {
             { styles: { reagent: { isTextOn: true, when: "noCombat" } } },
         );
         inFight.advance(2);
-        expect(inFight.notice()).not.toContain("Reagents running low");
+        expect(inFight.notice()).not.toContain("Running low");
     });
 
     it("comes when the player chose the reagents to show always", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true, when: "always" } } });
         world.advance(2);
-        expect(world.notice()).toContain("Reagents running low: Holy Candle (0)");
+        expect(world.notice()).toContain("Running low: Holy Candle (0)");
     });
 });
 
 describe("the reagent message on the screen", () => {
     it("is on unless the player switched it off", () => {
-        expect(createWorld((state) => setUpPriest(state, true)).notice()).toContain("Reagents running low");
+        expect(createWorld((state) => setUpPriest(state, true)).notice()).toContain("Running low");
         const world = createWorld((state) => setUpPriest(state, true), { styles: { reagent: { isTextOn: false } } });
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 });
 
 describe("a priest who is not in a town", () => {
     it("is told nothing", () => {
         const world = createWorld((state) => setUpPriest(state, false));
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("is told nothing when the candles are in the bags", () => {
@@ -103,7 +103,7 @@ describe("a priest who is not in a town", () => {
             setUpPriest(state, true);
             state.bags[HOLY_CANDLE] = 20;
         });
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 });
 
@@ -152,18 +152,6 @@ describe("the group buff on the bar of a priest low on candles", () => {
         expect(world.glowsOn(1)).toBe(1);
     });
 
-    it("does not glow out of a town when the player chose it to show only in town", () => {
-        world = createWorld(
-            (state) => {
-                setUpPriest(state, false);
-                state.bars[1] = PRAYER_OF_FORTITUDE.id;
-            },
-            { styles: { reagent: { when: "town" } } },
-        );
-        world.advance(2);
-        expect(world.glowsOn(1)).toBe(0);
-    });
-
     it("does not glow when the player switched the reagent reminder off", () => {
         switchInTable(world, "Low reagent", false);
         world.advance(1);
@@ -202,7 +190,7 @@ describe("the reagents of a priest in the table", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { reagent: { isTextOn: true } } });
         switchInTable(world, "Prayer of Fortitude (Holy Candle)", false);
         arriveInTown(world);
-        expect(world.notice()).not.toContain("Reagents running low");
+        expect(world.notice()).not.toContain("Running low");
     });
 
     it("are stored only where they differ from the default", () => {
@@ -238,7 +226,7 @@ describe("a priest with an old rank on the bar who arrives in a town", () => {
         world.state.isResting = true;
         world.fire("PLAYER_UPDATE_RESTING");
         world.advance(1);
-        expect(world.notice()).toContain("Reagents running low");
+        expect(world.notice()).toContain("Running low");
         expect(world.notice()).not.toContain("Old spell rank");
     });
 });

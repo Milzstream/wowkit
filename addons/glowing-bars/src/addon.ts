@@ -71,7 +71,6 @@ import { OutdatedRanksService } from "./reminders/outdated-ranks.service";
 import { SealReminderService } from "./reminders/seal-reminder.service";
 import { TrackingReminderService } from "./reminders/tracking-reminder.service";
 import { PartyBuffsService } from "./reminders/party-buffs.service";
-import { TownVisitService } from "./reminders/town-visit.service";
 import { WeaponChoiceService } from "./reminders/weapon/weapon-choice.service";
 import { WeaponMemoryService } from "./reminders/weapon/weapon-memory.service";
 import { WeaponReadingService } from "./reminders/weapon/weapon-reading.service";
@@ -187,7 +186,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     game.spells.useIdAlias((spellId) => customCues.getEffectiveId(spellId));
     const tracker = addon.register(new CooldownTrackerService(game.spells, game.cooldowns, game.clock));
     const glowCues = addon.register(
-        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, game.clock, settings, customCues),
+        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, customCues),
     );
     const fedBuffs = addon.register(
         new FedBuffsService(customCues, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),
@@ -197,9 +196,6 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     const custom = addon.register(
         new CustomRemindersService(customCues, spells, actionBars, buffs.state, weaponEnchants, bags, settings, reagents, fedBuffs),
     );
-    // Its own block of the shared notice: the tick clearing its lines must not take the town message with them
-    const townNotice = addon.register(new NoticeService(`${addonName}-town`));
-    addon.register(new TownVisitService(game.player, reagents, custom, settings, townNotice, texts.locale, texts.styles, game.clock));
     const seal = addon.register(new SealReminderService(game.spells, game.actionBars, buffs.state, game.player, settings, customCues));
     const tracking = addon.register(new TrackingReminderService(game.spells, game.actionBars, buffs.state, settings, customCues));
     return { buff, reagents, party, weaponChoice, weapon, outdatedRanks, glowCues, customCues, custom, fedBuffs, limits, seal, tracking };
@@ -233,7 +229,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
     const shower = addon.register(
         new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock, fedBuffs),
     );
-    const tick = addon.register(new TickService(finder, shower, game.player, styles));
+    const tick = addon.register(new TickService(finder, shower, game.player, styles, game.clock));
     const refresh = addon.register(new RefreshService(tick, shower, buffs.state, game.clock, game.barRefresh));
     addon.register(new DisplayService(shower, tick));
     addon.register(new EquipmentService(refresh, game.player, game.weaponEnchants, reminders.weapon));
@@ -285,7 +281,7 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const weaponSection = addon.register(
         new WeaponSection(locale, game.spells, reminders.weaponChoice, settings, controls, reminderControls),
     );
-    const glowsSection = addon.register(new GlowsSection(locale, settings, controls, reminderControls, reminders.glowCues));
+    const glowsSection = addon.register(new GlowsSection(reminderControls, reminders.glowCues));
     const table = makeTable(addon, addonName, game, texts, buffs, reminders);
     const barsSection = addon.register(new BarsSection(locale, settings, controls, reminderControls));
     const glowStyleSection = addon.register(new GlowStyleSection(locale, settings, controls));

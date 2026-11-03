@@ -1,3 +1,4 @@
+import type { LowReagent } from "../reagents/reagent.interface";
 import type { OutdatedRank } from "../reminders/outdated-ranks.service";
 import type { PartySuggestion, LowStock } from "../reminders/reminders.interface";
 
@@ -21,6 +22,8 @@ export interface Reminders {
     outdatedRanks: OutdatedRank[];
     /** The items the player watches that run low: they glow if on a button, and say so on a bar or not. */
     lowStock: LowStock[];
+    /** The reagents running low, on a bar or not: the message names them. */
+    lowReagents: LowReagent[];
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */
     reagentSpells: number[];
     /** In a town or an inn: only there a reminder whose When is "alert in town" says so, and repeats. */

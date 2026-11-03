@@ -9,9 +9,9 @@ export type AddonSettingsService = SettingsService<AddonSettings>;
 
 /**
  * When a reminder may show: always, only in combat or only out of it, only with a living enemy targeted; or (the low
- * reagents and the low stock) only in a town or an inn, or glowing anywhere with its message and repeat only there.
+ * reagents and the low stock) glowing anywhere, with its message and sound only in a town or an inn.
  */
-export type When = "always" | "combat" | "noCombat" | "target" | "town" | "townText";
+export type When = "always" | "combat" | "noCombat" | "target" | "townText";
 
 /** How a reminder looks and sounds, and when it shows. */
 export interface Style {
@@ -22,9 +22,11 @@ export interface Style {
     /** Does a short message at the top of the screen say so? */
     isTextOn: boolean;
     sound: SoundKey;
-    /** Seconds between the sound's repeats while the glow is on; 0 plays it once, as the glow starts. */
+    /** Seconds between the repeats of the glow, the message and the sound; 0 shows them once, as the reminder starts. */
     repeat: number;
     when: When;
+    /** Seconds the reminder shows once it is due, and again with each repeat; 0 = the whole time, until it is done. */
+    glowSeconds: number;
 }
 
 /** The kinds a spell can be added as by the player: every kind but the old ranks, which are found for every spell. */
@@ -64,11 +66,9 @@ export interface AddonSettings {
     showReagents: boolean;
     /** Important cooldowns that are ready. */
     showCooldowns: boolean;
-    /** As a fight starts, every ready cooldown glows too (a reminder to use it), for the same time. */
+    /** As a fight starts, every ready cooldown glows too (a reminder to use it), for its glow time. */
     showCooldownsAtFightStart: boolean;
-    /** How long a cooldown glows in a fight once it is back, in seconds; 0 = until it is pressed. */
-    cooldownGlowSeconds: number;
-    /** A group buff's reagent runs low with this many or fewer in the bags. */
+    /** A group buff's reagent runs low with fewer than this in the bags. */
     reagentLow: number;
     /** The same of the items the player watches, and whether they are watched. */
     stockLow: number;

@@ -1,8 +1,8 @@
-// What a click in the table of looks chooses: the next sound, how often it repeats, when the reminder shows, and a color
-// from the game's picker.
+// What a click in the table of looks chooses: the next sound, how often it repeats, when the reminder shows and for how
+// long, and a color from the game's picker.
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { GLOW_SECONDS_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
 import type { ColorKey, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
@@ -16,6 +16,7 @@ const WHEN_TIPS: { [kind in ColorKey]?: TextKey } = { reagent: "TIP_WHEN_TOWN", 
 export interface ChoiceButtons {
     repeat: Button;
     when: Button;
+    glowTime: Button;
 }
 
 /** The words of each When. */
@@ -24,7 +25,6 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     combat: "WHEN_COMBAT",
     noCombat: "WHEN_NO_COMBAT",
     target: "WHEN_TARGET",
-    town: "WHEN_TOWN",
     townText: "WHEN_TOWN_TEXT",
 };
 
@@ -49,13 +49,21 @@ export class StyleChoicesService {
 
     /** The buttons of a row that click through choices: how often the sound repeats, and when the reminder shows. */
     createChoiceButtons(frame: Frame, getRow: () => StyleRow | undefined): ChoiceButtons {
-        return { repeat: this.createRepeatButton(frame, getRow), when: this.createWhenButton(frame, getRow) };
+        return {
+            repeat: this.createRepeatButton(frame, getRow),
+            when: this.createWhenButton(frame, getRow),
+            glowTime: this.createGlowTimeButton(frame, getRow),
+        };
     }
 
     /** What the choice buttons of a row show. */
     fillChoices(buttons: ChoiceButtons, row: StyleRow): void {
         this.fillRepeat(buttons.repeat, row);
         this.fillWhen(buttons.when, row);
+        const seconds = this.styles.getStyle(row.kind, row.spellId).glowSeconds;
+        buttons.glowTime.SetText(
+            seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds),
+        );
     }
 
     /** The repeat button of a row: left click the next choice, right click the one before. */
@@ -103,6 +111,34 @@ export class StyleChoicesService {
     /** What the When button shows. */
     private fillWhen(button: Button, row: StyleRow): void {
         button.SetText(this.locale.getText(WHEN_TEXTS[this.styles.getStyle(row.kind, row.spellId).when]));
+    }
+
+    /** The glow time button of a row: left click the next choice, right click the one before. */
+    private createGlowTimeButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
+        const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
+        button.SetSize(72, 24);
+        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.glowTime, 72), 0);
+        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
+        button.SetScript("OnClick", (_button, mouseButton) => {
+            const row = getRow();
+            if (row === undefined) return;
+            const index = math.max(0, GLOW_SECONDS_CHOICES.indexOf(this.styles.getStyle(row.kind, row.spellId).glowSeconds));
+            const step = mouseButton === "RightButton" ? -1 : 1;
+            const chosen = GLOW_SECONDS_CHOICES[(index + step + GLOW_SECONDS_CHOICES.length) % GLOW_SECONDS_CHOICES.length]!;
+            this.styles.changeStyle(row.kind, row.spellId, { glowSeconds: chosen });
+        });
+        this.addTooltip(button, () => "TIP_GLOW_TIME");
+        return button;
+    }
+
+    /** A tooltip on a button, its text asked as the mouse comes. */
+    private addTooltip(button: Button, getText: () => TextKey): void {
+        button.SetScript("OnEnter", () => {
+            GameTooltip.SetOwner(button, "ANCHOR_RIGHT");
+            GameTooltip.SetText(this.locale.getText(getText()), 1, 1, 1, 1, true);
+            GameTooltip.Show();
+        });
+        button.SetScript("OnLeave", () => GameTooltip.Hide());
     }
 
     /** The name and type of a low reagent's row say where it works; the other kinds need no words. */

@@ -21,6 +21,7 @@ import "./elvui.spec";
 import "./daylightui.spec";
 import "./public-api.spec";
 import "./when.spec";
+import "./glow-time.spec";
 import "./food-buff.spec";
 import "./food-buff-learning.spec";
 import "./gathering.spec";

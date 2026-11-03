@@ -5,7 +5,7 @@
 
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
-import type { ColorKey } from "../settings/settings.interface";
+import type { ColorKey, Style } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import { NOTICE_SECONDS, type ActionBarsService, type ClockService, type NoticeService, type Rgb, type SpellsService } from "@wowkit/wow";
 import type { Reminders } from "./tick.interface";
@@ -105,9 +105,9 @@ export class NoticesService {
                 style.color,
                 string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
             );
-            const isTold = style.isTextOn && (style.when !== "townText" || reminders.isInTown === true);
-            if (isTold) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
+            if (this.isTold(style, reminders)) lines.push({ parts: [`stock:${stock.itemId}`], text, repeat: style.repeat });
         }
+        this.addReagentLine(lines, reminders);
         for (const spellId of reminders.buffsNotOnBars) {
             const name = this.spells.getSpellName(spellId) ?? "?";
             this.addNamedLine(lines, spellId, [`bar:${spellId}`], string.format(this.locale.getText("NOTICE_NOT_ON_BAR"), name));
@@ -124,6 +124,28 @@ export class NoticesService {
             this.addNamedLine(lines, suggestion.spellId, parts, text);
         }
         return lines;
+    }
+
+    /** Is the message on, and may it show here? An Alert in town's only in a town. */
+    private isTold(style: Style, reminders: Reminders): boolean {
+        return style.isTextOn && (style.when !== "townText" || reminders.isInTown === true);
+    }
+
+    /** One line that names the reagents running low, in the color of the first; it repeats with the row that repeats soonest. */
+    private addReagentLine(lines: Line[], reminders: Reminders): void {
+        const told = reminders.lowReagents
+            .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
+            .filter(({ style }) => this.isTold(style, reminders));
+        const first = told[0];
+        if (first === undefined) return;
+        let repeat = 0;
+        for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
+        const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");
+        lines.push({
+            parts: told.map(({ stock }) => `reagent:${stock.name}`),
+            text: this.styles.applyTextColor(first.style.color, string.format(this.locale.getText("NOTICE_REAGENTS_LOW"), names)),
+            repeat,
+        });
     }
 
     /** A line for a kind of reminder: one for each color its spells (whose message is on) are shown in. */
