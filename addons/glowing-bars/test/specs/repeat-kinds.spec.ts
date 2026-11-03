@@ -54,12 +54,17 @@ describe("the repeat of a sound", () => {
         expect(world.sounds.length > first).toBe(true);
     });
 
-    it("plays once for a low reagent out of a town", () => {
+    it("plays nothing for a low reagent out of a town by default", () => {
         const world = createLowOnCandles({ sound: "raidwarning", repeat: 5 }, false);
-        const first = world.sounds.length;
-        expect(first).toBe(1);
         world.advance(11);
-        expect(world.sounds.length).toBe(first);
+        expect(world.sounds.length).toBe(0);
+    });
+
+    it("repeats for a low reagent out of a town when the player chose it to show always", () => {
+        const world = createLowOnCandles({ sound: "raidwarning", repeat: 5, when: "always" }, false);
+        expect(world.sounds.length).toBe(1);
+        world.advance(11);
+        expect(world.sounds.length).toBe(3);
     });
 
     it("shows the message of a low reagent again in a town, with what is left by then", () => {
@@ -191,7 +196,7 @@ describe("the tooltip of a low reagent's row", () => {
     }
 
     it("is on its name and type, and says where it works", () => {
-        expect(readTip(createOpenTable(), "Low reagent", "hover")).toContain("only in a town or an inn");
+        expect(readTip(createOpenTable(), "Low reagent", "hover")).toContain("in a town or an inn");
     });
 
     it("is not on the message box any more", () => {

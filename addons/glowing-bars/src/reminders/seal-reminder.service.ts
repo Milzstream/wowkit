@@ -70,9 +70,12 @@ export class SealReminderService {
         }
     }
 
-    /** In a fight with no seal up: one seal on the bars and switched on, the one the player last used if it can be. */
+    /**
+     * No seal up: one seal on the bars and switched on, the one the player last used if it can be. Only in a fight by
+     * default: that is the When of the seals' look.
+     */
     findMissingSeal(): number[] {
-        if (!this.settings.get("showSeals") || !this.player.isInCombat()) return [];
+        if (!this.settings.get("showSeals")) return [];
         const glowOn = this.settings.get("glowOn");
         const onBars: number[] = [];
         for (const listId of this.listAllSeals()) {

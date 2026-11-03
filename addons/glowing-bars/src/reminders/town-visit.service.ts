@@ -1,5 +1,6 @@
-// Arriving in a town or an inn, where reagents are sold: a message on the screen names the ones that are running low,
-// if the reagent's message is on, and again while there if it repeats (their glow, on the group buffs, is the finder's).
+// The low reagents' message: it names the reagents running low, if the reagent's message is on, where their look's When
+// lets it (in a town or an inn by default, where reagents are sold; or anywhere), and again while there if it repeats.
+// Their glow, on the group buffs, is the finder's.
 import { Interval, OnGameEvent, type OnReady } from "@wowkit/core";
 import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
@@ -10,8 +11,7 @@ import type { CustomRemindersService } from "./custom-reminders.service";
 import type { AddonSettingsService, Style } from "../settings/settings.interface";
 
 export class TownVisitService implements OnReady {
-    private wasResting = false;
-    /** When the message last showed; undefined while it has not in this visit. */
+    /** When the message last showed; undefined while it has not since the reagents it names could be told (a new visit). */
     private shownAt: number | undefined;
 
     constructor(
@@ -26,41 +26,38 @@ export class TownVisitService implements OnReady {
     ) {}
 
     onReady(): void {
-        this.checkArrival();
+        this.showIfDue();
     }
 
-    /** Called at login and when the resting state changes. */
+    /**
+     * The message, at once on arriving in a town, then every so often where the player chose it to repeat; first as soon as
+     * there is something to tell where its When lets it.
+     */
     @OnGameEvent("PLAYER_UPDATE_RESTING")
-    checkArrival(): void {
-        const isRestingNow = this.player.isResting();
-        const hasArrived = isRestingNow && !this.wasResting;
-        this.wasResting = isRestingNow;
-        if (!isRestingNow) this.shownAt = undefined;
-        if (hasArrived) this.show(this.listTold());
-    }
-
-    /** The message again, every so often where the player chose it to repeat; first now if none came in this visit. Not in a fight. */
     @Interval(1000)
-    showAgainInTown(): void {
-        if (!this.player.isResting() || this.player.isInCombat()) return;
+    showIfDue(): void {
         const told = this.listTold();
+        if (told.length === 0) {
+            this.shownAt = undefined;
+            return;
+        }
         // The soonest of the rows that repeat
         let repeat = 0;
         for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
-        if (repeat === 0) return;
-        const isDue = this.shownAt === undefined || this.clock.getCurrentTime() - this.shownAt >= repeat;
+        const isDue = this.shownAt === undefined || (repeat > 0 && this.clock.getCurrentTime() - this.shownAt >= repeat);
         if (isDue) this.show(told);
     }
 
-    /** The reagents running low whose message is on, by the look of their own row. */
+    /** The reagents running low whose message is on and may show here, by the look of their own row. */
     private listTold(): { stock: LowReagent; style: Style }[] {
         if (this.settings.get("isMuted") || !this.settings.get("showReagents")) return [];
         const reagentOn = this.settings.get("reagentOn");
         const listed: LowReagent[] = this.reagents.findLowReagents((reagent) => reagentOn[String(reagent.itemId)] !== false);
         const added = this.customReminders.findLowReagents().filter((stock) => !listed.some((other) => other.name === stock.name));
+        const isResting = this.player.isResting();
         return [...listed, ...added]
             .map((stock) => ({ stock, style: this.styles.getStyle("reagent", stock.spellId) }))
-            .filter((entry) => entry.style.isTextOn);
+            .filter((entry) => entry.style.isTextOn && (entry.style.when === "always" || isResting));
     }
 
     private show(told: { stock: LowReagent; style: Style }[]): void {

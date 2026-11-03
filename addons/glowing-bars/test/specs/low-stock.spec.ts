@@ -107,6 +107,7 @@ describe("the limit of a low reagent", () => {
             state.reagentTexts[PRAYER_OF_FORTITUDE.id] = "Holy Candle";
             state.bags[HOLY_CANDLE] = candles;
             state.bars[1] = PRAYER_OF_FORTITUDE.id;
+            state.isResting = true;
         }, savedSettings);
         world.advance(2);
         return world;

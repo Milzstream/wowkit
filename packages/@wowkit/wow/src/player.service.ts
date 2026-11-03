@@ -47,6 +47,15 @@ export class PlayerService {
         return attempt(UnitExists, "target") === true;
     }
 
+    /** Is the player's target a living enemy, one the player can attack? A hidden answer counts as no. */
+    hasEnemyTarget(): boolean {
+        return (
+            this.hasTarget() &&
+            getReadable(attempt(UnitCanAttack, "player", "target")) === true &&
+            attempt(UnitIsDeadOrGhost, "target") !== true
+        );
+    }
+
     isMounted(): boolean {
         return attempt(IsMounted) === true;
     }

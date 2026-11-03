@@ -233,7 +233,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
     const shower = addon.register(
         new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock, fedBuffs),
     );
-    const tick = addon.register(new TickService(finder, shower));
+    const tick = addon.register(new TickService(finder, shower, game.player, styles));
     const refresh = addon.register(new RefreshService(tick, shower, buffs.state, game.clock, game.barRefresh));
     addon.register(new DisplayService(shower, tick));
     addon.register(new EquipmentService(refresh, game.player, game.weaponEnchants, reminders.weapon));

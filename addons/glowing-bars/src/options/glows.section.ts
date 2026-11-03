@@ -1,5 +1,5 @@
-// The cooldown part of the Settings page: also out of combat, also at the start of a fight, and how long a cooldown glows
-// once it is back. Which cooldowns glow, and how they look, is the table's.
+// The cooldown part of the Settings page: also at the start of a fight, and how long a cooldown glows once it is back.
+// Which cooldowns glow, how they look, and when (in combat only, by default), is the table's.
 
 import type { AddonLocale } from "../locale/locale.interface";
 import { COOLDOWN_GLOW_CHOICES } from "../settings/settings.constants";
@@ -21,7 +21,6 @@ export class GlowsSection {
     addGlowsSection(category: SettingsCategory, layout: SettingsLayout): void {
         if (this.glowCues.listCueIds("cooldown").length === 0) return;
         this.reminderControls.addHeader(layout, "HDR_COOLDOWNS");
-        this.reminderControls.addSwitch(category, "showCooldownsOutOfCombat", "OPT_COOLDOWNS_OUT_OF_COMBAT", "TIP_COOLDOWNS_OUT_OF_COMBAT");
         this.reminderControls.addSwitch(category, "showCooldownsAtFightStart", "OPT_COOLDOWNS_FIGHT_START", "TIP_COOLDOWNS_FIGHT_START");
         this.addGlowSecondsDropdown(category);
     }

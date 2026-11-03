@@ -48,7 +48,8 @@ export class GlowCuesService {
 
     /**
      * The important cooldowns of the class that are ready and on a button. In combat only the ones that have been on
-     * cooldown in this fight, for the seconds the player chose after they are back; out of combat all of them, if the player asked for that.
+     * cooldown in this fight, for the seconds the player chose after they are back; out of combat all of them (whether
+     * they show then is the When of their look: in combat only, by default).
      * The cooldowns are read out of combat too, so the tracker knows the ones still running when a fight starts and the
      * client hides them.
      */
@@ -62,8 +63,7 @@ export class GlowCuesService {
                 this.backAt.delete(id);
                 continue;
             }
-            const isShown = isInCombat ? this.isJustBack(id) : this.settings.get("showCooldownsOutOfCombat");
-            if (isShown) ready.push(id);
+            if (!isInCombat || this.isJustBack(id)) ready.push(id);
         }
         return ready;
     }

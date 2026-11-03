@@ -37,6 +37,12 @@ export class RefreshService {
         this.requestTick();
     }
 
+    /** A new target, or a fight starting: what may show (the When of each look) changed. */
+    @OnGameEvent("PLAYER_TARGET_CHANGED", "PLAYER_REGEN_DISABLED")
+    requestTickForWhen(): void {
+        this.requestTick();
+    }
+
     /** A tick that reads the auras again instead of reusing a recent read. */
     @OnGameEvent(
         "PLAYER_UPDATE_RESTING",

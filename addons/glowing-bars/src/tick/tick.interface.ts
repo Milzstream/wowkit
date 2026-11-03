@@ -21,8 +21,6 @@ export interface Reminders {
     outdatedRanks: OutdatedRank[];
     /** The items the player watches that run low: they glow if on a button, and say so anyway. */
     lowStock: LowStock[];
-    /** In a town or an inn, where reagents are sold: only there a low reagent's sound and message repeat. */
-    isInTown: boolean;
     /** Group buffs on a button whose reagent runs low: their buttons glow quietly. */
     reagentSpells: number[];
     /** Important cooldowns that are ready and on a button: their buttons glow. */

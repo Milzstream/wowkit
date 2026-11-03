@@ -24,7 +24,7 @@ import {
     findWindowWidth,
 } from "./style-table.constants";
 import type { StyleWindowService } from "./style-window.service";
-import type { StyleChoicesService } from "./style-choices.service";
+import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
 import type { StyleEditsService } from "./style-edits.service";
 import { KIND_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 
@@ -43,8 +43,8 @@ interface RowWidgets {
     spellIdBox: EditBox;
     message: CheckButton;
     sound: Button;
-    /** How often the sound repeats while the glow is on. */
-    repeat: Button;
+    /** The buttons that click through choices: how often the sound repeats, and when the reminder may show. */
+    choices: ChoiceButtons;
     lowAtBox: EditBox;
     reset: Button;
     /** Takes out a spell the player added. */
@@ -205,7 +205,7 @@ export class StyleTableService {
         widgets.opacity.SetText(string.format("%d", style.opacity));
         widgets.message.SetChecked(style.isTextOn);
         widgets.sound.SetText(SOUNDS.find((sound) => sound.key === style.sound)?.label ?? "");
-        this.choices.fillRepeat(widgets.repeat, row);
+        this.choices.fillChoices(widgets.choices, row);
         widgets.reset.SetShown(isOverridden);
         widgets.remove.SetShown(row.isCustom === true);
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
@@ -230,7 +230,7 @@ export class StyleTableService {
             reset: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
             remove: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
             enabled: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
-            repeat: this.choices.createRepeatButton(frame, () => widgets.row),
+            choices: this.choices.createChoiceButtons(frame, () => widgets.row),
             spellIdBox: this.edits.createIdBox(frame, () => widgets.row),
             lowAtBox: this.edits.createLowAtBox(frame, () => widgets.row),
             row: undefined,

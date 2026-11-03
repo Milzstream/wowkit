@@ -9,7 +9,7 @@ Your Rotation.
   member counts. In combat, when the client hides auras, buffs you saw or cast are remembered.
 - **Weapon buffs**: shaman imbues, rogue poisons (per hand) and warlock stones glow when missing or about to run out
   (30 s), with an alarm sound by default.
-- **Paladin seals**: in a fight with no seal up, the seal you used last glows (gold), already 1.5 seconds before it runs out. Before you have used one: the seal of your main talent
+- **Paladin seals**: in a fight (by default) with no seal up, the seal you used last glows (gold), already 1.5 seconds before it runs out. Before you have used one: the seal of your main talent
   tree (Holy Wisdom, Prot Righteousness, Ret Command), else the first on your bars. The game hides auras in combat,
   so a seal counts for its 30 seconds from your cast.
 - **Gathering**: a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow (turquoise). Any tracking
@@ -26,14 +26,15 @@ Your Rotation.
     Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the
     classes you buffed there.
 - **Reagents**: the group buff on your action bar (Prayer of Fortitude, Gift of the Wild...) glows, quietly, while its
-  reagent runs low (5 or fewer by default, set in the Low at column of the table), also in a town; on arriving in a town or an inn a message on the screen names the reagents.
+  reagent runs low (5 or fewer by default, set in the Low at column of the table), in a town or an inn by default, and a message on the screen names the reagents
+  as you arrive. Set its When to Always and the glow and the message come anywhere.
 - **Low stock**: add any item by its Item ID (arrows, drinks, candles) as `Low stock` in the table. At 20 or fewer (set in the Low at column,
   for all items or for each one) a message on the screen says how many are left, and if the item is on a bar, its button glows too, even at none.
 - **Ready cooldowns**: in a fight, an important cooldown of your class (Recklessness, Rapid Fire, Adrenaline Rush,
   Innervate...) or of your race (Blood Fury, Stoneform, Desperate Prayer...) glows when it is ready again after you used
   it, or after it was running as the fight began: for 3 seconds by default (1, 2, 5, 10, or until you press it). If you like, the ready
   ones glow as a fight starts too, a reminder to use them. Out of
-  combat they glow only if you ask. The list is a default you can switch off spell by spell. When the client hides a
+  combat they glow only if you set their When to Always or Out of combat. The list is a default you can switch off spell by spell. When the client hides a
   cooldown in combat, the addon remembers the one it saw or started with a cast.
 - **Procs**: a spell glows while the game says it can be used: Overpower, Revenge, Execute, Victory Rush, Riposte,
   Counterattack, Mongoose Bite, Hammer of Wrath.
@@ -47,7 +48,10 @@ Your Rotation.
 
 Every kind of reminder has the same four settings: the **color** of its glow and message, the **opacity** of the glow
 (1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each can also **repeat** their sound every 5, 10, 30 or 60 seconds while the glow is on,
-the message coming again with it (off by default). The defaults: missing
+the message coming again with it (off by default). And **when** it shows: Always, In combat, Out of combat, or only with a
+living Enemy targeted (a shaman's shield glowing as you target a mob before the pull, say); the low reagents In town (a
+city or an inn, the default) or Always. By default everything shows always, but the ready cooldowns and the seals only in
+combat. The defaults: missing
 buffs blue, weapon buffs orange, ready cooldowns white, procs red, old ranks and low reagents yellow (and a quieter glow
 than the others), low stock a quieter red. By default only the old ranks, the reagents and the low stock show a message; the buff messages (including the ones that name a
 buff on no bar and the party members who miss one) are there to switch on. They are set in a table, and every spell of your class can have a look of its own in the same table.
