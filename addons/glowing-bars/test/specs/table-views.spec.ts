@@ -111,3 +111,20 @@ describe("the views of the table", () => {
         expect(world.glowsOn(2)).toBe(1);
     });
 });
+
+describe("the list of spells of the table", () => {
+    it("has a small heading above each type it has, and none for the others", () => {
+        const world = createOpenTable();
+        const content = world.frames.find((frame) => frame.fontStrings.some((text) => text.text === "Spells (override the defaults)"))!;
+        const shown = content.fontStrings.filter((text) => text.isShown !== false).map((text) => text.text);
+        expect(shown.includes("Ready cooldown")).toBe(true);
+        expect(shown.includes("Missing seal")).toBe(false);
+    });
+
+    it("has them under the header of the spells, in the order of the types", () => {
+        const world = createOpenTable();
+        const content = world.frames.find((frame) => frame.fontStrings.some((text) => text.text === "Spells (override the defaults)"))!;
+        const texts = content.fontStrings.map((text) => text.text);
+        expect(texts.indexOf("Spells (override the defaults)") < texts.indexOf("Ready cooldown")).toBe(true);
+    });
+});

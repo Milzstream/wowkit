@@ -1,6 +1,6 @@
 // Where the controls of a row of the table go in a view: the same controls, in the columns of the Basic or the Advanced
 // view; the ones of a column that the view does not have are hidden. What they hold keeps working.
-import { findCenteredX, findColumns } from "./style-table.constants";
+import { ICON_SIZE, findCenteredX, findColumns, COLUMN, type Column } from "./style-table.constants";
 
 /** The controls of a row that move, or hide, with the view. */
 export interface RowControls {
@@ -35,4 +35,25 @@ export function applyRowView(row: RowControls, isAdvanced: boolean): void {
     const { repeat, when, glowTime, animation } = row.choices;
     for (const control of [row.glowPercent, repeat, when, glowTime, animation]) control.SetShown(isAdvanced);
     if (!isAdvanced) row.spellIdBox.Hide();
+}
+
+export function createStripe(frame: Frame): Texture {
+    const stripe = frame.CreateTexture(undefined, "BACKGROUND");
+    stripe.SetAllPoints(frame);
+    return stripe;
+}
+
+export function createIcon(frame: Frame): Texture {
+    const icon = frame.CreateTexture(undefined, "ARTWORK");
+    icon.SetSize(ICON_SIZE, ICON_SIZE);
+    icon.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.icon, ICON_SIZE), 0);
+    return icon;
+}
+
+export function createText(frame: Frame, column: Column, font: string): FontString {
+    const text = frame.CreateFontString(undefined, "OVERLAY", font);
+    text.SetPoint("LEFT", frame, "LEFT", column.x, 0);
+    text.SetWidth(column.width - 4);
+    text.SetJustifyH("LEFT");
+    return text;
 }

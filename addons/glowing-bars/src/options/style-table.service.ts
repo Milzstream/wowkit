@@ -13,17 +13,16 @@ import {
     COLUMN,
     findColumns,
     findCenteredX,
-    type Column,
     HEADER_HEIGHT,
-    ICON_SIZE,
     OVERRIDDEN_COLOR,
     ROW_HEIGHT,
     STRIPE_ALPHA,
     STRIPE_COLOR,
     TABLE_WIDTH,
+    TYPE_HEADING_HEIGHT,
     findWindowWidth,
 } from "./style-table.constants";
-import { applyRowView } from "./style-row-layout";
+import { applyRowView, createIcon, createStripe, createText } from "./style-row-layout";
 import type { StyleWindowService } from "./style-window.service";
 import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
 import type { StyleEditsService } from "./style-edits.service";
@@ -137,7 +136,12 @@ export class StyleTableService {
         header.SetText(this.locale.getText(headerText));
         header.Show();
         let y = top + HEADER_HEIGHT;
+        let previousType: StyleRow["reminderType"] | undefined;
         for (const row of rows) {
+            if (headerText === "HDR_TABLE_SPELLS" && row.reminderType !== previousType) {
+                y = this.drawTypeHeading(content, row.reminderType, y);
+                previousType = row.reminderType;
+            }
             const widgets = this.takeWidgets(content);
             widgets.row = row;
             widgets.frame.ClearAllPoints();
@@ -154,6 +158,16 @@ export class StyleTableService {
             y += ROW_HEIGHT;
         }
         return y + 10;
+    }
+
+    /** The small heading of a type, above its spells; returns where its first row goes. */
+    private drawTypeHeading(content: Frame, reminderType: StyleRow["reminderType"], top: number): number {
+        const heading = this.takeHeader(content);
+        heading.SetFontObject("GameFontNormalSmall");
+        heading.SetPoint("TOPLEFT", content, "TOPLEFT", 6, -(top + 6));
+        heading.SetText(this.locale.getText(TYPE_TEXTS[reminderType]));
+        heading.Show();
+        return top + TYPE_HEADING_HEIGHT;
     }
 
     /** The header and the row that adds a spell by its ID, at the end of the list. */
@@ -176,6 +190,7 @@ export class StyleTableService {
             this.headers.push(header);
         }
         this.usedHeaders += 1;
+        header.SetFontObject("GameFontNormalLarge");
         header.ClearAllPoints();
         return header;
     }
@@ -221,10 +236,10 @@ export class StyleTableService {
         // The ID box asks for the row it shows when it is used, by then the object below is there
         const widgets: RowWidgets = {
             frame,
-            stripe: this.createStripe(frame),
-            icon: this.createIcon(frame),
-            name: this.createText(frame, COLUMN.name, "GameFontHighlight"),
-            typeText: this.createText(frame, COLUMN.type, "GameFontNormalSmall"),
+            stripe: createStripe(frame),
+            icon: createIcon(frame),
+            name: createText(frame, COLUMN.name, "GameFontHighlight"),
+            typeText: createText(frame, COLUMN.type, "GameFontNormalSmall"),
             ...this.createSwatch(frame),
             glowPercent: this.createGlowPercentBox(frame),
             message: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
@@ -245,27 +260,6 @@ export class StyleTableService {
         this.edits.connectRemove(widgets.remove, () => widgets.row);
         this.edits.connectEnabled(widgets.enabled, () => widgets.row);
         return widgets;
-    }
-
-    private createStripe(frame: Frame): Texture {
-        const stripe = frame.CreateTexture(undefined, "BACKGROUND");
-        stripe.SetAllPoints(frame);
-        return stripe;
-    }
-
-    private createIcon(frame: Frame): Texture {
-        const icon = frame.CreateTexture(undefined, "ARTWORK");
-        icon.SetSize(ICON_SIZE, ICON_SIZE);
-        icon.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.icon, ICON_SIZE), 0);
-        return icon;
-    }
-
-    private createText(frame: Frame, column: Column, font: string): FontString {
-        const text = frame.CreateFontString(undefined, "OVERLAY", font);
-        text.SetPoint("LEFT", frame, "LEFT", column.x, 0);
-        text.SetWidth(column.width - 4);
-        text.SetJustifyH("LEFT");
-        return text;
     }
 
     private createSwatch(frame: Frame): { swatch: Button; swatchColor: Texture } {
