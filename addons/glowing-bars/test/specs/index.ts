@@ -30,6 +30,7 @@ import "./sound-repeat.spec";
 import "./repeat-kinds.spec";
 import "./low-stock.spec";
 import "./table-views.spec";
+import "./settings-migration.spec";
 import "./low-stock-table.spec";
 import "./food-buff-names.spec";
 import "./buff-groups.spec";
