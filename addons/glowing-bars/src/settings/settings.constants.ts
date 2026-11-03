@@ -20,7 +20,7 @@ export function createDefaultSettings(): AddonSettings {
         showReagents: true,
         showCooldowns: true,
         showCooldownsAtFightStart: false,
-        reagentLow: 5,
+        reagentLow: 10,
         stockLow: 20,
         showStock: true,
         lowAt: {},

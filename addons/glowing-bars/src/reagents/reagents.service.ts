@@ -55,7 +55,7 @@ export class ReagentsService {
     }
 
     /**
-     * Reagents of spells the player knows, with the player's limit or fewer in the bags. `isWanted` leaves out the reagents
+     * Reagents of spells the player knows, with fewer than the player's limit in the bags. `isWanted` leaves out the reagents
      * the player does not want to hear about. A rank the player has outgrown does not count (Prayer of Fortitude 1, with
      * rank 2 learned: no Holy Candle needed).
      */
@@ -96,9 +96,9 @@ export class ReagentsService {
         return spellIds;
     }
 
-    /** This many of a reagent in the bags is running low: the limit of its row (`entry`), else the kind's, or fewer. */
+    /** This many of a reagent in the bags is running low: fewer than the limit of its row (`entry`), else the kind's. */
     isLow(count: number, entry?: string): boolean {
-        return count <= this.limits.getLimit("reagent", entry);
+        return count < this.limits.getLimit("reagent", entry);
     }
 
     /** The name of the item (the client's, else the English one). */

@@ -68,7 +68,7 @@ export interface AddonSettings {
     showCooldowns: boolean;
     /** As a fight starts, every ready cooldown glows too (a reminder to use it), for its glow time. */
     showCooldownsAtFightStart: boolean;
-    /** A group buff's reagent runs low with this many or fewer in the bags. */
+    /** A group buff's reagent runs low with fewer than this in the bags. */
     reagentLow: number;
     /** The same of the items the player watches, and whether they are watched. */
     stockLow: number;

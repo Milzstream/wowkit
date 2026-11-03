@@ -101,10 +101,10 @@ export const TEXTS = {
     COL_COLOR: "Color",
     COL_OPACITY: "Glow %",
     COL_MESSAGE: "Message",
-    COL_LOW_AT: "Low at",
-    TIP_LOW_AT: "Reminds you when you have this many or fewer.",
+    COL_LOW_AT: "Below",
+    TIP_LOW_AT: "Reminds you when you have fewer than this.",
     TIP_LOW_AT_KIND:
-        "Reminds you when you have this many or fewer. Used for every row of this type, unless you set a different number on the row.",
+        "Reminds you when you have fewer than this. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     TIP_KIND_REAGENT:
