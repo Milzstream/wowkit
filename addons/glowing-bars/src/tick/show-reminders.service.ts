@@ -55,18 +55,18 @@ const TYPES: GlowType[] = [
     { category: "stock", isOnSetting: "showStock", findSpells: (reminders) => reminders.lowStock.map((stock) => stock.key) },
 ];
 
-/** The spells that glow in one color, opacity and animation: one glow shows them. */
+/** The spells that glow in one color, glow % and animation: one glow shows them. */
 interface GlowGroup {
     /** The look as text: the glow of the group is kept under it. */
     key: string;
     color: Rgb;
-    opacity: number;
+    glowPercent: number;
     animation: GlowAnimation;
     spells: number[];
 }
 
 export class ShowRemindersService {
-    /** The glows made so far, by the look they give (color, opacity and animation); one that is not needed any more is cleared, not dropped. */
+    /** The glows made so far, by the look they give (color, glow % and animation); one that is not needed any more is cleared, not dropped. */
     private readonly glows = new LuaMap<string, ButtonGlow>();
     /** The spells of each type in the previous tick, to tell what is new. */
     private previous: number[][] = TYPES.map(() => []);
@@ -103,10 +103,10 @@ export class ShowRemindersService {
     /** The faded bars: their buttons faded while they do not glow (every tick: the glows come and go). */
     private applyBarFades(): void {
         const opacityByBar = new LuaMap<number, number>();
-        const opacity = this.settings.get("fadedOpacity") / 100;
+        const glowPercent = this.settings.get("fadedOpacity") / 100;
         for (const [bar, isFaded] of pairs(this.settings.get("barFaded"))) {
             const number = tonumber(bar);
-            if (isFaded === true && number !== undefined) opacityByBar.set(number, opacity);
+            if (isFaded === true && number !== undefined) opacityByBar.set(number, glowPercent);
         }
         this.barFade.applyBarFades(opacityByBar);
     }
@@ -189,7 +189,7 @@ export class ShowRemindersService {
                 this.glows.set(group.key, glow);
             }
             glow.show(group.spells, group.color);
-            glow.setAlpha(group.opacity / 100);
+            glow.setAlpha(group.glowPercent / 100);
         }
         // Shown only once every glow is: after an error the next tick shows them again
         this.shownGlowKey = glowKey;
@@ -213,10 +213,10 @@ export class ShowRemindersService {
         for (const reminderType of TYPES) {
             for (const id of reminderType.findSpells(reminders)) {
                 const style = this.styles.getStyle(reminderType.category, id);
-                const key = `${style.color.join(",")}|${style.opacity}|${style.animation}`;
+                const key = `${style.color.join(",")}|${style.glowPercent}|${style.animation}`;
                 const group = groups.find((candidate) => candidate.key === key);
-                const { color, opacity, animation } = style;
-                if (group === undefined) groups.push({ key, color, opacity, animation, spells: [id] });
+                const { color, glowPercent, animation } = style;
+                if (group === undefined) groups.push({ key, color, glowPercent, animation, spells: [id] });
                 else if (!group.spells.includes(id)) group.spells.push(id);
             }
         }

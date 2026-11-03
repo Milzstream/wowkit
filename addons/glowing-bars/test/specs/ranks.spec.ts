@@ -123,13 +123,13 @@ describe("a character whose saved sound has gone from the list", () => {
 
 describe("the look of the old rank of a spell", () => {
     it("is the one set for the spell as an old rank", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "rank:Smite": { opacity: 80 } } });
+        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "rank:Smite": { glowPercent: 80 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.8]);
     });
 
     it("does not change with a look the spell has in another type", () => {
-        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "buff:Smite": { opacity: 90 } } });
+        const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "buff:Smite": { glowPercent: 90 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.5]);
     });

@@ -2,9 +2,9 @@
 import type { AddonSettingsService, ReminderType } from "../settings/settings.interface";
 
 /** The types with a limit, and the setting that holds the limit of the type. */
-const TYPE_LIMITS = { reagent: "reagentLow", stock: "stockLow" } as const;
+const TYPE_LIMITS = { reagent: "reagentBelow", stock: "stockBelow" } as const;
 
-export class LowLimitsService {
+export class BelowLimitsService {
     constructor(private readonly settings: AddonSettingsService) {}
 
     /** Does this type have a limit? */
@@ -14,15 +14,15 @@ export class LowLimitsService {
 
     /** The limit of a type; with `entry`, that of a row of it ("2512"). */
     getLimit(reminderType: keyof typeof TYPE_LIMITS, entry?: string): number {
-        const own = entry !== undefined ? this.settings.get("lowAt")[`${reminderType}:${entry}`] : undefined;
+        const own = entry !== undefined ? this.settings.get("belowLimits")[`${reminderType}:${entry}`] : undefined;
         return own ?? this.settings.get(TYPE_LIMITS[reminderType]);
     }
 
     /** Sets the limit of a type, or of a row of it; a row at its type's limit keeps none of its own. */
     setLimit(reminderType: keyof typeof TYPE_LIMITS, entry: string | undefined, limit: number): void {
         if (entry === undefined) return this.settings.change(TYPE_LIMITS[reminderType], limit);
-        const lowAt = { ...this.settings.get("lowAt") };
-        lowAt[`${reminderType}:${entry}`] = limit === this.getLimit(reminderType) ? undefined : limit;
-        this.settings.change("lowAt", lowAt);
+        const belowLimits = { ...this.settings.get("belowLimits") };
+        belowLimits[`${reminderType}:${entry}`] = limit === this.getLimit(reminderType) ? undefined : limit;
+        this.settings.change("belowLimits", belowLimits);
     }
 }

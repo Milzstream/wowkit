@@ -107,15 +107,15 @@ export class StyleWindowService {
             [COLUMN.type, "COL_TYPE", false],
             [COLUMN.id, "COL_ID", true],
             [COLUMN.color, "COL_COLOR", true],
-            [COLUMN.opacity, "COL_OPACITY", true],
+            [COLUMN.glowPercent, "COL_GLOW_PERCENT", true],
             [COLUMN.message, "COL_MESSAGE", true],
             [COLUMN.sound, "COL_SOUND", true],
             [COLUMN.repeat, "COL_REPEAT", true],
             [COLUMN.when, "COL_WHEN", true],
             [COLUMN.glowTime, "COL_GLOW_TIME", true],
             [COLUMN.animation, "COL_ANIMATION", true],
-            [COLUMN.lowAt, "COL_LOW_AT", true],
-            [COLUMN.enabled, "COL_ON", true],
+            [COLUMN.belowLimits, "COL_BELOW", true],
+            [COLUMN.enabled, "COL_ENABLED", true],
         ];
         for (const [column, text, isCentered] of columns) {
             const header = window.CreateFontString(undefined, "OVERLAY", "GameFontNormalSmall");

@@ -1,7 +1,7 @@
 import type { SettingsService, SoundKey } from "@wowkit/ui";
 import type { GlowAnimation, Rgb } from "@wowkit/wow";
 
-/** The types of reminder. Each has a look (color, opacity, message, sound) the player can change for the type and for a spell. */
+/** The types of reminder. Each has a look (color, glow %, message, sound) the player can change for the type and for a spell. */
 export type ReminderType = "buff" | "weapon" | "seal" | "tracking" | "cooldown" | "proc" | "rank" | "reagent" | "stock";
 
 /** The settings service of this addon: a SettingsService that knows the shape of its settings. */
@@ -17,8 +17,8 @@ export type When = "always" | "combat" | "noCombat" | "target" | "townAlert";
 export interface Style {
     /** Of the glow and of the message. */
     color: Rgb;
-    /** The opacity of the glow, 1 to 100 percent. */
-    opacity: number;
+    /** The glow %, 1 to 100. */
+    glowPercent: number;
     /** Does a short message at the top of the screen say so? */
     isMessageOn: boolean;
     sound: SoundKey;
@@ -26,7 +26,7 @@ export interface Style {
     repeat: number;
     when: When;
     /** Seconds the reminder shows once it is due, and again with each repeat; 0 = the whole time, until it is done. */
-    glowSeconds: number;
+    glowTime: number;
     /** How the glow moves: around the button, breathing, or still (fading in and out only as it comes and goes). */
     animation: GlowAnimation;
 }
@@ -69,12 +69,12 @@ export interface AddonSettings {
     /** As a fight starts, every ready cooldown glows too (a reminder to use it), for its glow time. */
     showCooldownsAtFightStart: boolean;
     /** A group buff's reagent runs low with fewer than this in the bags. */
-    reagentLow: number;
+    reagentBelow: number;
     /** The same of the items the player watches, and whether they are watched. */
-    stockLow: number;
+    stockBelow: number;
     showStock: boolean;
     /** The limit of a row of its own ("stock:2512", "reagent:17028"), where it has one. */
-    lowAt: { [entry: string]: number | undefined };
+    belowLimits: { [entry: string]: number | undefined };
     /** Spells the game says are usable now (Overpower, Revenge, Execute...). */
     showProcs: boolean;
     /** A paladin in a fight with no seal up. */

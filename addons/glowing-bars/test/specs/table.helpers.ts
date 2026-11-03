@@ -28,7 +28,7 @@ export function setUpWarrior(state: ClientState): void {
 /** The widgets of the row with this label in the open table. */
 export interface Row {
     swatch: FakeFrame;
-    opacity: FakeFrame;
+    glowPercent: FakeFrame;
     message: FakeFrame;
     enabled: FakeFrame;
     sound: FakeFrame;
@@ -51,7 +51,7 @@ export function findRow(world: World, label: string): Row {
     const buttons = parts.filter((frame) => frame.frameType === "Button" && frame.template === "UIPanelButtonTemplate");
     return {
         swatch: parts.find((frame) => frame.frameType === "Button" && frame.template === undefined)!,
-        opacity: parts.find((frame) => frame.frameType === "EditBox")!,
+        glowPercent: parts.find((frame) => frame.frameType === "EditBox")!,
         message: parts.filter((frame) => frame.frameType === "CheckButton")[0]!,
         enabled: parts.filter((frame) => frame.frameType === "CheckButton")[1]!,
         sound: buttons[0]!,

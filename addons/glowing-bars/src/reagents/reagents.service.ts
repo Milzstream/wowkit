@@ -3,7 +3,7 @@
 // that dropped the reagent cost never nags about it.
 import { OnEvent, contains } from "@wowkit/core";
 import type { BagsService, SpellsService } from "@wowkit/wow";
-import type { LowLimitsService } from "../reminders/low-limits.service";
+import type { BelowLimitsService } from "../reminders/below-limits.service";
 import type { Reagent, ReagentStock } from "./reagent.interface";
 import { REAGENTS } from "./reagents.constants";
 
@@ -15,7 +15,7 @@ export class ReagentsService {
     constructor(
         private readonly bags: BagsService,
         private readonly spells: SpellsService,
-        private readonly limits: LowLimitsService,
+        private readonly limits: BelowLimitsService,
     ) {
         for (const reagent of REAGENTS) for (const spellId of reagent.spells) this.reagentBySpell.set(spellId, reagent);
     }

@@ -20,10 +20,10 @@ export function createDefaultSettings(): AddonSettings {
         showReagents: true,
         showCooldowns: true,
         showCooldownsAtFightStart: false,
-        reagentLow: 10,
-        stockLow: 20,
+        reagentBelow: 10,
+        stockBelow: 20,
         showStock: true,
-        lowAt: {},
+        belowLimits: {},
         showProcs: true,
         showSeals: true,
         showTracking: true,
@@ -49,96 +49,96 @@ export function createDefaultSettings(): AddonSettings {
 export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
     buff: {
         color: [0.2, 0.55, 1],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     weapon: {
         color: [1, 0.55, 0.1],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "alarm2",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     // The paladin's gold
     seal: {
         color: [1, 0.85, 0.2],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "combat",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     // #1AA6BF, a deep turquoise: a lighter cyan glows almost white
     tracking: {
         color: [0.1, 0.65, 0.75],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     cooldown: {
         color: [1, 1, 1],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "combat",
-        glowSeconds: 3,
+        glowTime: 3,
         animation: "circling",
     },
     proc: {
         color: [1, 0.12, 0.08],
-        opacity: 100,
+        glowPercent: 100,
         isMessageOn: false,
         sound: "none",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     rank: {
         color: [1, 0.85, 0.2],
-        opacity: 50,
+        glowPercent: 50,
         isMessageOn: true,
         sound: "alarm1",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     // Its message is the town's: it names the reagents to buy
     reagent: {
         color: [1, 0.85, 0.2],
-        opacity: 50,
+        glowPercent: 50,
         isMessageOn: true,
         sound: "none",
         repeat: 0,
         when: "townAlert",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
     // A quieter red than the procs'
     stock: {
         color: [1, 0.12, 0.08],
-        opacity: 50,
+        glowPercent: 50,
         isMessageOn: true,
         sound: "none",
         repeat: 0,
         when: "always",
-        glowSeconds: 0,
+        glowTime: 0,
         animation: "circling",
     },
 };
@@ -159,7 +159,7 @@ export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "breathing", "still"];
 
 /** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
-export const GLOW_SECONDS_CHOICES = [0, 1, 2, 3, 5, 10];
+export const GLOW_TIME_CHOICES = [0, 1, 2, 3, 5, 10];
 
 /** The choices of from how many missing a buff its group version is asked for. */
 export const GROUP_MIN_CHOICES = [1, 2, 3, 4, 5];
@@ -188,10 +188,10 @@ function repairStyle(style: StyleOverride | undefined, reminderType: ReminderTyp
     if (isSoundKey(style.sound)) repaired.sound = style.sound;
     if (type(style.isMessageOn) === "boolean") repaired.isMessageOn = style.isMessageOn;
     repaired.repeat = pickChoice(style.repeat, REPEAT_CHOICES);
-    repaired.glowSeconds = pickChoice(style.glowSeconds, GLOW_SECONDS_CHOICES);
+    repaired.glowTime = pickChoice(style.glowTime, GLOW_TIME_CHOICES);
     repaired.animation = pickChoice(style.animation, ANIMATION_CHOICES);
-    const opacity = tonumber(style.opacity);
-    if (opacity !== undefined) repaired.opacity = math.max(1, math.min(100, math.floor(opacity + 0.5)));
+    const glowPercent = tonumber(style.glowPercent);
+    if (glowPercent !== undefined) repaired.glowPercent = math.max(1, math.min(100, math.floor(glowPercent + 0.5)));
     const color = style.color;
     if (color !== undefined && type(color) === "table" && tonumber(color[0]) !== undefined) {
         repaired.color = [color[0], color[1] ?? 0, color[2] ?? 0];
@@ -214,8 +214,8 @@ export function repairSettings(values: AddonSettings): void {
     values.addedSpells = (values.addedSpells ?? []).filter(
         (cue) => type(cue) === "table" && tonumber(cue.id) !== undefined && ADDABLE_TYPES.includes(cue.reminderType),
     );
-    values.reagentLow = repairLimit(values.reagentLow, defaults.reagentLow);
-    values.stockLow = repairLimit(values.stockLow, defaults.stockLow);
+    values.reagentBelow = repairLimit(values.reagentBelow, defaults.reagentBelow);
+    values.stockBelow = repairLimit(values.stockBelow, defaults.stockBelow);
     // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one
     const old = values as { showGreaterForOne?: boolean };
     if (old.showGreaterForOne === true) values.partyGroupMin = 1;

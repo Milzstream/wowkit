@@ -70,7 +70,7 @@ export const TEXTS = {
     COL_SPELL: "Spell / Item",
     COL_TYPE: "Type",
     COL_ID: "Spell / Item ID",
-    COL_ON: "Enabled",
+    COL_ENABLED: "Enabled",
     TIP_ENABLED_TYPE: "Turns this reminder type on or off. While it's off, none of its spells glow and their rows are grayed out.",
     TIP_ID_EDIT:
         "The spell ID the addon looks for. Change it if the game uses a different ID for this spell, e.g. after a patch the addon hasn't caught up with yet.",
@@ -96,11 +96,11 @@ export const TEXTS = {
     MSG_NO_COOLDOWN: "%s has no cooldown, pick another type.",
     MSG_NO_REAGENT: "%s uses no reagent, pick another type.",
     COL_COLOR: "Color",
-    COL_OPACITY: "Glow %",
+    COL_GLOW_PERCENT: "Glow %",
     COL_MESSAGE: "Message",
-    COL_LOW_AT: "Below",
-    TIP_LOW_AT: "Reminds you when you have fewer than this.",
-    TIP_LOW_AT_TYPE:
+    COL_BELOW: "Below",
+    TIP_BELOW: "Reminds you when you have fewer than this.",
+    TIP_BELOW_TYPE:
         "Reminds you when you have fewer than this. Used for every row of this type, unless you set a different number on the row.",
     TIP_ID_ITEM: "The ID of the item. To watch another item, remove this row and add that one.",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",

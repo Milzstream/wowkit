@@ -59,8 +59,8 @@ describe("the table of looks", () => {
         const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
         const narrow = window.width;
         const row = findRow(world, "Recklessness");
-        row.opacity.text = "40";
-        row.opacity.scripts.OnEditFocusLost!(row.opacity);
+        row.glowPercent.text = "40";
+        row.glowPercent.scripts.OnEditFocusLost!(row.glowPercent);
         expect(window.width).toBe(narrow + 72);
         findRow(world, "Recklessness").reset.scripts.OnClick!(findRow(world, "Recklessness").reset);
         expect(window.width).toBe(narrow);
@@ -71,19 +71,19 @@ describe("the table of looks", () => {
         expect(world.findFrame((frame) => frame.name === "GlowingBarsLooks")?.isShown).toBe(false);
     });
 
-    it("changes the opacity of a spell when a percent is typed, and the glow follows", () => {
+    it("changes the glow % of a spell when a percent is typed, and the glow follows", () => {
         const row = findRow(world, "Recklessness");
-        row.opacity.text = "40";
-        row.opacity.scripts.OnEnterPressed!(row.opacity);
-        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.opacity).toBe(40);
+        row.glowPercent.text = "40";
+        row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
+        expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]?.glowPercent).toBe(40);
         expect(world.glowAlphasOn(2)).toEqual([0.4]);
     });
 
-    it("changes the opacity of a type for all of its spells", () => {
+    it("changes the glow % of a type for all of its spells", () => {
         const row = findRow(world, "Ready cooldown");
-        row.opacity.text = "60";
-        row.opacity.scripts.OnEnterPressed!(row.opacity);
-        expect(readSaved(world, "styles").cooldown?.opacity).toBe(60);
+        row.glowPercent.text = "60";
+        row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
+        expect(readSaved(world, "styles").cooldown?.glowPercent).toBe(60);
         expect(world.glowAlphasOn(2)).toEqual([0.6]);
     });
 
@@ -113,25 +113,25 @@ describe("the table of looks", () => {
 
     it("keeps the saved percent when Escape is pressed in the box", () => {
         const row = findRow(world, "Recklessness");
-        row.opacity.text = "40";
-        row.opacity.scripts.OnEscapePressed!(row.opacity);
+        row.glowPercent.text = "40";
+        row.glowPercent.scripts.OnEscapePressed!(row.glowPercent);
         // Letting go of the box saves what it shows
-        row.opacity.scripts.OnEditFocusLost!(row.opacity);
-        expect(row.opacity.text).toBe("100");
+        row.glowPercent.scripts.OnEditFocusLost!(row.glowPercent);
+        expect(row.glowPercent.text).toBe("100");
         expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
     });
 
     it("keeps no change that is the same as what the spell inherits", () => {
         const row = findRow(world, "Recklessness");
-        row.opacity.text = "100";
-        row.opacity.scripts.OnEnterPressed!(row.opacity);
+        row.glowPercent.text = "100";
+        row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
         expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
     });
 
     it("forgets what the player changed for a spell on Reset", () => {
         const row = findRow(world, "Recklessness");
-        row.opacity.text = "40";
-        row.opacity.scripts.OnEnterPressed!(row.opacity);
+        row.glowPercent.text = "40";
+        row.glowPercent.scripts.OnEnterPressed!(row.glowPercent);
         row.reset.scripts.OnClick!(row.reset);
         expect(readSaved(world, "spellStyles")["cooldown:Recklessness"]).toBeUndefined();
         expect(world.glowAlphasOn(2)).toEqual([1]);

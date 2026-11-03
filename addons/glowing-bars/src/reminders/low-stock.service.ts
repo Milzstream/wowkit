@@ -3,14 +3,14 @@
 import { type BagsService, getItemButtonKey } from "@wowkit/wow";
 import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
-import type { LowLimitsService } from "./low-limits.service";
+import type { BelowLimitsService } from "./below-limits.service";
 import type { LowStock } from "./reminders.interface";
 
 export class LowStockService {
     constructor(
         private readonly addedSpells: AddedSpellsService,
         private readonly bags: BagsService,
-        private readonly limits: LowLimitsService,
+        private readonly limits: BelowLimitsService,
         private readonly settings: AddonSettingsService,
     ) {}
 

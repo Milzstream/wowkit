@@ -6,7 +6,7 @@ import { STYLE_DEFAULTS } from "./settings.constants";
 import type { AddonSettingsService, ReminderType, Style, StyleOverride } from "./settings.interface";
 
 /** The parts of a look. */
-const PARTS: (keyof Style)[] = ["color", "opacity", "isMessageOn", "sound", "repeat", "when", "glowSeconds", "animation"];
+const PARTS: (keyof Style)[] = ["color", "glowPercent", "isMessageOn", "sound", "repeat", "when", "glowTime", "animation"];
 
 export class StyleService {
     /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
@@ -31,12 +31,12 @@ export class StyleService {
         ];
         return {
             color: this.pickPart(layers, "color"),
-            opacity: this.pickPart(layers, "opacity"),
+            glowPercent: this.pickPart(layers, "glowPercent"),
             isMessageOn: this.pickPart(layers, "isMessageOn"),
             sound: this.pickPart(layers, "sound"),
             repeat: this.pickPart(layers, "repeat"),
             when: this.pickPart(layers, "when"),
-            glowSeconds: this.pickPart(layers, "glowSeconds"),
+            glowTime: this.pickPart(layers, "glowTime"),
             animation: this.pickPart(layers, "animation"),
         };
     }

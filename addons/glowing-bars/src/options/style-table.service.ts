@@ -1,6 +1,6 @@
 // The window with the table of looks: one row for each type of reminder (its default look) and one for each spell of the
-// player's class (a look of its own where the player changed it, else the type's). A row shows the color, the opacity of
-// the glow in percent, whether a message says so, the sound and how often it repeats; a click or an entry changes it. Opened by /gb and by
+// player's class (a look of its own where the player changed it, else the type's). A row shows the color, the glow %,
+// whether a message says so, the sound and how often it repeats; a click or an entry changes it. Opened by /gb and by
 // the button on the Settings page. Like the Settings page, this folder may call the game.
 import { OnEvent } from "@wowkit/core";
 import { SOUNDS, type MessagesService } from "@wowkit/ui";
@@ -38,14 +38,14 @@ interface RowWidgets {
     typeText: FontString;
     swatch: Button;
     swatchColor: Texture;
-    opacity: EditBox;
+    glowPercent: EditBox;
     /** The ID of a cooldown or proc: it can be fixed. */
     spellIdBox: EditBox;
     message: CheckButton;
     sound: Button;
     /** The buttons that click through choices: how often the sound repeats, and when the reminder may show. */
     choices: ChoiceButtons;
-    lowAtBox: EditBox;
+    belowBox: EditBox;
     reset: Button;
     /** Takes out a spell the player added. */
     remove: Button;
@@ -202,7 +202,7 @@ export class StyleTableService {
         widgets.typeText.SetTextColor(BRONZE_TEXT[0], BRONZE_TEXT[1], BRONZE_TEXT[2]);
         widgets.typeText.SetText(row.spellId !== undefined ? this.locale.getText(TYPE_TEXTS[row.reminderType]) : "");
         widgets.swatchColor.SetColorTexture(style.color[0], style.color[1], style.color[2], 1);
-        widgets.opacity.SetText(string.format("%d", style.opacity));
+        widgets.glowPercent.SetText(string.format("%d", style.glowPercent));
         widgets.message.SetChecked(style.isMessageOn);
         widgets.sound.SetText(SOUNDS.find((sound) => sound.key === style.sound)?.label ?? "");
         this.choices.fillChoices(widgets.choices, row);
@@ -210,7 +210,7 @@ export class StyleTableService {
         widgets.remove.SetShown(row.isAdded === true);
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
         this.edits.fillIdBox(widgets.spellIdBox, row);
-        this.edits.fillLowAtBox(widgets.lowAtBox, row);
+        this.edits.fillBelowBox(widgets.belowBox, row);
     }
 
     private createWidgets(content: Frame): RowWidgets {
@@ -224,7 +224,7 @@ export class StyleTableService {
             name: this.createText(frame, COLUMN.name, "GameFontHighlight"),
             typeText: this.createText(frame, COLUMN.type, "GameFontNormalSmall"),
             ...this.createSwatch(frame),
-            opacity: this.createOpacityBox(frame),
+            glowPercent: this.createGlowPercentBox(frame),
             message: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
             sound: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
             reset: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
@@ -232,11 +232,11 @@ export class StyleTableService {
             enabled: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
             choices: this.choices.createChoiceButtons(frame, () => widgets.row),
             spellIdBox: this.edits.createIdBox(frame, () => widgets.row),
-            lowAtBox: this.edits.createLowAtBox(frame, () => widgets.row),
+            belowBox: this.edits.createBelowBox(frame, () => widgets.row),
             row: undefined,
         };
         this.connectSwatch(widgets);
-        this.connectOpacity(widgets);
+        this.connectGlowPercent(widgets);
         this.connectMessage(widgets);
         this.connectSound(widgets);
         this.connectReset(widgets);
@@ -280,10 +280,10 @@ export class StyleTableService {
         return { swatch, swatchColor };
     }
 
-    private createOpacityBox(frame: Frame): EditBox {
+    private createGlowPercentBox(frame: Frame): EditBox {
         const box = CreateFrame("EditBox", undefined, frame, "InputBoxTemplate");
         box.SetSize(36, 20);
-        box.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.opacity, 36) + 3, 0);
+        box.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.glowPercent, 36) + 3, 0);
         box.SetAutoFocus(false);
         box.SetNumeric(true);
         box.SetMaxLetters(3);
@@ -296,21 +296,21 @@ export class StyleTableService {
         });
     }
 
-    private connectOpacity(widgets: RowWidgets): void {
+    private connectGlowPercent(widgets: RowWidgets): void {
         const apply = () => {
             const row = widgets.row;
-            const percent = tonumber(widgets.opacity.GetText());
+            const percent = tonumber(widgets.glowPercent.GetText());
             if (row !== undefined && percent !== undefined) {
-                this.styles.changeStyle(row.reminderType, row.spellId, { opacity: math.max(1, math.min(100, math.floor(percent + 0.5))) });
+                const glowPercent = math.max(1, math.min(100, math.floor(percent + 0.5)));
+                this.styles.changeStyle(row.reminderType, row.spellId, { glowPercent });
             }
-            widgets.opacity.ClearFocus();
+            widgets.glowPercent.ClearFocus();
         };
-        widgets.opacity.SetScript("OnEnterPressed", apply);
-        widgets.opacity.SetScript("OnEditFocusLost", apply);
-        widgets.opacity.SetScript("OnEscapePressed", () => {
-            const opacity = widgets.row && this.styles.getStyle(widgets.row.reminderType, widgets.row.spellId).opacity;
-            if (opacity !== undefined) widgets.opacity.SetText(string.format("%d", opacity));
-            widgets.opacity.ClearFocus();
+        widgets.glowPercent.SetScript("OnEnterPressed", apply);
+        widgets.glowPercent.SetScript("OnEditFocusLost", apply);
+        widgets.glowPercent.SetScript("OnEscapePressed", () => {
+            if (widgets.row !== undefined) this.fill(widgets, widgets.row);
+            widgets.glowPercent.ClearFocus();
         });
     }
 

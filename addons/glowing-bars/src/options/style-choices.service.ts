@@ -2,7 +2,7 @@
 // long, and a color from the game's picker.
 import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { ANIMATION_CHOICES, GLOW_SECONDS_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { ANIMATION_CHOICES, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
 import { ANIMATION_TEXTS } from "./animation.section";
 import type { ReminderType, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
@@ -65,7 +65,7 @@ export class StyleChoicesService {
         this.fillWhen(buttons.when, row);
         const style = this.styles.getStyle(row.reminderType, row.spellId);
         buttons.animation.SetText(this.locale.getText(ANIMATION_TEXTS[style.animation]));
-        const seconds = style.glowSeconds;
+        const seconds = style.glowTime;
         buttons.glowTime.SetText(
             seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds),
         );
@@ -127,10 +127,10 @@ export class StyleChoicesService {
         button.SetScript("OnClick", (_button, mouseButton) => {
             const row = getRow();
             if (row === undefined) return;
-            const index = math.max(0, GLOW_SECONDS_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).glowSeconds));
+            const index = math.max(0, GLOW_TIME_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).glowTime));
             const step = mouseButton === "RightButton" ? -1 : 1;
-            const chosen = GLOW_SECONDS_CHOICES[(index + step + GLOW_SECONDS_CHOICES.length) % GLOW_SECONDS_CHOICES.length]!;
-            this.styles.changeStyle(row.reminderType, row.spellId, { glowSeconds: chosen });
+            const chosen = GLOW_TIME_CHOICES[(index + step + GLOW_TIME_CHOICES.length) % GLOW_TIME_CHOICES.length]!;
+            this.styles.changeStyle(row.reminderType, row.spellId, { glowTime: chosen });
         });
         this.addTooltip(button, () => "TIP_GLOW_TIME");
         return button;

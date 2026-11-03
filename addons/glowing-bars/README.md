@@ -47,7 +47,7 @@ Your Rotation.
   your character. Each of them can also be faded until its buttons glow (50% by default), so such a bar shows only
   what is due.
 
-Every type of reminder has the same four settings: the **color** of its glow and message, the **opacity** of the glow
+Every type of reminder has the same four settings: the **color** of its glow and message, the **glow %**
 (1 to 100 percent), whether a short **message** at the top of the screen says so, and a **sound**. Each also has a **glow time**: how long the glow and the message show once it is due
 (1, 2, 3, 5 or 10 seconds; until done, the default, keeps them until you cast the buff or press the cooldown; the ready
 cooldowns 3 seconds). And each can **repeat** every 5, 10, 30 or 60 seconds: the glow, the message and the sound come

@@ -10,7 +10,7 @@ import { COLUMN, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.co
 import { TYPE_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 import type { StyleService } from "../settings/style.service";
 import type { ReagentsService } from "../reagents/reagents.service";
-import type { LowLimitsService } from "../reminders/low-limits.service";
+import type { BelowLimitsService } from "../reminders/below-limits.service";
 import type { AddableType } from "../settings/settings.interface";
 
 /** How faded the spell rows of a type that is switched off are. */
@@ -28,7 +28,7 @@ export class StyleEditsService {
         private readonly switches: EnabledService,
         private readonly rows: StyleRowsService,
         private readonly styles: StyleService,
-        private readonly limits: LowLimitsService,
+        private readonly limits: BelowLimitsService,
         private readonly reagents: ReagentsService,
     ) {}
 
@@ -112,9 +112,9 @@ export class StyleEditsService {
         box.SetTextColor(shade, shade, shade);
     }
 
-    /** The Low at box of a row of a type with a limit: a click out of it keeps a number, and an empty box takes back the old one. */
-    createLowAtBox(frame: Frame, getRow: (this: void) => StyleRow | undefined): EditBox {
-        const box = this.createNumberBox(frame, findCenteredX(COLUMN.lowAt, 44), 44, 5);
+    /** The Below box of a row of a type with a limit: a click out of it keeps a number, and an empty box takes back the old one. */
+    createBelowBox(frame: Frame, getRow: (this: void) => StyleRow | undefined): EditBox {
+        const box = this.createNumberBox(frame, findCenteredX(COLUMN.belowLimits, 44), 44, 5);
         box.SetScript("OnEnterPressed", () => box.ClearFocus());
         box.SetScript("OnEditFocusLost", () => {
             const row = getRow();
@@ -122,14 +122,14 @@ export class StyleEditsService {
             if (row !== undefined && limit !== undefined && this.limits.hasLimit(row.reminderType)) {
                 this.limits.setLimit(row.reminderType, this.findLimitEntry(row), limit);
             }
-            if (row !== undefined) this.fillLowAtBox(box, row);
+            if (row !== undefined) this.fillBelowBox(box, row);
         });
-        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_LOW_AT_TYPE" : "TIP_LOW_AT"));
+        box.SetScript("OnEnter", () => this.showTooltip(box, getRow()?.spellId === undefined ? "TIP_BELOW_TYPE" : "TIP_BELOW"));
         box.SetScript("OnLeave", () => GameTooltip.Hide());
         return box;
     }
 
-    fillLowAtBox(box: EditBox, row: StyleRow): void {
+    fillBelowBox(box: EditBox, row: StyleRow): void {
         const hasLimit = this.limits.hasLimit(row.reminderType);
         box.SetShown(hasLimit);
         if (this.limits.hasLimit(row.reminderType))

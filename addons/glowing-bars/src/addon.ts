@@ -65,7 +65,7 @@ import { BuffReminderService } from "./reminders/buff-reminder.service";
 import { ClassBuffsService } from "./reminders/class-buffs.service";
 import { AddedRemindersService } from "./reminders/added-reminders.service";
 import { FedBuffsService } from "./reminders/fed-buffs.service";
-import { LowLimitsService } from "./reminders/low-limits.service";
+import { BelowLimitsService } from "./reminders/below-limits.service";
 import { LowStockService } from "./reminders/low-stock.service";
 import { OutdatedRanksService } from "./reminders/outdated-ranks.service";
 import { SealReminderService } from "./reminders/seal-reminder.service";
@@ -171,7 +171,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     const buff = addon.register(
         new BuffReminderService(buffs.state, game.spells, game.player, game.actionBars, buffs.classBuffs, settings),
     );
-    const limits = addon.register(new LowLimitsService(settings));
+    const limits = addon.register(new BelowLimitsService(settings));
     const reagents = addon.register(new ReagentsService(game.bags, game.spells, limits));
     const party = addon.register(
         new PartyBuffsService(buffs.state, game.spells, game.clock, game.party, game.player, buffs.classBuffs, reagents, settings, buff),
