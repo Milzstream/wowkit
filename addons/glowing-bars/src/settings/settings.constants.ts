@@ -60,7 +60,7 @@ export const STYLE_DEFAULTS: { [key in ColorKey]: Style } = {
     // Its message is the town's: it names the reagents to buy
     reagent: { color: [1, 0.85, 0.2], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText" },
     // A quieter red than the procs'
-    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "townText" },
+    stock: { color: [1, 0.12, 0.08], opacity: 50, isTextOn: true, sound: "none", repeat: 0, when: "always" },
 };
 
 /**
