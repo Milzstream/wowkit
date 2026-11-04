@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Global functions and C_* namespaces.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ eac30af597), game version 1.60.1.70790
 
 /** @noSelfInFile */
 
@@ -1380,6 +1380,7 @@ declare namespace C_BattleNet {
     function GetAccountInfoByGUID(guid: string): BNetAccountInfo | undefined;
     function GetAccountInfoByID(id: number, wowAccountGUID?: string): BNetAccountInfo | undefined;
     function GetCustomTitleFriendName(id: number): string | undefined;
+    function GetDefaultTitleWhisperTarget(id: number): string | undefined;
     function GetFriendAccountInfo(friendIndex: number, wowAccountGUID?: string): BNetAccountInfo | undefined;
     function GetFriendGameAccountInfo(friendIndex: number, accountIndex: number): BNetGameAccountInfo | undefined;
     function GetFriendInviteInfo(inviteIndex: number): BNetFriendInviteInfo | undefined;

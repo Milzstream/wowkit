@@ -1,6 +1,6 @@
 // GENERATED FILE - do not edit. Regenerate with "pnpm gen:types".
 // Event payloads, keyed by event name.
-// Source: https://github.com/Gethe/wow-ui-source.git (forever @ 17ed2c3e84), game version 1.60.1.70755
+// Source: https://github.com/Gethe/wow-ui-source.git (forever @ eac30af597), game version 1.60.1.70790
 
 interface WowEventPayloads {
     /** @remarks Synchronous event. */
