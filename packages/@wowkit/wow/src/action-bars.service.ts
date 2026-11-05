@@ -342,7 +342,7 @@ export class ActionBarsService implements OnFirstLogin {
 
     /**
      * The slot the button shows now. A Blizzard action button keeps the paged slot in GetPagedID /
-     * `action` (a druid form or warrior stance pages the main bar, e.g. bear form to 73-84), while
+     * `action` (a druid form or warrior stance pages the main bar, e.g. bear form to 97-108 on Forever), while
      * its "action" attribute is the base slot 1-12, so the attribute comes last.
      */
     getActionSlot(button: ActionButton): number | undefined {

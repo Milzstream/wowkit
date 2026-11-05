@@ -3,6 +3,7 @@
 import { Interval, OnEvent, OnGameEvent, type OnFirstLogin } from "@wowkit/core";
 import type { ActionBarsService } from "./action-bars.service";
 import { listAddonButtonNames } from "./bar-names";
+import { isGamepadBarShown } from "./gamepad-buttons";
 import type { ButtonRegistryService } from "./button-registry.service";
 import type { ClockService } from "./clock.service";
 import { attempt } from "./utils/protected-call.utils";
@@ -65,6 +66,7 @@ export class BarRefreshService implements OnFirstLogin {
         const globals = _G as unknown as { [name: string]: unknown };
         let count = 0;
         for (const name of this.addonButtonNames) if (globals[name] !== undefined) count++;
-        return count + this.registry.countButtons();
+        // The gamepad bars coming or going (gamepad mode switched) count as a change too: their buttons are mapped only while shown
+        return count + this.registry.countButtons() + (isGamepadBarShown() ? 1 : 0);
     }
 }

@@ -4,6 +4,7 @@ import {
     describe,
     expect,
     it,
+    GAMEPAD_BAR,
     learnSpell,
     playAs,
     PRIEST,
@@ -193,5 +194,31 @@ describe("the look of the old rank of a spell", () => {
         const world = createWorld((state) => setUpPriest(state, false), { spellStyles: { "missingBuff:Smite": { glowPercent: 90 } } });
         world.advance(3);
         expect(world.glowAlphasOn(1)).toEqual([0.5]);
+    });
+});
+
+describe("a priest out of gamepad mode, with Smite rank 1 left on the hidden gamepad bar", () => {
+    let world!: World;
+
+    beforeEach(() => {
+        world = createWorld((state) => {
+            playAs(state, PRIEST);
+            for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
+            // As in bear form: the best rank is on no button on the screen, rank 1 only on the gamepad bar
+            state.bars[193] = SMITE_RANK_1.id;
+        });
+        world.findFrame((frame) => frame.name === GAMEPAD_BAR)!.Hide();
+        world.fire("ACTIONBAR_SLOT_CHANGED", 1);
+        world.advance(3);
+    });
+
+    it("is told nothing of the old rank: that bar is not on the screen", () => {
+        expect(world.notice() ?? "").toBe("");
+    });
+
+    it("is told of it once the gamepad mode is switched on and the bar shows", () => {
+        world.findFrame((frame) => frame.name === GAMEPAD_BAR)!.Show();
+        world.advance(4);
+        expect(world.notice()).toContain("Old spell rank");
     });
 });
