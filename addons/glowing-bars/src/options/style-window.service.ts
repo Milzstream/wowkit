@@ -3,6 +3,7 @@
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import type { AddonSettingsService } from "../settings/settings.interface";
+import { CustomSoundsSection } from "./custom-sounds-section";
 import {
     BORDER_COLOR,
     COLUMN,
@@ -39,6 +40,7 @@ export class StyleWindowService {
     /** The column headers, and what each one's column is called. */
     private readonly headers: { header: FontString; hover?: Frame; column: keyof typeof COLUMN }[] = [];
     private viewButton: Button | undefined;
+    private customSounds: CustomSoundsSection | undefined;
     private hasBelow = false;
 
     constructor(
@@ -54,6 +56,12 @@ export class StyleWindowService {
     /** Does any row have a limit? Without one the Below column is left out. */
     setBelowShown(hasBelow: boolean): void {
         this.hasBelow = hasBelow;
+    }
+
+    /** The folders with sounds of the player's own; returns where the next thing goes. */
+    drawCustomSounds(content: Frame, top: number): number {
+        this.customSounds = this.customSounds ?? new CustomSoundsSection(this.locale, this.settings);
+        return this.customSounds.drawLines(content, top);
     }
 
     /** Where the columns are now. */

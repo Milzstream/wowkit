@@ -1,10 +1,10 @@
 // What the table of looks lets the player pick from a list (the sound, how often it repeats, when the reminder shows, for
 // how long and how it moves), and a color from the game's picker.
-import { SOUNDS, type MessagesService } from "@wowkit/ui";
+import { listSoundChoices, type MessagesService } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
-import { ANIMATION_CHOICES, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
+import { ANIMATION_CHOICES, CUSTOM_SOUND_FOLDER, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
 import { ANIMATION_TEXTS } from "./animation.section";
-import type { Style, StyleOverride, When } from "../settings/settings.interface";
+import type { AddonSettingsService, Style, StyleOverride, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
 import { connectChoiceMenu } from "./choice-menu";
@@ -36,11 +36,16 @@ export class StyleChoicesService {
         private readonly locale: AddonLocale,
         private readonly styles: StyleService,
         private readonly messages: MessagesService,
+        private readonly settings: AddonSettingsService,
     ) {}
 
     /** The list of sounds of a row; the one picked plays once as a preview. */
     connectSoundMenu(button: Button, getRow: () => StyleRow | undefined): void {
-        const listSounds = () => SOUNDS.map((sound) => ({ value: sound.key, label: sound.label }));
+        const listSounds = () =>
+            listSoundChoices(this.settings.get("customSoundFolders"), CUSTOM_SOUND_FOLDER).map((sound) => ({
+                value: sound.key,
+                label: sound.label,
+            }));
         this.connectMenu(button, getRow, "sound", listSounds, (sound) => this.messages.playAlertSound(sound));
     }
 

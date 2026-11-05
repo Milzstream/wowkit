@@ -25,6 +25,7 @@ export interface FakeMenuChoice {
 /** The list the addon opened last. */
 export interface FakeMenu {
     choices: FakeMenuChoice[];
+    isScrolling: boolean;
 }
 
 /** The game's color picker: it keeps what the addon set it up with, and answers with the color a test picks. */
@@ -66,7 +67,11 @@ export function installUi(frames: FrameRegistry, chat: string[], proxySettings: 
         MenuUtil: {
             CreateContextMenu: (owner: FakeFrame, generator: (this: void, owner: FakeFrame, root: unknown) => void) => {
                 menu.choices = [];
+                menu.isScrolling = false;
                 generator(owner, {
+                    SetScrollMode() {
+                        menu.isScrolling = true;
+                    },
                     CreateRadio(label: string, isChosen: (this: void) => boolean, choose: (this: void) => void) {
                         menu.choices.push({ label, isChosen, choose });
                     },

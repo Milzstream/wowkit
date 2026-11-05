@@ -55,6 +55,13 @@ export const TEXTS = {
         "When a fight starts, every ready cooldown glows too, as a reminder to use it (Berserking, Recklessness...).",
 
     HDR_REMINDERS: "Reminders",
+    HDR_CUSTOM_SOUNDS: "Custom sounds",
+    OPT_CUSTOM_SOUNDS: "Sounds:",
+    OPT_CUSTOM_FOLDER: "Folder in AddOns:",
+    BTN_ADD_FOLDER: "Add folder",
+    TEXT_CUSTOM_TIP: "Tip: type /reload after adding a folder.",
+    TIP_CUSTOM_SOUNDS:
+        "Sounds of your own for the Sound list. Make a folder next to this addon's folder, in AddOns, and enter its name here. Put your files in it, named custom1, custom2 and so on, as .ogg or .mp3, and enter how many there are. Restart the game if /reload is not enough.",
     OPT_TABLE: "Colors, sounds and on/off per spell",
     TIP_TABLE: "Set the color, glow, message and sound of each reminder type and each spell, and turn them on or off. Also /gb.",
     BTN_OPEN: "Open",

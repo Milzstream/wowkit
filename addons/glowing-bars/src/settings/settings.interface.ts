@@ -1,4 +1,4 @@
-import type { SettingsService, SoundKey } from "@wowkit/ui";
+import type { CustomSoundFolder, SettingsService, SoundKey } from "@wowkit/ui";
 import type { GlowAnimation, Rgb } from "@wowkit/wow";
 
 /** The types of reminder. Each has a look (color, glow %, message, sound) the player can change for the type and for a spell. */
@@ -99,6 +99,8 @@ export interface AddonSettings {
     showTooltipIds: boolean;
     /** The table shows every column (Advanced), not only the ones everybody needs (Basic). */
     isTableAdvanced: boolean;
+    /** The folders in AddOns with sound files of the player's own (custom1, custom2...), and how many each has. */
+    customSoundFolders: CustomSoundFolder[];
     /** The action bars (1 to 8) that glow; only set (false) where the player switched one off. */
     barsThatGlow: { [bar: string]: boolean | undefined };
     /** Per-spell switches of the cooldown and proc glows (by spell ID); only set where the player switched one off. */

@@ -36,6 +36,7 @@ export function createDefaultSettings(): AddonSettings {
         fadedOpacity: 50,
         showTooltipIds: false,
         isTableAdvanced: false,
+        customSoundFolders: [{ folder: CUSTOM_SOUND_FOLDER, count: 0 }],
         idOverrides: {},
         addedSpells: [],
         enabledReagents: {},
@@ -151,6 +152,12 @@ export function listWhenChoices(reminderType: ReminderType): When[] {
     return reminderType === "lowReagent" || reminderType === "lowStock" ? [...choices, "townAlert"] : choices;
 }
 
+/** The folder in AddOns for sound files of the player's own that the table starts with: next to the addon, so an update leaves it alone. */
+export const CUSTOM_SOUND_FOLDER = "GlowingBars_Sounds";
+
+/** What a folder added in the table starts as, to change into the player's own. */
+export const NEW_SOUND_FOLDER = "GlowingBars_My_Sounds";
+
 /** The choices of how often a sound repeats while its glow is on (seconds; 0 = once). */
 export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 
@@ -225,6 +232,18 @@ function repairLimit(limit: unknown, byDefault: number): number {
     return type(limit) === "number" && (limit as number) >= 0 ? (limit as number) : byDefault;
 }
 
+/** The folders that make sense; there is always one to fill in. */
+function repairSoundFolders(saved: unknown, byDefault: AddonSettings["customSoundFolders"]): AddonSettings["customSoundFolders"] {
+    if (type(saved) !== "table") return byDefault;
+    const folders = (saved as AddonSettings["customSoundFolders"])
+        .filter(
+            (entry) =>
+                type(entry) === "table" && type(entry.folder) === "string" && string.find(entry.folder, "^[^\\/:]+$")[0] !== undefined,
+        )
+        .map((entry) => ({ folder: entry.folder, count: repairLimit(entry.count, 0) }));
+    return folders.length > 0 ? folders : byDefault;
+}
+
 /** Puts right what a saved look got wrong. */
 export function repairSettings(values: AddonSettings): void {
     // Whatever goes wrong with old settings, the addon still loads: what was not converted is the default
@@ -239,6 +258,7 @@ export function repairSettings(values: AddonSettings): void {
     );
     values.reagentBelow = repairLimit(values.reagentBelow, defaults.reagentBelow);
     values.stockBelow = repairLimit(values.stockBelow, defaults.stockBelow);
+    values.customSoundFolders = repairSoundFolders(values.customSoundFolders, defaults.customSoundFolders);
     // The old switch of a Greater Blessing for one member of a class in a party is a party group version from one
     const old = values as { showGreaterForOne?: boolean };
     if (old.showGreaterForOne === true) values.partyGroupFrom = 1;

@@ -1,6 +1,6 @@
 // Items: weapon enchants (imbues, poisons), the bags and the sounds the addon plays.
 import type { ClientState } from "./client-state";
-import { defineNamespace, defineValues, fake } from "./define";
+import { defineGlobals, defineNamespace, defineValues, fake } from "./define";
 
 export function installItems(state: ClientState, sounds: number[]): void {
     defineNamespace<typeof C_PaperDollInfo>("C_PaperDollInfo", {
@@ -24,6 +24,14 @@ export function installItems(state: ClientState, sounds: number[]): void {
         GetItemCount: (item) => state.bags[(type(item) === "string" ? state.itemIds[item as string] : (item as number)) ?? 0] ?? 0,
         GetItemNameByID: (item) => state.itemNames[item as number],
         GetItemIconByID: () => undefined,
+    });
+
+    defineGlobals({
+        PlaySoundFile: (file) => {
+            if (!state.soundFiles.includes(file)) return false;
+            state.playedSoundFiles.push(file);
+            return true;
+        },
     });
 
     defineNamespace<typeof C_Sound>("C_Sound", {

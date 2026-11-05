@@ -116,6 +116,10 @@ export interface ClientState {
     /** The points spent in each of the three talent trees (a paladin's Holy, Protection, Retribution). */
     talentPoints: number[];
     isResting: boolean;
+    /** The sound files the game finds. */
+    soundFiles: string[];
+    /** The sound files the addon played. */
+    playedSoundFiles: string[];
     /** Inventory slot (16 main hand, 17 off hand) -> the temporary enchant on it. */
     enchants: { [slot: number]: FakeEnchant | undefined };
     /** The client gives no answer about weapon enchants (reads fail), as it sometimes does. */
@@ -186,6 +190,8 @@ export function createClientState(): ClientState {
         hasDaylight: false,
         talentPoints: [0, 0, 0],
         isResting: false,
+        soundFiles: [],
+        playedSoundFiles: [],
         enchants: {},
         areEnchantReadsBroken: false,
         equippedItems: {},

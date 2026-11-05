@@ -1,6 +1,6 @@
 // What the addon says and plays: chat lines in its name, and the alert sounds the player can pick.
 import type { NoticeService } from "@wowkit/wow";
-import { SOUNDS, type SoundKey } from "./sounds.constants";
+import { SOUNDS, findCustomSound, type SoundKey } from "./sounds.constants";
 
 export class MessagesService {
     constructor(
@@ -10,6 +10,11 @@ export class MessagesService {
     ) {}
 
     playAlertSound(key: SoundKey): void {
+        const custom = findCustomSound(key);
+        if (custom !== undefined) {
+            this.notice.playSoundFile(string.format("Interface\\AddOns\\%s\\custom%d", custom.folder, custom.soundNumber));
+            return;
+        }
         const choice = SOUNDS.find((sound) => sound.key === key);
         if (choice?.id === undefined) return;
         this.notice.playSound(choice.kit, choice.id);

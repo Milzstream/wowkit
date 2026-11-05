@@ -27,6 +27,7 @@ import "./food-buff-learning.spec";
 import "./gathering.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";
+import "./custom-sounds.spec";
 import "./repeat-kinds.spec";
 import "./low-stock.spec";
 import "./table-views.spec";

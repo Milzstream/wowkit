@@ -29,6 +29,8 @@ export interface World {
     frames: FakeFrame[];
     /** Clicks a button that opens a list of choices, and answers with the list. */
     openMenu(button: FakeFrame): FakeMenuChoice[];
+    /** Does the list opened last scroll? */
+    isMenuScrolling(): boolean;
     /** Clicks a button that opens a list of choices, and picks the one with this label. */
     pickFromMenu(button: FakeFrame, label: string): void;
     /** A game event, delivered to every frame that listens for it. */
@@ -84,7 +86,7 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
     installClock(clock);
     installUnits(state);
     installSpells(state);
-    const menu: FakeMenu = { choices: [] };
+    const menu: FakeMenu = { choices: [], isScrolling: false };
     installUi(frames, chat, proxySettings, menu);
     const openMenu = (button: FakeFrame) => {
         menu.choices = [];
@@ -118,6 +120,7 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
         },
         frames: frames.all,
         openMenu: (button) => openMenu(button),
+        isMenuScrolling: () => menu.isScrolling,
         pickFromMenu: (button, label) => {
             const choice = openMenu(button).find((listed) => listed.label === label);
             if (choice === undefined) throw new Error(`the list has no choice "${label}"`);

@@ -257,7 +257,7 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
             reminders.fedBuffs,
         ),
     );
-    const choices = addon.register(new StyleChoicesService(locale, styles, messages));
+    const choices = addon.register(new StyleChoicesService(locale, styles, messages, texts.settings));
     const windows = addon.register(new StyleWindowService(locale, texts.settings));
     const switches = addon.register(new EnabledService(game.spells, buffs.classBuffs, reminders.reagents, texts.settings));
     const tableNotice = addon.register(new NoticeService(`${addonName}-table`));

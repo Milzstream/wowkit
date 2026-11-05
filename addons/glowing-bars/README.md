@@ -64,6 +64,10 @@ wrong for the spell is refused or put right. To find a spell's ID, switch on the
 page: every spell tooltip then shows its ID, and an elixir's, potion's, food's or drink's the spell it casts. Added as a missing buff, such an item glows only on its own button, under its own name in the table, and not when none is left; a food or drink stops glowing once you have its Well Fed buff. Like the other
 settings, the looks are kept per character.
 
+**Custom sounds**: make a folder in `Interface\AddOns`, next to the addon's folder (the name `GlowingBars_Sounds` is filled in for you), and put your files in it,
+named `custom1`, `custom2` and so on, as `.ogg` or `.mp3`. In the Custom sounds section of the table, enter how many there are: they are in the Sound list
+as Sounds 1, Sounds 2 and so on. `Add folder` adds more folders in `AddOns`, whose sounds go by the folder's name (`Horns` is `Horns 1`, `GlowingBars_My_Sounds` is `My Sounds 1`). A short sound works best.
+
 Settings (per character): *Options > AddOns > Glowing Bars*: the button that opens the table of looks, the spell IDs in
 the tooltips (off by default), the action bars that glow, the party buff message, the weapon buff to keep up, when the
 cooldowns glow, and a Help section with links to report problems. Blizzard's own action bars are supported, Forever's

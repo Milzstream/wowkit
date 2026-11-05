@@ -27,9 +27,13 @@ type JustifyHorizontal = "LEFT" | "CENTER" | "RIGHT";
 type JustifyVertical = "TOP" | "MIDDLE" | "BOTTOM";
 type Orientation = "HORIZONTAL" | "VERTICAL";
 
+/** Plays a sound file from the Interface folder; answers whether it will play. */
+declare function PlaySoundFile(this: void, file: string): boolean;
+
 /** The game's menu: what a generator fills, one radio line at a time. */
 interface MenuDescription {
     CreateRadio(text: string, isSelected: (this: void) => boolean, setSelected: (this: void) => void): unknown;
+    SetScrollMode(maxScrollExtent: number): void;
 }
 
 /** FrameXML MenuUtil: the game's dropdown lists. */

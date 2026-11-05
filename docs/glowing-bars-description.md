@@ -38,7 +38,7 @@ Type **/gb** to open the table. It opens in a **Basic** view with the columns mo
 *   **Color** of the glow and of the message
 *   **Glow %**, 1 to 100
 *   **Message** at the top of the screen, on or off
-*   **Sound**, from a short list of game sounds
+*   **Sound**, from a short list of game sounds, or your own
 *   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)
 *   **Animation**: circling (Blizzard's own), breathing, or none
 *   **Repeat**: every 5, 10, 30 or 60 seconds the glow, the message and the sound come again, for the glow time (off by default)
@@ -46,6 +46,10 @@ Type **/gb** to open the table. It opens in a **Basic** view with the columns mo
 *   **Enabled**: turn a whole type, or one spell, on or off
 
 In the same table you can **add your own spells and items by their ID**, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Show spell and item IDs in tooltips**.
+
+**Your own sounds**: make a folder named `GlowingBars_Sounds` in `Interface\AddOns`, next to the addon's folder, and put your files in it, named `custom1`, `custom2` and so on, as `.ogg` or `.mp3`. Open the table with **/gb**, scroll to the bottom, and under **Custom sounds** enter how many there are. They then appear in the Sound list. With **Add folder** you can use more folders; type **/reload** after adding one.
+
+Sound packs may come later, from me or from anyone else: a pack is just a folder of sounds named this way, so you can already make one and share it.
 
 The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow, low stock a quieter red. Only the old ranks, low stock and the low reagents (in a town) show a message by default, and nothing makes a sound until you pick one; the glow is the reminder.
 

@@ -3,7 +3,8 @@
 // whether a message says so, the sound and how often it repeats; a click or an entry changes it. Opened by /gb and by
 // the button on the Settings page. Like the Settings page, this folder may call the game.
 import { OnEvent } from "@wowkit/core";
-import { SOUNDS, type MessagesService } from "@wowkit/ui";
+import { findSoundLabel, type MessagesService } from "@wowkit/ui";
+import { CUSTOM_SOUND_FOLDER } from "../settings/settings.constants";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import type { StyleOverride } from "../settings/settings.interface";
@@ -116,6 +117,7 @@ export class StyleTableService {
         let y = this.drawSection(content, "HDR_TABLE_DEFAULTS", typeRows, 0);
         y = this.drawSection(content, "HDR_TABLE_SPELLS", spellRows, y);
         y = this.drawAddRow(content, y);
+        y = this.drawCustomSounds(content, y);
         for (let i = this.usedHeaders; i < this.headers.length; i++) this.headers[i]!.Hide();
         for (let i = this.usedWidgets; i < this.widgets.length; i++) this.widgets[i]!.frame.Hide();
         content.SetHeight(math.max(10, y));
@@ -183,6 +185,15 @@ export class StyleTableService {
         return top + HEADER_HEIGHT + ROW_HEIGHT + 10;
     }
 
+    /** The header and the folders with sounds of the player's own, under the add row. */
+    private drawCustomSounds(content: Frame, top: number): number {
+        const header = this.takeHeader(content);
+        header.SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top);
+        header.SetText(this.locale.getText("HDR_CUSTOM_SOUNDS"));
+        header.Show();
+        return this.windows.drawCustomSounds(content, top);
+    }
+
     private takeHeader(content: Frame): FontString {
         let header = this.headers[this.usedHeaders];
         if (header === undefined) {
@@ -220,7 +231,7 @@ export class StyleTableService {
         widgets.swatchColor.SetColorTexture(style.color[0], style.color[1], style.color[2], 1);
         widgets.glowPercent.SetText(string.format("%d", style.glowPercent));
         widgets.message.SetChecked(style.isMessageOn);
-        widgets.sound.SetText(SOUNDS.find((sound) => sound.key === style.sound)?.label ?? "");
+        widgets.sound.SetText(findSoundLabel(style.sound, CUSTOM_SOUND_FOLDER));
         this.choices.fillChoices(widgets.choices, row);
         widgets.reset.SetShown(isOverridden);
         widgets.remove.SetShown(row.isAdded === true);

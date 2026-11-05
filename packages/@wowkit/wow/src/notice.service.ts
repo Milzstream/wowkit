@@ -7,6 +7,9 @@ import { attempt } from "./utils/protected-call.utils";
 
 export const NOTICE_SECONDS = 10;
 
+/** The kinds of sound file the game plays, in the order they are tried: the addon cannot see which one is there. */
+const SOUND_FILE_EXTENSIONS = ["ogg", "mp3"];
+
 /** The lines one addon shows, and the number of its latest message (an older timer must not remove a newer one). */
 interface OwnedNotice {
     owner: string;
@@ -35,6 +38,13 @@ export class NoticeService {
     playSound(kitName: string | undefined, fallbackId: number): void {
         const soundKitId = (kitName !== undefined ? SOUNDKIT[kitName] : undefined) ?? fallbackId;
         attempt(C_Sound.PlaySound, soundKitId, undefined, true);
+    }
+
+    /** Plays a sound file given without its extension, in the first kind the game finds; a missing file plays nothing. */
+    playSoundFile(pathWithoutExtension: string): void {
+        for (const extension of SOUND_FILE_EXTENSIONS) {
+            if (attempt(PlaySoundFile, `${pathWithoutExtension}.${extension}`) === true) return;
+        }
     }
 
     /** A line in the chat window. */
