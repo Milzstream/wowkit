@@ -35,7 +35,7 @@ export class BuffMemoryService {
      * renews the memory: an aspect seen every few seconds never runs out.
      */
     remember(spellId: number | undefined, auraName: string | undefined, remain: number | undefined, isFromCast: boolean): void {
-        const name = auraName ?? this.spells.getSpellName(spellId);
+        const name = auraName ?? (spellId !== undefined ? this.spells.getSpellLabel(spellId) : undefined);
         if (name === undefined || name === "") return;
         const key = buildNameKey(name);
         const category = this.knowledge.findCategory(name);
@@ -54,7 +54,7 @@ export class BuffMemoryService {
 
     /** Is the buff (or a member of its category) remembered as up, with more than `lead` seconds left? */
     isRemembered(spellId: number, lead = 0): boolean {
-        const name = this.spells.getSpellName(spellId);
+        const name = this.spells.getSpellLabel(spellId);
         if (name === undefined || name === "") return false;
         const now = this.clock.getCurrentTime() + lead;
         if (now < (this.heldNames.get(buildNameKey(name)) ?? 0)) return true;
@@ -64,7 +64,7 @@ export class BuffMemoryService {
 
     /** The buff was looked for and is gone. `categoriesSeen`: categories still up in the same scan. */
     release(spellId: number, categoriesSeen: LuaMap<string, AuraEntry> | undefined): void {
-        const name = this.spells.getSpellName(spellId);
+        const name = this.spells.getSpellLabel(spellId);
         if (name === undefined || name === "") return;
         const key = buildNameKey(name);
         const now = this.clock.getCurrentTime();

@@ -65,6 +65,8 @@ export class FedBuffsService {
     checkWellFed(): void {
         const auras = this.buffState.findAuras(Consumable.WellFed);
         if (auras === undefined) return;
+        // Seen or gone, for the fight: the game hides the buffs then, and only what was remembered counts
+        this.buffState.hasAura(Consumable.WellFed);
         const now = this.clock.getCurrentTime();
         const isEating = this.used.length > 0 && this.player.isEating();
         this.used = this.used.filter((food) => isEating || now - food.usedAt < EATING_GRACE_SECONDS);

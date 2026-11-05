@@ -29,6 +29,35 @@ function createFoodWorld(isWellFed: boolean, foodName = "Food") {
 }
 
 describe("a food added as a buff by the spell it casts", () => {
+    it("does not glow in combat, where the game hides the buffs, on a player seen well fed before it", () => {
+        const world = createFoodWorld(true);
+        world.state.isInCombat = true;
+        world.state.areAurasHidden = true;
+        world.fire("PLAYER_REGEN_DISABLED");
+        world.advance(2);
+        expect(world.glowsOn(1)).toBe(0);
+    });
+
+    it("does not glow in combat either for Forever's better drink, on a player seen well fed before it", () => {
+        const world = createFoodWorld(true, "Nutritious Drink");
+        world.state.isInCombat = true;
+        world.state.areAurasHidden = true;
+        world.fire("PLAYER_REGEN_DISABLED");
+        world.advance(2);
+        expect(world.glowsOn(1)).toBe(0);
+    });
+
+    it("glows in combat on a player whose Well Fed was seen to end before it", () => {
+        const world = createFoodWorld(true);
+        world.state.auras.pop();
+        world.advance(1);
+        world.state.isInCombat = true;
+        world.state.areAurasHidden = true;
+        world.fire("PLAYER_REGEN_DISABLED");
+        world.advance(2);
+        expect(world.glowsOn(1)).toBe(1);
+    });
+
     it("glows while the player is not well fed", () => {
         expect(createFoodWorld(false).glowsOn(1)).toBe(1);
     });

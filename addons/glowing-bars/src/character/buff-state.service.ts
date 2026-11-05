@@ -66,6 +66,7 @@ export class BuffStateService {
     findAuras(spellId: number): AuraEntry[] | undefined {
         const scan = this.auras.scanAuras("player");
         if (scan.isUnreadable || scan.auras.some((aura) => aura.isHidden || aura.name === undefined)) return undefined;
+        if (scan.auras.length === 0 && this.isEmptyListSuspicious()) return undefined;
         const wantKey = buildNameKey(this.getBuffName(spellId) ?? "");
         return scan.auras.filter((aura) => buildNameKey(aura.name!) === wantKey);
     }
