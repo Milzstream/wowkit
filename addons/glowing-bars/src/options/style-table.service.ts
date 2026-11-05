@@ -11,7 +11,6 @@ import type { StyleService } from "../settings/style.service";
 import {
     BRONZE_TEXT,
     COLUMN,
-    findColumns,
     findCenteredX,
     HEADER_HEIGHT,
     OVERRIDDEN_COLOR,
@@ -112,6 +111,7 @@ export class StyleTableService {
         this.usedHeaders = 0;
         const spellRows = this.rows.listSpellRows();
         const typeRows = this.rows.listTypeRows(spellRows);
+        this.windows.setBelowShown(typeRows.some((row) => row.reminderType === "lowReagent" || row.reminderType === "lowStock"));
         this.applyTableWidth(content);
         let y = this.drawSection(content, "HDR_TABLE_DEFAULTS", typeRows, 0);
         y = this.drawSection(content, "HDR_TABLE_SPELLS", spellRows, y);
@@ -123,7 +123,7 @@ export class StyleTableService {
 
     /** The window is as wide as the columns of the view. */
     private applyTableWidth(content: Frame): void {
-        const { actions } = findColumns(this.windows.isAdvanced());
+        const { actions } = this.windows.getColumns();
         this.tableWidth = actions.x + actions.width;
         if (this.window !== undefined) this.windows.setWidthToFit(this.window, findWindowWidth(this.tableWidth));
         content.SetWidth(this.tableWidth);
@@ -227,7 +227,7 @@ export class StyleTableService {
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
         this.edits.fillIdBox(widgets.spellIdBox, row);
         this.edits.fillBelowBox(widgets.belowBox, row);
-        applyRowView(widgets, this.windows.isAdvanced());
+        applyRowView(widgets, this.windows.getColumns(), this.windows.isAdvanced());
     }
 
     private createWidgets(content: Frame): RowWidgets {

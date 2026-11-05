@@ -39,6 +39,7 @@ export class StyleWindowService {
     /** The column headers, and what each one's column is called. */
     private readonly headers: { header: FontString; hover?: Frame; column: keyof typeof COLUMN }[] = [];
     private viewButton: Button | undefined;
+    private hasBelow = false;
 
     constructor(
         private readonly locale: AddonLocale,
@@ -50,9 +51,19 @@ export class StyleWindowService {
         return this.settings.get("isTableAdvanced");
     }
 
+    /** Does any row have a limit? Without one the Below column is left out. */
+    setBelowShown(hasBelow: boolean): void {
+        this.hasBelow = hasBelow;
+    }
+
+    /** Where the columns are now. */
+    getColumns(): ReturnType<typeof findColumns> {
+        return findColumns(this.isAdvanced(), this.hasBelow);
+    }
+
     /** The headers and the button say which view it is. */
     showView(window: Frame): void {
-        const columns = findColumns(this.isAdvanced());
+        const columns = this.getColumns();
         for (const { header, hover, column } of this.headers) {
             const shown = columns[column];
             header.SetShown(shown !== undefined);

@@ -2,7 +2,7 @@ import { createWorld, describe, expect, it, learnSpell, playAs, WARRIOR, type Fa
 import { RECKLESSNESS, findLabel, setUpWarrior, toggleTable } from "./table.helpers";
 
 const ADVANCED_ONLY = ["Spell / Item ID", "Glow %", "Repeat", "When", "Glow time", "Animation"];
-const BOTH = ["Spell / Item", "Type", "Color", "Message", "Sound", "Below", "Enabled", "Actions"];
+const BOTH = ["Spell / Item", "Type", "Color", "Message", "Sound", "Enabled", "Actions"];
 
 function createOpenTable(savedSettings: Record<string, unknown> = {}): World {
     const world = createWorld((state) => {
@@ -87,8 +87,8 @@ describe("the views of the table", () => {
     it("explains its columns as the mouse comes over their headers: only the ones of the view", () => {
         const basic = readHeaderTips(createOpenTable());
         const advanced = readHeaderTips(createOpenTable({ isTableAdvanced: true }));
-        expect(basic.length).toBe(7);
-        expect(advanced.length).toBe(13);
+        expect(basic.length).toBe(6);
+        expect(advanced.length).toBe(12);
         for (const tips of [basic, advanced]) {
             expect(tips.some((tip) => tip.includes("Reset: undoes your changes on this row."))).toBe(true);
             expect(tips.some((tip) => tip.includes("right-click for the one before"))).toBe(true);
@@ -109,6 +109,35 @@ describe("the views of the table", () => {
         world.state.isInCombat = false;
         world.advance(1);
         expect(world.glowsOn(2)).toBe(1);
+    });
+});
+
+describe("the Below column", () => {
+    const ARROWS = { addedSpells: [{ id: 2512, reminderType: "lowStock" }] };
+
+    it("is left out while no row has a limit, and the window is narrower for it", () => {
+        const without = createOpenTable();
+        const withArrows = createOpenTable(ARROWS);
+        expect(isHeaderShown(without, "Below")).toBe(false);
+        expect(isHeaderShown(withArrows, "Below")).toBe(true);
+        expect(findWindow(withArrows).width - findWindow(without).width).toBe(56);
+    });
+
+    it("is left out in Advanced too", () => {
+        const without = createOpenTable({ isTableAdvanced: true });
+        const withArrows = createOpenTable({ isTableAdvanced: true, ...ARROWS });
+        expect(isHeaderShown(without, "Below")).toBe(false);
+        expect(isHeaderShown(withArrows, "Below")).toBe(true);
+        expect(findWindow(withArrows).width - findWindow(without).width).toBe(56);
+    });
+
+    it("goes when the last row with a limit is removed", () => {
+        const world = createOpenTable(ARROWS);
+        const row = findLabel(world, "Low stock")!.parent;
+        expect(row === undefined).toBe(false);
+        const arrow = world.frames.find((frame) => frame.template === "UIPanelButtonTemplate" && frame.text === "X" && frame.isShown)!;
+        arrow.scripts.OnClick!(arrow);
+        expect(isHeaderShown(world, "Below")).toBe(false);
     });
 });
 

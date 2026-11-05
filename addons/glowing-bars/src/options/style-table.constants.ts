@@ -53,9 +53,22 @@ export const BASIC_COLUMN = {
     actions: { x: 644, width: 72 },
 } satisfies { [name: string]: Column };
 
-/** Where the columns of a view are. */
-export function findColumns(isAdvanced: boolean): { [name in keyof typeof COLUMN]?: Column } & typeof BASIC_COLUMN {
-    return isAdvanced ? COLUMN : BASIC_COLUMN;
+/** Where the columns of a view are; without `hasBelow` (no row has a limit) the Below column is left out and the next ones close up. */
+export function findColumns(
+    isAdvanced: boolean,
+    hasBelow: boolean,
+): { [name in keyof typeof COLUMN]?: Column } & Omit<typeof BASIC_COLUMN, "belowLimits"> {
+    const columns = isAdvanced ? COLUMN : BASIC_COLUMN;
+    if (hasBelow) return columns;
+    const width = columns.belowLimits.width;
+    const closedUp: { [name in keyof typeof COLUMN]?: Column } & Omit<typeof BASIC_COLUMN, "belowLimits"> = {
+        ...columns,
+        enabled: { x: columns.enabled.x - width, width: columns.enabled.width },
+        actions: { x: columns.actions.x - width, width: columns.actions.width },
+    };
+    // Set after the copy: in Lua a nil among the fields of a table leaves the copied one there
+    closedUp.belowLimits = undefined;
+    return closedUp;
 }
 
 /** A row is as wide as its columns. */

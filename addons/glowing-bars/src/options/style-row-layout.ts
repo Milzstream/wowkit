@@ -1,6 +1,6 @@
 // Where the controls of a row of the table go in a view: the same controls, in the columns of the Basic or the Advanced
 // view; the ones of a column that the view does not have are hidden. What they hold keeps working.
-import { ICON_SIZE, findCenteredX, findColumns, COLUMN, type Column } from "./style-table.constants";
+import { ICON_SIZE, findCenteredX, COLUMN, type Column, type findColumns } from "./style-table.constants";
 
 /** The controls of a row that move, or hide, with the view. */
 export interface RowControls {
@@ -23,12 +23,11 @@ function applyPosition(control: Button | CheckButton | EditBox, frame: Frame, x:
 }
 
 /** Puts the controls of a filled row in the columns of the view. */
-export function applyRowView(row: RowControls, isAdvanced: boolean): void {
-    const columns = findColumns(isAdvanced);
+export function applyRowView(row: RowControls, columns: ReturnType<typeof findColumns>, isAdvanced: boolean): void {
     applyPosition(row.swatch, row.frame, findCenteredX(columns.color, 22));
     applyPosition(row.message, row.frame, findCenteredX(columns.message, 24));
     applyPosition(row.sound, row.frame, findCenteredX(columns.sound, 126));
-    applyPosition(row.belowBox, row.frame, findCenteredX(columns.belowLimits, 44));
+    if (columns.belowLimits !== undefined) applyPosition(row.belowBox, row.frame, findCenteredX(columns.belowLimits, 44));
     applyPosition(row.enabled, row.frame, findCenteredX(columns.enabled, 24));
     applyPosition(row.reset, row.frame, columns.actions.x + 2);
     applyPosition(row.remove, row.frame, columns.actions.x + 50);
