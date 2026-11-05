@@ -13,9 +13,14 @@ export interface WorldPosition {
     mapId: number;
 }
 
+/** The main talent tree is read again after this many seconds: it reads every talent, and rarely changes. */
+const MAIN_TREE_REUSE = 3;
+
 export class PlayerService {
     /** The lowercase names of the eating and drinking buffs, in the client's language. */
     private eatingNames: LuaSet<string> | undefined;
+    private mainTree: number | undefined;
+    private mainTreeAt = 0;
 
     isInCombat(): boolean {
         const [didSucceed, isFighting] = tryCall(UnitAffectingCombat, "player");
@@ -67,6 +72,14 @@ export class PlayerService {
      * the trait system, each a third of its width, so a talent's tree is the third its position falls in.
      */
     findMainTalentTree(): number | undefined {
+        const now = GetTime();
+        if (this.mainTreeAt > 0 && now - this.mainTreeAt < MAIN_TREE_REUSE) return this.mainTree;
+        this.mainTreeAt = now;
+        this.mainTree = this.readMainTalentTree();
+        return this.mainTree;
+    }
+
+    private readMainTalentTree(): number | undefined {
         const nodes = this.listTalentNodes();
         if (nodes.length === 0) return undefined;
         let left = math.huge;

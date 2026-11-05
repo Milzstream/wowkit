@@ -150,6 +150,7 @@ export class NoticesService {
 
     /** A line for a reminderType of reminder: one for each color its spells (whose message is on) are shown in. */
     private addTypeLines(lines: Line[], reminderType: ReminderType, spellIds: number[], text: TextKey): void {
+        if (spellIds.length === 0) return;
         const groups: { color: Rgb; ids: number[]; repeat: number }[] = [];
         for (const id of spellIds) {
             const style = this.styles.getStyle(reminderType, id);

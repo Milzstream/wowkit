@@ -63,14 +63,13 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
         const hasFightStarted = now.inCombat && !this.wasInCombat;
         this.wasInCombat = now.inCombat;
         this.schedule.startTick();
-        return {
-            ...filterReminders(byWhen, (reminderType, id) => {
-                const style = this.styles.getStyle(reminderType, id);
-                const isStartingOver =
-                    (style.when === "townAlert" && hasArrivedInTown) || (reminderType === "readyCooldown" && hasFightStarted);
-                return this.schedule.isShowing(`${reminderType}:${id}`, style, time, isInTown, isStartingOver);
-            }),
-            isInTown,
-        };
+        const showing = filterReminders(byWhen, (reminderType, id) => {
+            const style = this.styles.getStyle(reminderType, id);
+            const isStartingOver =
+                (style.when === "townAlert" && hasArrivedInTown) || (reminderType === "readyCooldown" && hasFightStarted);
+            return this.schedule.isShowing(`${reminderType}:${id}`, style, time, isInTown, isStartingOver);
+        });
+        showing.isInTown = isInTown;
+        return showing;
     }
 }

@@ -66,7 +66,7 @@ export class FedBuffsService {
         const auras = this.buffState.findAuras(Consumable.WellFed);
         if (auras === undefined) return;
         const now = this.clock.getCurrentTime();
-        const isEating = this.player.isEating();
+        const isEating = this.used.length > 0 && this.player.isEating();
         this.used = this.used.filter((food) => isEating || now - food.usedAt < EATING_GRACE_SECONDS);
         const seen = this.seen;
         this.seen = new LuaSet();

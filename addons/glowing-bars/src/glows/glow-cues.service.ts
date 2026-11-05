@@ -74,15 +74,15 @@ export class GlowCuesService {
         const classToken = this.player.getClassToken() ?? "";
         if (reminderType === "proc") return PROC_CUES[classToken] ?? [];
         const racials = RACIAL_COOLDOWNS.filter((id) => this.spells.isLearned(this.addedSpells.getEffectiveId(id)));
-        return [...(COOLDOWN_CUES[classToken] ?? []), ...racials];
+        return (COOLDOWN_CUES[classToken] ?? []).concat(racials);
     }
 
     /** The spells of a type: the lists', and the ones the player added. */
     listCueIds(reminderType: AddableType): number[] {
         // Once each: a spell the player added may be on a list too (the Settings page cannot have two switches of one name)
         const ids: number[] = [];
-        for (const id of [...this.listBuiltInIds(reminderType), ...this.addedSpells.listAdded(reminderType)])
-            if (!ids.includes(id)) ids.push(id);
+        for (const id of this.listBuiltInIds(reminderType)) if (!ids.includes(id)) ids.push(id);
+        for (const id of this.addedSpells.listAdded(reminderType)) if (!ids.includes(id)) ids.push(id);
         return ids;
     }
 

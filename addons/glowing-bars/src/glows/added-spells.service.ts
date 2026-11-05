@@ -45,10 +45,9 @@ export class AddedSpellsService {
 
     /** The IDs of the spells the player added as this type. */
     listAdded(reminderType: AddableType): number[] {
-        return this.settings
-            .get("addedSpells")
-            .filter((spell) => spell.reminderType === reminderType)
-            .map((spell) => spell.id);
+        const ids: number[] = [];
+        for (const spell of this.settings.get("addedSpells")) if (spell.reminderType === reminderType) ids.push(spell.id);
+        return ids;
     }
 
     /** Adds a spell by its ID. False when the client knows no spell by it; a spell added already stays as it is. */

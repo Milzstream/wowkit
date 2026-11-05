@@ -58,17 +58,24 @@ export class ReagentsService {
      */
     findLowReagents(isWanted: (reagent: Reagent) => boolean = () => true): ReagentStock[] {
         const low: ReagentStock[] = [];
-        REAGENTS.forEach((reagent, index) => {
-            if (!isWanted(reagent)) return;
-            const usedBy = reagent.spells.find(
-                (spellId) =>
-                    this.spells.isLearned(spellId) && this.findReagentFor(spellId) !== undefined && !this.isOutranked(spellId, index),
-            );
+        for (let index = 0; index < REAGENTS.length; index++) {
+            const reagent = REAGENTS[index]!;
+            const usedBy = isWanted(reagent) ? this.findSpellUsing(reagent, index) : undefined;
+            if (usedBy === undefined) continue;
             const count = this.getReagentCount(reagent);
-            if (usedBy !== undefined && this.isLow(count, string.format("%d", reagent.itemId)))
+            if (this.isLow(count, string.format("%d", reagent.itemId)))
                 low.push({ reagent, spellId: usedBy, name: this.getReagentName(reagent), count });
-        });
+        }
         return low;
+    }
+
+    /** The first spell the player knows that uses the reagent, and has not outgrown. */
+    private findSpellUsing(reagent: Reagent, index: number): number | undefined {
+        for (const spellId of reagent.spells) {
+            if (this.spells.isLearned(spellId) && this.findReagentFor(spellId) !== undefined && !this.isOutranked(spellId, index))
+                return spellId;
+        }
+        return undefined;
     }
 
     /** Does the player know a higher rank of the spell, one with a later reagent of the list (its ranks are in order)? */

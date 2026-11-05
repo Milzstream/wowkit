@@ -66,6 +66,22 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
     });
 });
 
+describe("a priest with Smite rank 1 on the bar, who learns rank 2 later", () => {
+    it("is told about the old rank once it is learned", () => {
+        const world = createWorld((state) => {
+            playAs(state, PRIEST);
+            learnSpell(state, SMITE_RANK_1);
+            state.bars[1] = SMITE_RANK_1.id;
+        });
+        world.advance(3);
+        expect(world.notice() ?? "").toBe("");
+        learnSpell(world.state, SMITE_RANK_2);
+        world.fire("LEARNED_SPELL_IN_SKILL_LINE", SMITE_RANK_2.id);
+        world.advance(3);
+        expect(world.notice()).toContain("Old spell rank");
+    });
+});
+
 describe("a priest who knows Smite rank 2, with a macro for it on the bar", () => {
     function createWithMacro(body: string, spellId?: number): World {
         const world = createWorld((state) => {
