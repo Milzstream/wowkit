@@ -26,7 +26,7 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
 *   **Low stock, if you add it** – add any item by its *Item ID* (arrows, drinks, candles). When only a few are left, a message says how many. If the item is on your bars, its button glows too.
 *   **Cooldowns that are back** – in a fight, an important cooldown of your class or your race (Recklessness, Rapid Fire, Adrenaline Rush, Innervate, Swift Judgement, Blood Fury, Stoneform, Desperate Prayer…) glows for a few seconds when it is ready again. If you like, the ready ones also glow as a fight starts.
 *   **Procs** – Overpower, Revenge, Execute, Victory Rush, Riposte, Counterattack, Mongoose Bite and Hammer of Wrath glow while you can use them.
-*   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you.
+*   **Old ranks** – a spell on your bars at a lower rank than the one you know glows quietly, and a short message tells you. A spell in a macro doesn't count.
 *   **Elixirs, food and drinks, if you add them** – turn on **Show spell and item IDs in tooltips** on the Settings page, put the item on your bars, and add the *Use spell ID* from its tooltip in the **/gb** table as a missing buff. Only that item glows, under its own name in the table, and not when you have none left. A food or drink stops glowing once you have its Well Fed buff.
 
 It stays quiet while you are dead, mounted or on a taxi. It also stays quiet in towns and inns, except for low reagents and low stock. To turn off the town rule, untick **Stay quiet in towns and inns** on the Settings page.

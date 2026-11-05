@@ -23,7 +23,8 @@ export function installSpells(state: ClientState): void {
         if (type(idOrName) === "number") return state.spells[idOrName as number];
         let best: SpellDefinition | undefined;
         for (const [, spell] of pairs(state.spells)) {
-            if (spell.name === idOrName && (best === undefined || spell.rank > best.rank)) best = spell;
+            if (spell.name !== idOrName) continue;
+            if (best === undefined || (state.isFirstRankByName ? spell.rank < best.rank : spell.rank > best.rank)) best = spell;
         }
         return best;
     }

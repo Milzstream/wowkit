@@ -66,6 +66,51 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
     });
 });
 
+describe("a priest who knows Smite rank 2, with a macro for it on the bar", () => {
+    function createWithMacro(body: string, spellId?: number): World {
+        const world = createWorld((state) => {
+            playAs(state, PRIEST);
+            for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
+            state.isFirstRankByName = true;
+            state.barMacros[1] = { body, spellId };
+        });
+        world.advance(3);
+        return world;
+    }
+
+    for (const body of ["/cast Smite", "/cast Smite(Rank 2)", "#showtooltip\n/cast [harm] Smite(Rank 2)"]) {
+        it(`is told nothing for "${body}"`, () => {
+            expect(createWithMacro(body).notice() ?? "").toBe("");
+        });
+    }
+
+    it("is told nothing for a macro the game gives as the spell it shows, and its button glows for that spell", () => {
+        const world = createWithMacro("/cast Smite(Rank 1)", SMITE_RANK_1.id);
+        expect(world.notice() ?? "").toBe("");
+        expect(world.glowsOn(1)).toBe(0);
+    });
+
+    it("is told nothing either when the game says the macro casts rank 1", () => {
+        expect(createWithMacro("/cast Smite", SMITE_RANK_1.id).notice() ?? "").toBe("");
+    });
+
+    it("is told nothing for a macro of a lower rank: that is on purpose", () => {
+        expect(createWithMacro("/cast Smite(Rank 1)").notice() ?? "").toBe("");
+    });
+
+    it("is still told about rank 1 on another button when no macro names it", () => {
+        const world = createWorld((state) => {
+            playAs(state, PRIEST);
+            for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
+            state.isFirstRankByName = true;
+            state.bars[1] = SMITE_RANK_1.id;
+            state.barMacros[2] = { body: "/cast Renew" };
+        });
+        world.advance(3);
+        expect(world.notice()).toContain("Old spell rank");
+    });
+});
+
 describe("a priest resting in a town", () => {
     it("is told nothing by default", () => {
         const world = createWorld((state) => setUpPriest(state, true));

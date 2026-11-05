@@ -59,7 +59,7 @@ function installAddonBars(state: ClientState, frames: FrameRegistry): void {
 
 export function installActionBars(state: ClientState, frames: FrameRegistry): void {
     defineNamespace<typeof C_ActionBar>("C_ActionBar", {
-        HasAction: (slot) => state.bars[slot] !== undefined || state.barItems[slot] !== undefined,
+        HasAction: (slot) => state.bars[slot] !== undefined || state.barItems[slot] !== undefined || state.barMacros[slot] !== undefined,
         GetActionTexture: (slot) => state.spells[state.bars[slot] ?? 0]?.icon ?? 0,
         // The bar does not answer: the addon then asks the spell
         IsActionInRange: () => undefined,
@@ -68,6 +68,10 @@ export function installActionBars(state: ClientState, frames: FrameRegistry): vo
         GetActionInfo: (slot) => {
             const itemId = state.barItems[slot];
             if (itemId !== undefined) return $multi("item", itemId, undefined, undefined);
+            // A macro that shows a spell is given as that spell, as the game does; any other by its number
+            const macro = state.barMacros[slot];
+            if (macro?.spellId !== undefined) return $multi("macro", macro.spellId, "spell", undefined);
+            if (macro !== undefined) return $multi("macro", slot, undefined, undefined);
             const spellId = state.bars[slot];
             if (spellId === undefined) return $multi(undefined, undefined, undefined, undefined);
             return $multi("spell", spellId, undefined, spellId);
@@ -77,8 +81,9 @@ export function installActionBars(state: ClientState, frames: FrameRegistry): vo
             if (!totem) return $multi(false, "", 0, 0, 0, 0, 0);
             return $multi(true, totem.name, totem.start, totem.duration, 0, 0, 0);
         },
-        GetMacroSpell: () => undefined,
-        GetMacroBody: () => undefined,
+        strtrim: (text: string) => string.match(text, "^%s*(.-)%s*$")[0] ?? "",
+        GetMacroSpell: (macro) => state.barMacros[macro as number]?.spellId,
+        GetMacroBody: (macro) => state.barMacros[macro as number]?.body,
     });
 
     // Blizzard's own action buttons: ActionButton1..12, each on its action slot

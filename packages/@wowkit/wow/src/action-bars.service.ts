@@ -8,7 +8,8 @@
 import { type EventBus, type OnFirstLogin, trimText } from "@wowkit/core";
 import type { ButtonRegistryService, ButtonShape } from "./button-registry.service";
 import type { ClockService } from "./clock.service";
-import { findButtonItem, getItemButtonKey } from "./utils/item-button.utils";
+import { findButtonItem, findItemUseSpell, getItemButtonKey } from "./utils/item-button.utils";
+import { listMacroTokens } from "./utils/macro-text.utils";
 import { attempt, attemptMulti } from "./utils/protected-call.utils";
 import { getReadableId, isReadable } from "./utils/secret-value.utils";
 import type { SpellsService } from "./spells.service";
@@ -40,6 +41,8 @@ export class ActionBarsService implements OnFirstLogin {
     private readonly buttonsByName = new LuaMap<string, ActionButton[]>();
     private readonly buttonsByNameKey = new LuaMap<string, ActionButton[]>();
     private readonly buttonsByIcon = new LuaMap<number | string, ActionButton[]>();
+    /** The names of the spells a macro on the bars casts. */
+    private readonly macroSpellNames = new LuaMap<string, boolean>();
     /** The action slot each mapped button shows. */
     private readonly slotByButton = new LuaMap<ActionButton, number>();
     private lastMapAt = 0;
@@ -75,6 +78,7 @@ export class ActionBarsService implements OnFirstLogin {
         this.clear(this.buttonsByNameKey);
         this.clear(this.buttonsByIcon);
         this.clear(this.slotByButton);
+        this.clear(this.macroSpellNames);
         this.lastMapAt = this.clock.getCurrentTime();
 
         const queue = this.listButtonsToMap();
@@ -189,6 +193,11 @@ export class ActionBarsService implements OnFirstLogin {
         return ids;
     }
 
+    /** Does a macro on the bars cast this spell? Which rank it casts cannot be told from the ID found for its name. */
+    isInMacro(name: string): boolean {
+        return this.macroSpellNames.has(name);
+    }
+
     private getReadableSpellName(spellId: number | undefined): string | undefined {
         const id = getReadableId(spellId);
         if (id === undefined) return undefined;
@@ -221,28 +230,19 @@ export class ActionBarsService implements OnFirstLogin {
         if (icon) add(attempt(() => icon.GetTexture()));
     }
 
-    /** Spells named on the cast lines of a macro (#showtooltip, /cast ...). */
+    /** The spells named on the cast lines of a macro (#showtooltip, /cast ...). */
     private addMacroSpells(macro: number | string, button: ActionButton): void {
         const body = attempt(GetMacroBody, macro);
         if (body === undefined || !isReadable(body)) return;
-        for (const [line] of string.gmatch(body, "[^\r\n]+")) {
-            let [command] = string.match(line!, "^%s*#showtooltip%s+(.+)$");
-            if (command === undefined) [command] = string.match(line!, "^%s*/%S+%s+(.+)$");
-            if (command !== undefined) {
-                // Drop [conditions], then read each "Spell, Other Spell; Third"
-                const [cleaned] = string.gsub(command, "%b[]", " ");
-                for (const [rawToken] of string.gmatch(cleaned, "[^,;]+")) this.addMacroToken(rawToken!, button);
-            }
-        }
+        for (const token of listMacroTokens(body)) this.addMacroToken(token, button);
     }
 
-    private addMacroToken(rawToken: string, button: ActionButton): void {
-        let [token] = string.gsub(strtrim(rawToken), "^!", "");
-        [token] = string.gsub(token, "%s*%([^)]*%)%s*$", "");
-        if (token === "") return;
+    private addMacroToken(token: string, button: ActionButton): void {
         const info = attempt(C_Spell.GetSpellInfo, token);
         if (info === undefined || type(info) !== "table") return;
-        this.addSpellName(isReadable(info.name) && info.name !== "" ? info.name : token, button);
+        const name = isReadable(info.name) && info.name !== "" ? info.name : token;
+        this.macroSpellNames.set(name, true);
+        this.addSpellName(name, button);
         this.addSpell(info.spellID, button);
     }
 
@@ -355,22 +355,24 @@ export class ActionBarsService implements OnFirstLogin {
         );
     }
 
-    /** The spell an item casts (a poison, a warlock stone): that is what the reminders name. */
-    private findItemSpell(actionId: unknown): number | undefined {
-        const itemId = getReadableId(actionId);
-        const [didReadItemSpell, , itemSpell] = attemptMulti(() => C_Item.GetItemSpell(itemId));
-        return didReadItemSpell ? getReadableId(itemSpell) : undefined;
-    }
-
     /** What an action slot holds: "spell" with a spell ID, "macro" with a macro, or nothing known. */
     private getSlotAction(slot: number): LuaMultiReturn<[kind: string | undefined, id: unknown]> {
-        const [didSucceed, kind, actionId, , spellFromAction] = attemptMulti(() => GetActionInfo(slot));
+        const [didSucceed, kind, actionId, subType, spellFromAction] = attemptMulti(() => GetActionInfo(slot));
         if (!didSucceed) return $multi(undefined, undefined);
         if (this.isToken(kind, "spell")) return $multi("spell", getReadableId(spellFromAction) ?? getReadableId(actionId));
-        if (this.isToken(kind, "macro")) return $multi("macro", actionId);
-        const itemSpell = this.isToken(kind, "item") ? this.findItemSpell(actionId) : undefined;
+        if (this.isToken(kind, "macro")) return this.readMacroAction(actionId, subType);
+        const itemSpell = this.isToken(kind, "item") ? findItemUseSpell(getReadableId(actionId)!) : undefined;
         if (itemSpell !== undefined) return $multi("spell", itemSpell);
         return $multi(undefined, undefined);
+    }
+
+    /** A macro that shows a spell: the game then gives the ID of that spell, not of the macro, whose text cannot be read by it. */
+    private readMacroAction(actionId: unknown, subType: unknown): LuaMultiReturn<[kind: string | undefined, id: unknown]> {
+        if (!this.isToken(subType, "spell")) return $multi("macro", actionId);
+        const spellId = getReadableId(actionId);
+        const name = this.getReadableSpellName(spellId);
+        if (name !== undefined) this.macroSpellNames.set(name, true);
+        return $multi("spell", spellId);
     }
 
     /** What the button casts: "spell" with a spell ID, "macro" with a macro, or nothing known. */
