@@ -123,7 +123,7 @@ flowchart TB
         end
 
         subgraph features["features (glowing-bars)"]
-            tick["tick/<br/>a tick every 0.2 s: find what is due,<br/>show it; when to look sooner"]
+            tick["tick/<br/>a tick every 0.5 s: find what is due,<br/>show it; when to look sooner"]
             character["character/<br/>weapons, auras and casts,<br/>party roster, blocked actions"]
             options["options/<br/>the Settings panel pages"]
             reminders["reminders/<br/>missing buffs, weapon buff,<br/>party buffs, old ranks, reagents"]
@@ -210,7 +210,7 @@ flowchart TB
         end
 
         subgraph PIPELINE["Pipeline: find, then show"]
-            tick["TickService (every 0.2 s)"] --> find["FindRemindersService"] --> show["ShowRemindersService<br/>NoticesService"]
+            tick["TickService (every 0.5 s)"] --> find["FindRemindersService"] --> show["ShowRemindersService<br/>NoticesService"]
             refresh["RefreshService<br/>merges and delays requests<br/>(debounce)"] -.-> tick
         end
 
@@ -420,7 +420,7 @@ flowchart LR
 
 ## One tick: a two-stage pipeline
 
-Every 0.2 seconds (`@Interval(200)`, and on the next frame after relevant events) a tick runs. It has two stages
+Every 0.5 seconds (`@Interval(500)`, and on the next frame after relevant events) a tick runs. It has two stages
 and one value passed between them, so the stage that decides never shows anything, and the stage that shows
 never decides.
 

@@ -61,7 +61,7 @@ export class FedBuffsService {
     }
 
     /** Looks for a new Well Fed. */
-    @Interval(200)
+    @Interval(500)
     checkWellFed(): void {
         const auras = this.buffState.findAuras(Consumable.WellFed);
         if (auras === undefined) return;

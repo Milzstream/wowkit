@@ -43,7 +43,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
         world.state.unusableSpells[OVERPOWER.id] = undefined;
         world.advance(0.5);
         world.state.cooldowns[OVERPOWER.id] = { start: 0, duration: 99999 };
-        world.advance(0.5);
+        world.advance(1);
         expect(world.glowsOn(1)).toBe(0);
     });
 

@@ -1,5 +1,5 @@
-// One tick: look at the game, then show what is due. Runs every 0.2 seconds, and sooner when
-// something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look says it
+// One tick: look at the game, then show what is due. Runs every 0.5 seconds, and sooner
+// when something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look says it
 // may (the When column of the table): always, in combat, out of combat, with a living enemy targeted, or (the low
 // reagents and stock) in a town or an inn; and then for its glow time, again with its repeat (GlowSchedule). What is due
 // is the finders' to say; when it shows is the player's, for each type and spell.
@@ -43,7 +43,7 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
     }
 
     /** Looks at the game and shows what is due, when its look says it may. Does nothing before the first login. */
-    @Interval(200)
+    @Interval(500)
     tick(): void {
         if (!this.isRunning) return;
         this.shower.showReminders(this.filterShowing(this.finder.findReminders()));

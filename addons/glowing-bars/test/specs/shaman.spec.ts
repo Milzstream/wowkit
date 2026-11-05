@@ -143,7 +143,7 @@ describe("a shaman", () => {
         it("is believed to be gone once the reading has held", () => {
             putOnTheWeapon();
             takeOffTheWeapon();
-            world.advance(2.5);
+            world.advance(3.2);
             expect(world.glowsOn(3)).toBe(1);
         });
 

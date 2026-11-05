@@ -49,7 +49,7 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
         world.state.bars[1] = SMITE_RANK_2.id;
         world.fire("ACTIONBAR_SLOT_CHANGED", 1);
         // The message goes out as soon as there is nothing to say, not when its ten seconds are up
-        world.advance(2);
+        world.advance(2.5);
         expect(world.notice()).toBe("");
     });
 
