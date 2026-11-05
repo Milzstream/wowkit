@@ -26,7 +26,7 @@ describe("a second food of one name, added in the table", () => {
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
         const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
-        for (let click = 0; click < 10 && buttons[0]!.text !== "Missing buff"; click++) buttons[0]!.scripts.OnClick!(buttons[0]!);
+        world.pickFromMenu(buttons[0]!, "Missing buff");
         box.text = `${spellId}`;
         buttons[1]!.scripts.OnClick!(buttons[1]!);
     }
@@ -56,7 +56,7 @@ describe("a second food of one name, added in the table", () => {
         )!;
         const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
         for (const reminderType of ["Ready cooldown", "Low reagent", "Proc"]) {
-            for (let click = 0; click < 10 && buttons[0]!.text !== reminderType; click++) buttons[0]!.scripts.OnClick!(buttons[0]!);
+            world.pickFromMenu(buttons[0]!, reminderType);
             box.text = `${SECOND}`;
             buttons[1]!.scripts.OnClick!(buttons[1]!);
             expect(world.notice()).toContain("Nutritious Food is a food or drink, add it as Missing buff.");

@@ -19,7 +19,7 @@ export function createBasicGame(): BasicGame {
     const frames = createFrameRegistry();
     const chat: string[] = [];
     installClock(clock);
-    installUi(frames, chat, {});
+    installUi(frames, chat, {}, { choices: [] });
     return {
         clock,
         frames,

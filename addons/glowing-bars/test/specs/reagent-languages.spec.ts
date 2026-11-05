@@ -62,8 +62,7 @@ describe("a reagent on a client in another language", () => {
                 !world.frames.some((other) => other.parent === frame.parent && other.frameType === "CheckButton"),
         )!;
         const buttons = world.frames.filter((frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate");
-        for (let click = 0; click < 10 && buttons[0]!.text !== "Low reagent"; click++)
-            buttons[0]!.scripts.OnClick!(buttons[0]!, "LeftButton");
+        world.pickFromMenu(buttons[0]!, "Low reagent");
         box.text = `${RITUAL.id}`;
         buttons[1]!.scripts.OnClick!(buttons[1]!);
         globals.SPELL_REAGENTS = undefined;

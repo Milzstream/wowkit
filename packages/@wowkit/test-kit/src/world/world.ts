@@ -12,7 +12,7 @@ import { installItems } from "./install-items";
 import { installTalents } from "./install-talents";
 import { installTooltips, type TooltipKind } from "./install-tooltips";
 import { installSpells } from "./install-spells";
-import { installUi, type ProxySettings } from "./install-ui";
+import { installUi, type FakeMenu, type FakeMenuChoice, type ProxySettings } from "./install-ui";
 import { installUnits } from "./install-units";
 
 export interface World {
@@ -27,6 +27,10 @@ export interface World {
     /** Sets a checkbox or dropdown of the options page, the way the player's click does: "showWeapon", "buff_InnerFire". */
     setOption(name: string, value: unknown): void;
     frames: FakeFrame[];
+    /** Clicks a button that opens a list of choices, and answers with the list. */
+    openMenu(button: FakeFrame): FakeMenuChoice[];
+    /** Clicks a button that opens a list of choices, and picks the one with this label. */
+    pickFromMenu(button: FakeFrame, label: string): void;
     /** A game event, delivered to every frame that listens for it. */
     fire(event: string, ...args: unknown[]): void;
     /** Moves time forward; timers and the addon's regular tick run on the way. */
@@ -80,7 +84,13 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
     installClock(clock);
     installUnits(state);
     installSpells(state);
-    installUi(frames, chat, proxySettings);
+    const menu: FakeMenu = { choices: [] };
+    installUi(frames, chat, proxySettings, menu);
+    const openMenu = (button: FakeFrame) => {
+        menu.choices = [];
+        button.scripts.OnClick!(button);
+        return menu.choices;
+    };
     installActionBars(state, frames);
     installAuras(state);
     installItems(state, sounds);
@@ -107,6 +117,12 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
             setting.set(value);
         },
         frames: frames.all,
+        openMenu: (button) => openMenu(button),
+        pickFromMenu: (button, label) => {
+            const choice = openMenu(button).find((listed) => listed.label === label);
+            if (choice === undefined) throw new Error(`the list has no choice "${label}"`);
+            choice.choose();
+        },
         fire: (event, ...args) => frames.fire(event, ...args),
         advance: (seconds) => clock.advance(seconds),
         makeAura: (name, spellId, secondsLeft, sourceUnit) => ({ name, spellId, expirationTime: clock.getNow() + secondsLeft, sourceUnit }),

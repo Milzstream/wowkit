@@ -15,6 +15,18 @@ export interface ProxySettings {
     [variable: string]: ProxySetting | undefined;
 }
 
+/** A line of the list a button opened. */
+export interface FakeMenuChoice {
+    label: string;
+    isChosen: (this: void) => boolean;
+    choose: (this: void) => void;
+}
+
+/** The list the addon opened last. */
+export interface FakeMenu {
+    choices: FakeMenuChoice[];
+}
+
 /** The game's color picker: it keeps what the addon set it up with, and answers with the color a test picks. */
 export interface FakeColorPicker {
     info: ColorPickerInfo | undefined;
@@ -37,7 +49,7 @@ function createColorPicker(): FakeColorPicker {
     return picker;
 }
 
-export function installUi(frames: FrameRegistry, chat: string[], proxySettings: ProxySettings): void {
+export function installUi(frames: FrameRegistry, chat: string[], proxySettings: ProxySettings, menu: FakeMenu): void {
     defineValues({
         CreateFrame: (frameType: string, name?: string, parent?: FakeFrame, template?: string) =>
             frames.create(frameType, name, parent, template),
@@ -51,6 +63,16 @@ export function installUi(frames: FrameRegistry, chat: string[], proxySettings: 
         // The frames that Escape closes
         UISpecialFrames: [],
         ColorPickerFrame: createColorPicker(),
+        MenuUtil: {
+            CreateContextMenu: (owner: FakeFrame, generator: (this: void, owner: FakeFrame, root: unknown) => void) => {
+                menu.choices = [];
+                generator(owner, {
+                    CreateRadio(label: string, isChosen: (this: void) => boolean, choose: (this: void) => void) {
+                        menu.choices.push({ label, isChosen, choose });
+                    },
+                });
+            },
+        },
         Enum: {
             SpellBookSpellBank: { Player: 0, Pet: 1 },
             SpellBookItemType: { None: 0, Spell: 1, FutureSpell: 2, PetAction: 3, Flyout: 4 },

@@ -155,13 +155,8 @@ describe("the Glow time column of the table", () => {
         toggleTable();
         expect(findGlowTimeButton(world, "Ready cooldown").text).toBe("3 s");
         const button = findGlowTimeButton(world, "Missing buff");
-        const seen: string[] = [];
-        for (let i = 0; i < 6; i++) {
-            seen.push(button.text!);
-            button.scripts.OnClick!(button, "LeftButton");
-        }
-        expect(seen).toEqual(["Until done", "1 s", "2 s", "3 s", "5 s", "10 s"]);
-        button.scripts.OnClick!(button, "RightButton");
+        expect(world.openMenu(button).map((choice) => choice.label)).toEqual(["Until done", "1 s", "2 s", "3 s", "5 s", "10 s"]);
+        world.pickFromMenu(button, "10 s");
         expect(button.text).toBe("10 s");
     });
 });

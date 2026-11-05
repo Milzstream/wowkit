@@ -116,18 +116,30 @@ describe("the table of looks", () => {
         expect(world.notice()).toContain("Cooldown ready");
     });
 
-    it("takes the next sound on a click and plays it", () => {
+    it("lists the sounds with the chosen one marked, and plays the one picked", () => {
         const row = findRow(world, "Recklessness");
-        row.sound.scripts.OnClick!(row.sound, "LeftButton");
+        const choices = world.openMenu(row.sound);
+        expect(choices.map((choice) => choice.label)).toEqual([
+            "No sound",
+            "Raid warning",
+            "Battleground start",
+            "Role check",
+            "Alarm clock 1",
+            "Alarm clock 2",
+            "Alarm clock 3",
+        ]);
+        expect(choices.filter((choice) => choice.isChosen()).map((choice) => choice.label)).toEqual(["No sound"]);
+        world.pickFromMenu(row.sound, "Raid warning");
         expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.sound).toBe("raidwarning");
         expect(world.sounds).toEqual([8959]);
     });
 
-    it("takes the sound before on a right click", () => {
+    it("goes quiet in one pick, with no sound played on the way", () => {
         const row = findRow(world, "Recklessness");
-        row.sound.scripts.OnClick!(row.sound, "LeftButton");
-        row.sound.scripts.OnClick!(row.sound, "RightButton");
+        world.pickFromMenu(row.sound, "Raid warning");
+        world.pickFromMenu(row.sound, "No sound");
         expect(readSaved(world, "spellStyles")["readyCooldown:Recklessness"]?.sound).toBeUndefined();
+        expect(world.sounds).toEqual([8959]);
     });
 
     it("takes the color the game's picker gives", () => {

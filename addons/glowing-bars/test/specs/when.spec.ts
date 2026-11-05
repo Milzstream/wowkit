@@ -110,7 +110,7 @@ describe("a spell with a When of its own", () => {
         toggleTable();
         const button = findWhenButton(world, FORTITUDE.name);
         expect(button.text).toBe("Always");
-        button.scripts.OnClick!(button, "LeftButton");
+        world.pickFromMenu(button, "In combat");
         world.advance(0.5);
         expect(button.text).toBe("In combat");
         expect(world.glowsOn(1)).toBe(0);
@@ -120,18 +120,12 @@ describe("a spell with a When of its own", () => {
 });
 
 describe("the When button of the table", () => {
-    it("goes through the four choices, and back with a right click", () => {
+    it("lists the four choices, and shows the one picked", () => {
         const world = startPriest();
         toggleTable();
         const button = findWhenButton(world, "Missing buff");
-        const seen: string[] = [];
-        for (let i = 0; i < 4; i++) {
-            seen.push(button.text!);
-            button.scripts.OnClick!(button, "LeftButton");
-        }
-        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted"]);
-        expect(button.text).toBe("Always");
-        button.scripts.OnClick!(button, "RightButton");
+        expect(world.openMenu(button).map((choice) => choice.label)).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted"]);
+        world.pickFromMenu(button, "Enemy targeted");
         expect(button.text).toBe("Enemy targeted");
     });
 
@@ -139,12 +133,14 @@ describe("the When button of the table", () => {
         const world = startPriest();
         toggleTable();
         const button = findWhenButton(world, "Low reagent");
-        const seen: string[] = [];
-        for (let i = 0; i < 5; i++) {
-            seen.push(button.text!);
-            button.scripts.OnClick!(button, "LeftButton");
-        }
-        expect(seen).toEqual(["Alert in town", "Always", "In combat", "Out of combat", "Enemy targeted"]);
+        expect(button.text).toBe("Alert in town");
+        expect(world.openMenu(button).map((choice) => choice.label)).toEqual([
+            "Always",
+            "In combat",
+            "Out of combat",
+            "Enemy targeted",
+            "Alert in town",
+        ]);
         expect(button.text).toBe("Alert in town");
     });
 });
@@ -206,12 +202,14 @@ describe("a low stock", () => {
         const world = createArcher(12);
         toggleTable();
         const button = findWhenButton(world, "Low stock");
-        const seen: string[] = [];
-        for (let i = 0; i < 5; i++) {
-            seen.push(button.text!);
-            button.scripts.OnClick!(button, "LeftButton");
-        }
-        expect(seen).toEqual(["Always", "In combat", "Out of combat", "Enemy targeted", "Alert in town"]);
+        expect(button.text).toBe("Always");
+        expect(world.openMenu(button).map((choice) => choice.label)).toEqual([
+            "Always",
+            "In combat",
+            "Out of combat",
+            "Enemy targeted",
+            "Alert in town",
+        ]);
     });
 });
 

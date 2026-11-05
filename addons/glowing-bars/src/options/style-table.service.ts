@@ -42,7 +42,7 @@ interface RowWidgets {
     spellIdBox: EditBox;
     message: CheckButton;
     sound: Button;
-    /** The buttons that click through choices: how often the sound repeats, and when the reminder may show. */
+    /** The other buttons that open a list of choices: how often it repeats, when it may show, for how long, how it moves. */
     choices: ChoiceButtons;
     belowBox: EditBox;
     reset: Button;
@@ -313,13 +313,9 @@ export class StyleTableService {
         widgets.message.SetScript("OnClick", () => this.change(widgets, { isMessageOn: widgets.message.GetChecked() }));
     }
 
-    /** Left click: the next sound; right click: the one before. Choosing one plays it once as a preview. */
     private connectSound(widgets: RowWidgets): void {
         widgets.sound.SetSize(126, 24);
-        widgets.sound.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        widgets.sound.SetScript("OnClick", (_button, mouseButton) => {
-            if (widgets.row !== undefined) this.choices.chooseNextSound(widgets.row, mouseButton === "RightButton" ? -1 : 1);
-        });
+        this.choices.connectSoundMenu(widgets.sound, () => widgets.row);
     }
 
     private connectReset(widgets: RowWidgets): void {

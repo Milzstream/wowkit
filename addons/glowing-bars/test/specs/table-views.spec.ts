@@ -91,7 +91,7 @@ describe("the views of the table", () => {
         expect(advanced.length).toBe(12);
         for (const tips of [basic, advanced]) {
             expect(tips.some((tip) => tip.includes("Reset: undoes your changes on this row."))).toBe(true);
-            expect(tips.some((tip) => tip.includes("right-click for the one before"))).toBe(true);
+            expect(tips.some((tip) => tip.includes("The sound that plays when the reminder starts."))).toBe(true);
         }
     });
 

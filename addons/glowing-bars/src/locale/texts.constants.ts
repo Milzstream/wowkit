@@ -78,7 +78,7 @@ export const TEXTS = {
     TIP_GLOW_PERCENT: "How strong the glow is, 1 to 100. Type a number.",
     TIP_MESSAGE: "Shows a short message at the top of the screen.",
     TIP_WHEN:
-        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Low reagent and Low stock also have Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn. Click for the next choice, right-click for the one before.",
+        "When the reminder may show: always, only in combat, only out of combat, or only while a living enemy is targeted. Low reagent and Low stock also have Alert in town: the button glows anywhere, and the message and the sound come only in a town or an inn.",
     TIP_BELOW:
         "Reminds you when you have fewer than this. The number on a row under Defaults is used for every row of that type, unless you set a different number on the row.",
     TIP_ENABLED:
@@ -104,19 +104,19 @@ export const TEXTS = {
     COL_BELOW: "Below",
     MSG_UNKNOWN_ITEM: "No item found with ID %d.",
     COL_SOUND: "Sound",
-    TIP_SOUND: "The sound that plays when the reminder starts. Click for the next choice, right-click for the one before.",
+    TIP_SOUND: "The sound that plays when the reminder starts.",
     COL_REPEAT: "Repeat",
     REPEAT_OFF: "Off",
     REPEAT_SECONDS: "%d s",
     TIP_REPEAT:
-        "Every so many seconds, the glow, the message and the sound come again, for the glow time (with Until done the glow stays, and the sound and the message come again). Off shows them once, as the reminder starts. Click for the next choice, right-click for the one before.",
+        "Every so many seconds, the glow, the message and the sound come again, for the glow time (with Until done the glow stays, and the sound and the message come again). Off shows them once, as the reminder starts.",
     COL_ANIMATION: "Animation",
     TIP_ANIMATION:
-        "How the glow moves. Circling: it runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes. Round buttons cannot circle: there Circling does what the Settings page says (Breathing by default). Click for the next choice, right-click for the one before.",
+        "How the glow moves. Circling: it runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes. Round buttons cannot circle: there Circling does what the Settings page says (Breathing by default).",
     COL_GLOW_TIME: "Glow time",
     GLOW_UNTIL_DONE: "Until done",
     TIP_GLOW_TIME:
-        "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown... Click for the next choice, right-click for the one before.",
+        "How long the glow and the message show once the reminder is due, and again with each repeat. Until done: the whole time, until you cast the buff, press the cooldown...",
     COL_WHEN: "When",
     COL_ACTIONS: "Actions",
     TIP_ACTIONS:

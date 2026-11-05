@@ -71,16 +71,22 @@ describe("the spells of the table, fixed and added by the player", () => {
         expect(box.text).toBe("1719");
     });
 
-    it("goes through the types with a left click, and back with a right click", () => {
+    it("lists the types, and shows the one picked", () => {
         const { reminderType: kind } = findAddRow();
-        const first = kind.text;
-        kind.scripts.OnClick!(kind, "LeftButton");
-        const second = kind.text;
-        expect(second === first).toBe(false);
-        kind.scripts.OnClick!(kind, "RightButton");
-        expect(kind.text).toBe(first);
-        kind.scripts.OnClick!(kind, "RightButton");
+        expect(world.openMenu(kind).map((choice) => choice.label)).toEqual([
+            "Ready cooldown",
+            "Proc",
+            "Missing buff",
+            "Weapon buff",
+            "Low reagent",
+            "Low stock",
+            "Missing seal",
+            "Missing tracking",
+        ]);
+        world.pickFromMenu(kind, "Missing tracking");
         expect(kind.text).toBe("Missing tracking");
+        const chosen = world.openMenu(kind).filter((choice) => choice.isChosen());
+        expect(chosen.map((choice) => choice.label)).toEqual(["Missing tracking"]);
     });
 
     it("says what to enter over the heading of the add row, not on its box", () => {
@@ -123,9 +129,9 @@ describe("the spells of the table, fixed and added by the player", () => {
         expect(world.glowsOn(4)).toBe(1);
     });
 
-    it("adds a spell as a proc once the type button is clicked", () => {
+    it("adds a spell as a proc once Proc is picked", () => {
         const { box, reminderType, add } = findAddRow();
-        reminderType.scripts.OnClick!(reminderType);
+        world.pickFromMenu(reminderType, "Proc");
         box.text = "72";
         add.scripts.OnClick!(add);
         expect(readSettings().addedSpells).toEqual([{ id: 72, reminderType: "proc" }]);
@@ -163,7 +169,7 @@ describe("the spells of the table, fixed and added by the player", () => {
 
     it("does not add a spell with a cooldown and no reagent as a low reagent, and says so", () => {
         const { box, reminderType, add } = findAddRow();
-        for (let click = 0; click < 10 && reminderType.text !== "Low reagent"; click++) reminderType.scripts.OnClick!(reminderType);
+        world.pickFromMenu(reminderType, "Low reagent");
         box.text = "72";
         add.scripts.OnClick!(add);
         expect(readSettings().addedSpells).toEqual([]);
@@ -187,8 +193,8 @@ describe("the spells of other types a player adds", () => {
     const RITUAL: SpellDefinition = { id: 29893, name: "Ritual of Souls", rank: 1, icon: 136194, isHelpful: true };
     let world!: World;
 
-    /** Adds a spell in the table as the type the type button shows after `clicks` clicks. */
-    function addAs(spellId: number, clicks: number): void {
+    /** Adds a spell in the table as this type. */
+    function addAs(spellId: number, type: string): void {
         const box = world.frames.find(
             (frame) =>
                 frame.frameType === "EditBox" &&
@@ -197,7 +203,7 @@ describe("the spells of other types a player adds", () => {
         const [reminderType, add] = world.frames.filter(
             (frame) => frame.parent === box.parent && frame.template === "UIPanelButtonTemplate",
         );
-        for (let i = 0; i < clicks; i++) reminderType!.scripts.OnClick!(reminderType!);
+        world.pickFromMenu(reminderType!, type);
         box.text = string.format("%d", spellId);
         add!.scripts.OnClick!(add!);
         world.advance(0.5);
@@ -219,7 +225,7 @@ describe("the spells of other types a player adds", () => {
     });
 
     it("lights an added buff that is not on the player, and not once it is", () => {
-        addAs(DEMON_SKIN.id, 2);
+        addAs(DEMON_SKIN.id, "Missing buff");
         expect(world.glowsOn(1)).toBe(1);
         world.state.auras.push(world.makeAura(DEMON_SKIN.name, DEMON_SKIN.id, 1800));
         world.fire("UNIT_AURA", "player");
@@ -228,13 +234,13 @@ describe("the spells of other types a player adds", () => {
     });
 
     it("lights an added weapon buff while the weapon has no temporary enchant", () => {
-        addAs(SHARPEN.id, 3);
+        addAs(SHARPEN.id, "Weapon buff");
         expect(world.glowsOn(2)).toBe(1);
     });
 
     it("lights an added spell whose reagent, named in its tooltip, runs low, in a town", () => {
         world.state.isResting = true;
-        addAs(RITUAL.id, 4);
+        addAs(RITUAL.id, "Low reagent");
         expect(world.glowsOn(3)).toBe(1);
         world.state.bags[6265] = 20;
         world.advance(0.5);

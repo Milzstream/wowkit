@@ -1,16 +1,20 @@
-// What a click in the table of looks chooses: the next sound, how often it repeats, when the reminder shows and for how
-// long, and a color from the game's picker.
-import { SOUNDS, type MessagesService, type SoundKey } from "@wowkit/ui";
+// What the table of looks lets the player pick from a list (the sound, how often it repeats, when the reminder shows, for
+// how long and how it moves), and a color from the game's picker.
+import { SOUNDS, type MessagesService } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import { ANIMATION_CHOICES, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
 import { ANIMATION_TEXTS } from "./animation.section";
-import type { When } from "../settings/settings.interface";
+import type { Style, StyleOverride, When } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import type { TextKey } from "../locale/texts.constants";
-import { COLUMN, findCenteredX } from "./style-table.constants";
+import { connectChoiceMenu } from "./choice-menu";
+import { COLUMN, findCenteredX, type Column } from "./style-table.constants";
 import type { StyleRow } from "./style-rows.service";
 
-/** The buttons of a row that click through choices. */
+/** The parts of a look picked from a list. */
+type ChosenPart = "sound" | "repeat" | "when" | "glowTime" | "animation";
+
+/** The buttons of a row that open a list of choices. */
 export interface ChoiceButtons {
     repeat: Button;
     when: Button;
@@ -34,120 +38,82 @@ export class StyleChoicesService {
         private readonly messages: MessagesService,
     ) {}
 
-    /** The sound after (or, with a negative step, before) the current one; it plays once as a preview. */
-    chooseNextSound(row: StyleRow, step: number): void {
-        const current = this.styles.getStyle(row.reminderType, row.spellId).sound;
-        const index = math.max(
-            0,
-            SOUNDS.findIndex((sound) => sound.key === current),
-        );
-        const chosen: SoundKey = SOUNDS[(index + step + SOUNDS.length) % SOUNDS.length]!.key;
-        this.styles.changeStyle(row.reminderType, row.spellId, { sound: chosen });
-        this.messages.playAlertSound(chosen);
+    /** The list of sounds of a row; the one picked plays once as a preview. */
+    connectSoundMenu(button: Button, getRow: () => StyleRow | undefined): void {
+        const listSounds = () => SOUNDS.map((sound) => ({ value: sound.key, label: sound.label }));
+        this.connectMenu(button, getRow, "sound", listSounds, (sound) => this.messages.playAlertSound(sound));
     }
 
-    /** The buttons of a row that click through choices: how often the sound repeats, and when the reminder shows. */
+    /** The other buttons of a row that open a list of choices. */
     createChoiceButtons(frame: Frame, getRow: () => StyleRow | undefined): ChoiceButtons {
         return {
-            repeat: this.createRepeatButton(frame, getRow),
-            when: this.createWhenButton(frame, getRow),
-            glowTime: this.createGlowTimeButton(frame, getRow),
-            animation: this.createAnimationButton(frame, getRow),
+            repeat: this.createChoiceButton(frame, COLUMN.repeat, 54, getRow, "repeat", () =>
+                REPEAT_CHOICES.map((seconds) => ({ value: seconds, label: this.findRepeatText(seconds) })),
+            ),
+            when: this.createChoiceButton(frame, COLUMN.when, 104, getRow, "when", (row) =>
+                listWhenChoices(row.reminderType).map((when) => ({ value: when, label: this.locale.getText(WHEN_TEXTS[when]) })),
+            ),
+            glowTime: this.createChoiceButton(frame, COLUMN.glowTime, 72, getRow, "glowTime", () =>
+                GLOW_TIME_CHOICES.map((seconds) => ({ value: seconds, label: this.findGlowTimeText(seconds) })),
+            ),
+            animation: this.createChoiceButton(frame, COLUMN.animation, 82, getRow, "animation", () =>
+                ANIMATION_CHOICES.map((animation) => ({ value: animation, label: this.locale.getText(ANIMATION_TEXTS[animation]) })),
+            ),
         };
     }
 
     /** What the choice buttons of a row show. */
     fillChoices(buttons: ChoiceButtons, row: StyleRow): void {
-        this.fillRepeat(buttons.repeat, row);
-        this.fillWhen(buttons.when, row);
         const style = this.styles.getStyle(row.reminderType, row.spellId);
+        buttons.repeat.SetText(this.findRepeatText(style.repeat));
+        buttons.when.SetText(this.locale.getText(WHEN_TEXTS[style.when]));
+        buttons.glowTime.SetText(this.findGlowTimeText(style.glowTime));
         buttons.animation.SetText(this.locale.getText(ANIMATION_TEXTS[style.animation]));
-        const seconds = style.glowTime;
-        buttons.glowTime.SetText(
-            seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds),
-        );
     }
 
-    /** The repeat button of a row: left click the next choice, right click the one before. */
-    private createRepeatButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
+    private createChoiceButton<Part extends ChosenPart>(
+        frame: Frame,
+        column: Column,
+        width: number,
+        getRow: () => StyleRow | undefined,
+        part: Part,
+        listValues: (row: StyleRow) => { value: Style[Part]; label: string }[],
+    ): Button {
         const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
-        button.SetSize(54, 24);
-        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.repeat, 54), 0);
-        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        button.SetScript("OnClick", (_button, mouseButton) => {
-            const row = getRow();
-            if (row !== undefined) this.chooseNextRepeat(row, mouseButton === "RightButton" ? -1 : 1);
-        });
+        button.SetSize(width, 24);
+        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(column, width), 0);
+        this.connectMenu(button, getRow, part, listValues);
         return button;
     }
 
-    /** The When button of a row: left click the next choice of its type, right click the one before. */
-    private createWhenButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
-        const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
-        button.SetSize(104, 24);
-        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.when, 104), 0);
-        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        button.SetScript("OnClick", (_button, mouseButton) => {
+    /** The row is read as the list opens: the choices stay with it, whatever the table shows by the time one is picked. */
+    private connectMenu<Part extends ChosenPart>(
+        button: Button,
+        getRow: () => StyleRow | undefined,
+        part: Part,
+        listValues: (row: StyleRow) => { value: Style[Part]; label: string }[],
+        reactToChoice?: (value: Style[Part]) => void,
+    ): void {
+        connectChoiceMenu(button, () => {
             const row = getRow();
-            if (row === undefined) return;
-            const choices = listWhenChoices(row.reminderType);
-            const index = math.max(0, choices.indexOf(this.styles.getStyle(row.reminderType, row.spellId).when));
-            const step = mouseButton === "RightButton" ? -1 : 1;
-            this.styles.changeStyle(row.reminderType, row.spellId, { when: choices[(index + step + choices.length) % choices.length]! });
+            if (row === undefined) return [];
+            return listValues(row).map(({ value, label }) => ({
+                label,
+                isChosen: () => this.styles.getStyle(row.reminderType, row.spellId)[part] === value,
+                choose: () => {
+                    this.styles.changeStyle(row.reminderType, row.spellId, { [part]: value } as StyleOverride);
+                    reactToChoice?.(value);
+                },
+            }));
         });
-        return button;
     }
 
-    /** What the When button shows. */
-    private fillWhen(button: Button, row: StyleRow): void {
-        button.SetText(this.locale.getText(WHEN_TEXTS[this.styles.getStyle(row.reminderType, row.spellId).when]));
+    private findRepeatText(seconds: number): string {
+        return seconds === 0 ? this.locale.getText("REPEAT_OFF") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds);
     }
 
-    /** The glow time button of a row: left click the next choice, right click the one before. */
-    private createGlowTimeButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
-        const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
-        button.SetSize(72, 24);
-        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.glowTime, 72), 0);
-        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        button.SetScript("OnClick", (_button, mouseButton) => {
-            const row = getRow();
-            if (row === undefined) return;
-            const index = math.max(0, GLOW_TIME_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).glowTime));
-            const step = mouseButton === "RightButton" ? -1 : 1;
-            const chosen = GLOW_TIME_CHOICES[(index + step + GLOW_TIME_CHOICES.length) % GLOW_TIME_CHOICES.length]!;
-            this.styles.changeStyle(row.reminderType, row.spellId, { glowTime: chosen });
-        });
-        return button;
-    }
-
-    /** The animation button of a row: left click the next choice, right click the one before. */
-    private createAnimationButton(frame: Frame, getRow: () => StyleRow | undefined): Button {
-        const button = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
-        button.SetSize(82, 24);
-        button.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.animation, 82), 0);
-        button.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        button.SetScript("OnClick", (_button, mouseButton) => {
-            const row = getRow();
-            if (row === undefined) return;
-            const index = math.max(0, ANIMATION_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).animation));
-            const step = mouseButton === "RightButton" ? -1 : 1;
-            const chosen = ANIMATION_CHOICES[(index + step + ANIMATION_CHOICES.length) % ANIMATION_CHOICES.length]!;
-            this.styles.changeStyle(row.reminderType, row.spellId, { animation: chosen });
-        });
-        return button;
-    }
-
-    /** What the repeat button shows. */
-    private fillRepeat(button: Button, row: StyleRow): void {
-        const seconds = this.styles.getStyle(row.reminderType, row.spellId).repeat;
-        button.SetText(seconds === 0 ? this.locale.getText("REPEAT_OFF") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds));
-    }
-
-    /** The repeat after (or, with a negative step, before) the current one. */
-    private chooseNextRepeat(row: StyleRow, step: number): void {
-        const index = math.max(0, REPEAT_CHOICES.indexOf(this.styles.getStyle(row.reminderType, row.spellId).repeat));
-        const chosen = REPEAT_CHOICES[(index + step + REPEAT_CHOICES.length) % REPEAT_CHOICES.length]!;
-        this.styles.changeStyle(row.reminderType, row.spellId, { repeat: chosen });
+    private findGlowTimeText(seconds: number): string {
+        return seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds);
     }
 
     /** The game's color picker; every move of it changes the color, and cancelling puts the old one back. */

@@ -27,6 +27,16 @@ type JustifyHorizontal = "LEFT" | "CENTER" | "RIGHT";
 type JustifyVertical = "TOP" | "MIDDLE" | "BOTTOM";
 type Orientation = "HORIZONTAL" | "VERTICAL";
 
+/** The game's menu: what a generator fills, one radio line at a time. */
+interface MenuDescription {
+    CreateRadio(text: string, isSelected: (this: void) => boolean, setSelected: (this: void) => void): unknown;
+}
+
+/** FrameXML MenuUtil: the game's dropdown lists. */
+declare const MenuUtil: {
+    CreateContextMenu(this: void, owner: Frame, generator: (this: void, owner: Frame, root: MenuDescription) => void): unknown;
+};
+
 /** FrameXML ColorMixin (CreateColor, NORMAL_FONT_COLOR, ...). */
 interface ColorMixin {
     r: number;

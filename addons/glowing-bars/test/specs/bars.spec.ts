@@ -139,9 +139,9 @@ describe("a priest who chose how the glow moves", () => {
         const button = world.frames.find(
             (frame) => frame.parent === row && frame.frameType === "Button" && frame.text === "Circling" && frame.width === 82,
         )!;
-        button.scripts.OnClick!(button, "LeftButton");
+        world.pickFromMenu(button, "Breathing");
         expect(button.text).toBe("Breathing");
-        button.scripts.OnClick!(button, "LeftButton");
+        world.pickFromMenu(button, "None");
         expect(button.text).toBe("None");
         world.advance(1);
         const buttonFrame = world.findFrame((frame) => frame.name === "ActionButton1");

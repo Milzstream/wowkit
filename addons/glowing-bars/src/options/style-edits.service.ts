@@ -6,6 +6,7 @@ import type { EnabledService } from "../settings/enabled.service";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import { ADDABLE_TYPES } from "../settings/settings.constants";
+import { connectChoiceMenu } from "./choice-menu";
 import { COLUMN, HEADER_HEIGHT, ROW_HEIGHT, TABLE_WIDTH, findCenteredX } from "./style-table.constants";
 import { TYPE_TEXTS, type StyleRow, type StyleRowsService } from "./style-rows.service";
 import type { StyleService } from "../settings/style.service";
@@ -145,17 +146,21 @@ export class StyleEditsService {
         hover.SetScript("OnEnter", () => this.showTooltip(hover, "TIP_ADD"));
         hover.SetScript("OnLeave", () => GameTooltip.Hide());
         const box = this.createNumberBox(frame, COLUMN.name.x, 90, 7);
-        let typeIndex = 0;
+        let chosenType = ADDABLE_TYPES[0]!;
         const typeButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         typeButton.SetSize(136, 24);
         typeButton.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x + 110, 0);
-        const showType = () => typeButton.SetText(this.locale.getText(TYPE_TEXTS[ADDABLE_TYPES[typeIndex]!]));
-        typeButton.RegisterForClicks("LeftButtonUp", "RightButtonUp");
-        typeButton.SetScript("OnClick", (_button, mouseButton) => {
-            const step = mouseButton === "RightButton" ? -1 : 1;
-            typeIndex = (typeIndex + step + ADDABLE_TYPES.length) % ADDABLE_TYPES.length;
-            showType();
-        });
+        const showType = () => typeButton.SetText(this.locale.getText(TYPE_TEXTS[chosenType]));
+        connectChoiceMenu(typeButton, () =>
+            ADDABLE_TYPES.map((reminderType) => ({
+                label: this.locale.getText(TYPE_TEXTS[reminderType]),
+                isChosen: () => reminderType === chosenType,
+                choose: () => {
+                    chosenType = reminderType;
+                    showType();
+                },
+            })),
+        );
         showType();
         const addButton = CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate");
         addButton.SetSize(80, 24);
@@ -163,7 +168,7 @@ export class StyleEditsService {
         addButton.SetText(this.locale.getText("BTN_ADD"));
         addButton.SetScript("OnClick", () => {
             const spellId = tonumber(box.GetText());
-            if (spellId !== undefined && this.addSpell(spellId, ADDABLE_TYPES[typeIndex]!)) box.SetText("");
+            if (spellId !== undefined && this.addSpell(spellId, chosenType)) box.SetText("");
             box.ClearFocus();
         });
         return frame;
