@@ -20,7 +20,7 @@ export class RefreshService {
     ) {}
 
     /** A tick on the next frame; several requests in one frame give one tick. */
-    @OnEvent("bars.mapped", "spells.refreshed")
+    @OnEvent("bars.mapped", "spells.refreshed", "procs.changed")
     requestTick(): void {
         this.shower.markGlowsStale();
         if (this.isTickQueued) return;

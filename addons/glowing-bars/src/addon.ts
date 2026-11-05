@@ -45,6 +45,7 @@ import { RosterService } from "./character/roster.service";
 import { CooldownTrackerService } from "./glows/cooldown-tracker.service";
 import { AddedSpellsService } from "./glows/added-spells.service";
 import { GlowCuesService } from "./glows/glow-cues.service";
+import { StanceProcsService } from "./glows/stance-procs.service";
 import { BuffKnowledgeService } from "./knowledge/buff-knowledge.service";
 import { TEXTS } from "./locale/texts.constants";
 import { BarsSection } from "./options/bars.section";
@@ -185,8 +186,9 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     // A spell the player gave another ID is asked of that ID everywhere: buffs, weapon buffs, reagents, cooldowns, procs
     game.spells.useIdAlias((spellId) => addedSpells.getEffectiveId(spellId));
     const tracker = addon.register(new CooldownTrackerService(game.spells, game.cooldowns, game.clock));
+    const stanceProcs = addon.register(new StanceProcsService(game.player, game.spells, game.clock, addon.events));
     const glowCues = addon.register(
-        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, addedSpells),
+        new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, addedSpells, stanceProcs),
     );
     const fedBuffs = addon.register(
         new FedBuffsService(addedSpells, game.spells, buffs.state, game.player, game.clock, settings, game.actionBars),

@@ -13,6 +13,7 @@ import {
 } from "@wowkit/test-kit";
 
 const OVERPOWER: SpellDefinition = { id: 7384, name: "Overpower", rank: 1, icon: 132223, maxRange: 5, isHarmful: true };
+const REVENGE: SpellDefinition = { id: 6572, name: "Revenge", rank: 1, icon: 132353, maxRange: 5, isHarmful: true };
 const RECKLESSNESS: SpellDefinition = { id: 1719, name: "Recklessness", rank: 1, icon: 132109, cooldownSeconds: 300, isHelpful: true };
 
 /** A warrior with Overpower on button 1 and Recklessness on button 2. */
@@ -23,6 +24,61 @@ function setUpWarrior(state: ClientState): void {
     state.bars[2] = RECKLESSNESS.id;
     state.unusableSpells[OVERPOWER.id] = true;
 }
+
+describe("a warrior in a stance where Overpower and Revenge cannot be used", () => {
+    let world!: World;
+
+    beforeEach(() => {
+        world = createWorld((state) => {
+            setUpWarrior(state);
+            learnSpell(state, REVENGE);
+            state.bars[3] = REVENGE.id;
+            state.unusableSpells[REVENGE.id] = true;
+        });
+        world.advance(1);
+    });
+
+    it("sees Overpower glow while the combo point of a dodge is up, and stop once it goes", () => {
+        world.state.comboPoints = 1;
+        world.fire("UNIT_POWER_UPDATE", "player", "COMBO_POINTS");
+        world.advance(0.1);
+        expect(world.glowsOn(1)).toBe(1);
+        world.state.comboPoints = 0;
+        world.fire("UNIT_POWER_UPDATE", "player", "COMBO_POINTS");
+        world.advance(0.1);
+        expect(world.glowsOn(1)).toBe(0);
+    });
+
+    for (const [action, flagText] of [
+        ["DODGE", ""],
+        ["PARRY", ""],
+        ["BLOCK", ""],
+        ["WOUND", "BLOCK"],
+    ]) {
+        it(`sees Revenge glow after "${action} ${flagText}", for five seconds`, () => {
+            world.fire("UNIT_COMBAT", "player", action, flagText, 0, 1);
+            world.advance(0.1);
+            expect(world.glowsOn(3)).toBe(1);
+            world.advance(5.5);
+            expect(world.glowsOn(3)).toBe(0);
+        });
+    }
+
+    it("sees no Revenge glow when the target dodges, or when the player is only hit", () => {
+        world.fire("UNIT_COMBAT", "target", "DODGE", "", 0, 1);
+        world.fire("UNIT_COMBAT", "player", "WOUND", "", 120, 1);
+        world.advance(0.6);
+        expect(world.glowsOn(3)).toBe(0);
+    });
+
+    it("loses the Revenge glow once it is cast", () => {
+        world.fire("UNIT_COMBAT", "player", "PARRY", "", 0, 1);
+        world.advance(0.1);
+        world.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "cast-1", REVENGE.id);
+        world.advance(0.6);
+        expect(world.glowsOn(3)).toBe(0);
+    });
+});
 
 describe("a warrior with Overpower and Recklessness on the bars", () => {
     let world!: World;

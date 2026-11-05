@@ -8,6 +8,7 @@ import type { AddonSettingsService, AddableType } from "../settings/settings.int
 import type { AddedSpellsService } from "./added-spells.service";
 import { COOLDOWN_CUES, PROC_CUES, RACIAL_COOLDOWNS } from "./glow-cues.constants";
 import { READY_MARGIN, type CooldownTrackerService } from "./cooldown-tracker.service";
+import type { StanceProcsService } from "./stance-procs.service";
 
 export class GlowCuesService {
     /** The cooldowns that have been running at some point of this fight (or ready as it started, if the player asked). */
@@ -21,6 +22,7 @@ export class GlowCuesService {
         private readonly tracker: CooldownTrackerService,
         private readonly settings: AddonSettingsService,
         private readonly addedSpells: AddedSpellsService,
+        private readonly stanceProcs: StanceProcsService,
     ) {}
 
     /**
@@ -58,11 +60,13 @@ export class GlowCuesService {
         return ready;
     }
 
-    /** The procs of the class that the game says are usable now, and on a button. */
+    /** The procs of the class that the game says are usable now (Overpower and Revenge in any stance), and on a button. */
     findProcs(): number[] {
         if (!this.settings.get("isProcEnabled")) return [];
         return this.listCues(this.listCueIds("proc")).filter(
-            (id) => this.spellDetails.readUsability(id).isUsable === true && this.tracker.getRemaining(id) <= READY_MARGIN,
+            (id) =>
+                (this.spellDetails.readUsability(id).isUsable === true || this.stanceProcs.isOpen(id)) &&
+                this.tracker.getRemaining(id) <= READY_MARGIN,
         );
     }
 
