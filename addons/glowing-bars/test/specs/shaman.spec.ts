@@ -14,7 +14,7 @@ import {
 } from "@wowkit/test-kit";
 
 const MAIN_HAND = 16;
-/** The sound of the weapon buff by default: alarm clock 2. */
+/** The game's ID of the Alarm clock 2 sound. */
 const ALARM_SOUND = 12867;
 const ONE_HOUR_MS = 3600 * 1000;
 
@@ -46,13 +46,15 @@ describe("a shaman", () => {
             expect(world.glowsOn(4)).toBe(1);
         });
 
-        it("hears the weapon alarm once", () => {
-            expect(world.sounds).toEqual([ALARM_SOUND]);
+        it("hears no sound by default", () => {
+            world.advance(2);
+            expect(world.sounds.length).toBe(0);
         });
 
-        it("does not hear it again", () => {
-            world.advance(2);
-            expect(world.sounds.length).toBe(1);
+        it("hears a sound the player picked, once", () => {
+            const withSound = createWorld(setUpShaman, { styles: { weaponBuff: { sound: "alarm2" } } });
+            withSound.advance(4);
+            expect(withSound.sounds).toEqual([ALARM_SOUND]);
         });
     });
 

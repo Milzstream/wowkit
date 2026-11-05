@@ -8,7 +8,7 @@ Your Rotation.
   armors...) glows on its action button, all at once (one per group). Of a group (one aspect, one aura, one armor) any
   member counts. In combat, when the client hides auras, buffs you saw or cast are remembered.
 - **Weapon buffs**: shaman imbues, rogue poisons (per hand) and warlock stones glow when missing or about to run out
-  (30 s), with an alarm sound by default.
+  (30 s).
 - **Paladin seals**: in a fight (by default) with no seal up, the seal you used last glows (gold), already 1.5 seconds before it runs out. Before you have used one: the seal of your main talent
   tree (Holy Wisdom, Prot Righteousness, Ret Command), else the first on your bars. The game hides auras in combat,
   so a seal counts for its 30 seconds from your cast.

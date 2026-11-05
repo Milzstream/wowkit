@@ -82,10 +82,10 @@ describe("a priest resting in a town", () => {
 });
 
 describe("the sound of the message", () => {
-    it("is the alarm clock 1 unless the player picked another", () => {
+    it("is silent unless the player picked one", () => {
         const world = createWorld((state) => setUpPriest(state, false));
         world.advance(3);
-        expect(world.sounds).toEqual([18871]);
+        expect(world.sounds.length).toBe(0);
     });
 
     it("is not played when the player picked none", () => {
@@ -96,8 +96,8 @@ describe("the sound of the message", () => {
     });
 
     it("is played when the ranks appear, not each time the message is shown again", () => {
-        const world = createWorld((state) => setUpPriest(state, false));
-        // the message at login played the default
+        const world = createWorld((state) => setUpPriest(state, false), { styles: { oldRank: { sound: "alarm1" } } });
+        // the message at login played it
         expect(world.sounds.length).toBe(1);
         // no sound comes later on
         world.advance(35);
@@ -106,11 +106,11 @@ describe("the sound of the message", () => {
 });
 
 describe("a character whose saved sound has gone from the list", () => {
-    it("gets the default sound again", () => {
+    it("gets the default again: no sound", () => {
         const world = createWorld((state) => setUpPriest(state, false), { styles: { oldRank: { sound: "ping" } } });
         world.advance(3);
         expect((world.getSavedSettings()?.styles as { oldRank?: { sound?: string } } | undefined)?.oldRank?.sound).toBeUndefined();
-        expect(world.sounds).toEqual([18871]);
+        expect(world.sounds.length).toBe(0);
     });
 
     it("keeps a saved sound that is still in the list", () => {

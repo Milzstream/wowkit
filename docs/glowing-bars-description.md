@@ -47,7 +47,7 @@ Type **/gb** to open the table. It opens in a **Basic** view with the columns mo
 
 In the same table you can **add your own spells and items by their ID**, or fix the ID of a listed spell if the game uses another one. A new spell of Forever the addon doesn't know yet is a few clicks away. To find a spell's ID, turn on **Show spell and item IDs in tooltips**.
 
-The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow, low stock a quieter red. Only the old ranks, low stock and the low reagents (in a town) show a message by default; the glow is the reminder.
+The defaults: buffs blue, weapon buffs orange, seals gold, gathering turquoise, cooldowns white, procs red, old ranks and low reagents a quieter yellow, low stock a quieter red. Only the old ranks, low stock and the low reagents (in a town) show a message by default, and nothing makes a sound until you pick one; the glow is the reminder.
 
 On the Settings page (_Options > AddOns > Glowing Bars_):
 
