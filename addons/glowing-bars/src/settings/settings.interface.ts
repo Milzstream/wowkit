@@ -47,6 +47,8 @@ export type StyleOverride = Partial<Style>;
 
 export interface AddonSettings {
     isDisabled: boolean;
+    /** Does the greeting in the chat come at each login? */
+    shouldShowGreeting: boolean;
     shouldStayQuietInTowns: boolean;
     /** What a circling glow does on a round button (Forever's gamepad bars, another addon's), where it cannot circle. */
     roundAnimation: GlowAnimation;

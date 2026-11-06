@@ -149,7 +149,8 @@ function makeTexts(addon: Addon, game: Game) {
     );
     const locale = addon.register(new LocaleService(TEXTS));
     const messages = addon.register(new MessagesService(game.notice, locale.getText("TITLE")));
-    addon.register(new GreetingService(messages, locale.getText("INIT")));
+    // At each login it tells where the table is, unless the player switched it off
+    addon.register(new GreetingService(messages, locale.getText("INIT"), { settings, key: "shouldShowGreeting" }));
     const styles = addon.register(new StyleService(game.spells, settings));
     return { settings, locale, messages, styles };
 }

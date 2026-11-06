@@ -37,6 +37,16 @@ describe("a priest", () => {
             expect(world.chat[0]).toContain("Loaded. Type /gb");
         });
 
+        it("does not greet once the player switched the login message off", () => {
+            const quiet = createWorld((state) => playAs(state, PRIEST), { shouldShowGreeting: false });
+            expect(quiet.chat.some((line) => line.includes("/gb"))).toBe(false);
+        });
+
+        it("has the switch of the login message on the Settings page, on by default", () => {
+            expect(world.proxySettings["GlowingBars_shouldShowGreeting"]).toBeDefined();
+            expect(world.getSavedSettings()?.shouldShowGreeting).toBe(true);
+        });
+
         it("keeps its settings in the character's saved variables", () => {
             expect(world.getSavedSettings()?.isMissingBuffEnabled).toBe(true);
         });

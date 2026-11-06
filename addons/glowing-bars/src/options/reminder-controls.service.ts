@@ -8,6 +8,7 @@ import { GROUP_FROM_CHOICES } from "../settings/settings.constants";
 import type { AddonSettings, AddonSettingsService } from "../settings/settings.interface";
 
 type FeatureKey =
+    | "shouldShowGreeting"
     | "shouldStayQuietInTowns"
     | "isMissingBuffEnabled"
     | "isWeaponBuffEnabled"

@@ -9,6 +9,7 @@ export const SAVED_VARIABLES_NAME = "GlowingBarsCharDB";
 export function createDefaultSettings(): AddonSettings {
     return {
         isDisabled: false,
+        shouldShowGreeting: true,
         shouldStayQuietInTowns: true,
         roundAnimation: "breathing",
         isMissingBuffEnabled: true,

@@ -12,6 +12,8 @@ export const TEXTS = {
     HDR_CHARACTER: "This character",
     OPT_DISABLE: "Disable on this character",
     TIP_DISABLE: "Turns off all glows, sounds and messages on this character. Your other characters aren't affected.",
+    OPT_SHOW_GREETING: "Show the login message",
+    TIP_SHOW_GREETING: "At each login, a line in the chat says that Glowing Bars is loaded, and how to open its table (/gb).",
     OPT_STAY_QUIET_IN_TOWNS: "Stay quiet in towns and inns",
     TIP_STAY_QUIET_IN_TOWNS:
         "No glows or messages while resting in a town or inn (out of combat). Turn this off to get reminders there too.",
