@@ -4,6 +4,7 @@ import {
     expect,
     fakeFlipbooks,
     FORTITUDE,
+    GAMEPAD_BAR,
     it,
     learnSpell,
     playAs,
@@ -58,4 +59,28 @@ describe("a glow standing still, as the game still loads", () => {
         world.advance(1);
         expect(picture.alpha).toBe(1);
     });
+});
+
+describe("a priest in Forever's gamepad mode, with each look of the glow", () => {
+    /** The first button of the left gamepad bar is square (slot 185), of the right one round (slot 193). */
+    const BUTTONS = [
+        [185, `${GAMEPAD_BAR}PageUnitLeftCenteredAnchorLeftBarActionButton1`],
+        [193, `${GAMEPAD_BAR}PageUnitRightCenteredAnchorRightBarActionButton1`],
+    ] as const;
+    for (const animation of ["circling", "clean", "breathing", "breathingClean", "none", "noneClean"] as const) {
+        for (const [slot, name] of BUTTONS) {
+            it(`sees the missing buff glow by the button of slot ${slot} with ${animation}`, () => {
+                const world = createWorld(
+                    (state) => {
+                        playAs(state, PRIEST);
+                        learnSpell(state, FORTITUDE);
+                        state.bars[slot] = FORTITUDE.id;
+                    },
+                    { styles: { missingBuff: { animation } } },
+                );
+                world.advance(1);
+                expect(world.glowsOnFrame(name)).toBe(1);
+            });
+        }
+    }
 });
