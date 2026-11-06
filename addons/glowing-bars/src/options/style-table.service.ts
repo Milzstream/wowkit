@@ -22,6 +22,7 @@ import {
     TYPE_HEADING_HEIGHT,
     findWindowWidth,
 } from "./style-table.constants";
+import { showHeaderTip } from "./header-tip";
 import { applyRowView, createIcon, createStripe, createText } from "./style-row-layout";
 import type { StyleWindowService } from "./style-window.service";
 import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
@@ -137,6 +138,8 @@ export class StyleTableService {
         header.SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top);
         header.SetText(this.locale.getText(headerText));
         header.Show();
+        // What a faded name is
+        if (headerText === "HDR_TABLE_SPELLS") showHeaderTip(content, top, () => this.locale.getText("TIP_TABLE_SPELLS"));
         let y = top + HEADER_HEIGHT;
         let previousType: StyleRow["reminderType"] | undefined;
         for (const row of rows) {
@@ -235,7 +238,7 @@ export class StyleTableService {
         this.choices.fillChoices(widgets.choices, row);
         widgets.reset.SetShown(isOverridden);
         widgets.remove.SetShown(row.isAdded === true);
-        this.edits.fillEnabled(widgets.enabled, widgets.frame, row);
+        this.edits.fillEnabled(widgets.enabled, widgets.frame, row, [widgets.icon, widgets.name]);
         this.edits.fillIdBox(widgets.spellIdBox, row);
         this.edits.fillBelowBox(widgets.belowBox, row);
         applyRowView(widgets, this.windows.getColumns(), this.windows.isAdvanced());

@@ -55,6 +55,20 @@ describe("the table of looks", () => {
         expect(findLabel(world, "Recklessness")!.parent!.alpha).toBe(0.4);
     });
 
+    it("fades the name and icon of a spell not learned yet, and lists it all the same", () => {
+        // The client knows the name of a spell not learned yet
+        world = createWorld((state) => {
+            setUpWarrior(state);
+            state.spells[7384] = { id: 7384, name: "Overpower", rank: 1, icon: 132223 };
+        });
+        world.advance(1);
+        toggleTable();
+        expect(findLabel(world, "Recklessness")!.alpha).toBe(1);
+        // Only its name and icon: the rest of the row reads as any other
+        expect(findLabel(world, "Overpower")!.alpha).toBe(0.5);
+        expect(findLabel(world, "Overpower")!.parent!.alpha).toBe(1);
+    });
+
     it("keeps its size on a screen it fits on", () => {
         world.findFrame((frame) => frame.name === "UIParent")!.width = 2000;
         toggleTable();

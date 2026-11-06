@@ -16,6 +16,8 @@ import type { AddableType } from "../settings/settings.interface";
 
 /** How faded the spell rows of a type that is switched off are. */
 const TYPE_OFF_ALPHA = 0.4;
+/** How faded the name and icon of a spell the character has not learned (yet) are: listed all the same, to set its look before. */
+const NOT_LEARNED_ALPHA = 0.5;
 
 /** What was typed is wrong: nothing was done, or something else than was asked. */
 const ERROR_COLOR: Rgb = [1, 0.25, 0.2];
@@ -55,12 +57,16 @@ export class StyleEditsService {
         });
     }
 
-    /** Shows whether the row is on, and fades the spell rows of a type that is off: they will not glow. */
-    fillEnabled(box: CheckButton, frame: Frame, row: StyleRow): void {
+    /**
+     * Shows whether the row is on, and fades the spell rows of a type that is off (they will not glow), and the name and
+     * icon (nameParts) of a spell not learned yet (what the character has stands out).
+     */
+    fillEnabled(box: CheckButton, frame: Frame, row: StyleRow, nameParts: Region[]): void {
         box.Show();
         box.SetChecked(this.switches.isEnabled(row));
         const isTypeOff = row.spellId !== undefined && !this.switches.isTypeEnabled(row.reminderType);
         frame.SetAlpha(isTypeOff ? TYPE_OFF_ALPHA : 1);
+        for (const part of nameParts) part.SetAlpha(row.isLearned === false ? NOT_LEARNED_ALPHA : 1);
     }
 
     /** The Spell ID box of a row; `getRow` tells which row it shows now (the rows are reused). */

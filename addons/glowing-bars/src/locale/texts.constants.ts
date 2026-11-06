@@ -75,6 +75,7 @@ export const TEXTS = {
     TABLE_TITLE: "Glowing Bars",
     HDR_TABLE_DEFAULTS: "Defaults",
     HDR_TABLE_SPELLS: "Spells (override the defaults)",
+    TIP_TABLE_SPELLS: "Faded names are spells you haven't learned yet.",
     COL_SPELL_ITEM: "Spell / Item",
     COL_TYPE: "Type",
     COL_SPELL_ITEM_ID: "Spell / Item ID",

@@ -27,6 +27,8 @@ export interface StyleRow {
     listId?: number;
     /** A spell the player added. */
     isAdded?: boolean;
+    /** A spell of the class the character has not learned (yet): its row is faded. Undefined for a type and an item. */
+    isLearned?: boolean;
     /** The low stock: the item the row is about (its `spellId` is what the item's buttons are found by). */
     itemId?: number;
 }
@@ -120,6 +122,7 @@ export class StyleRowsService {
                 spellId,
                 label: suffix !== undefined ? `${look.label} (${suffix})` : look.label,
                 iconId: look.iconId,
+                isLearned: extra.itemId !== undefined ? undefined : this.spells.isLearned(spellId),
                 ...extra,
             });
         };
