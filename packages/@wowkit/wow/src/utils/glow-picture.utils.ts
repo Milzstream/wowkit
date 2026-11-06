@@ -24,8 +24,9 @@ function applyLoopPicture(alert: SpellAlertFrame, picture: Texture, sheetWidth: 
 export function showLoopPicture(alert: SpellAlertFrame, atlas: string, then: (this: void) => void): void {
     const picture = alert.ProcLoopFlipbook;
     if (picture === undefined) return;
-    // The whole sheet of its pictures, which nothing may see
-    picture.SetAtlas(atlas);
+    // The whole sheet of its pictures, which nothing may see. The coordinates set by hand the last time it stood still
+    // stay through a new atlas unless it resets them: the sheet would then seem one picture wide, and the loop never stop
+    picture.SetAtlas(atlas, false, undefined, true);
     picture.SetAlpha(0);
     const [sheetLeft, , , , sheetRight] = picture.GetTexCoord();
     picture.Show();
