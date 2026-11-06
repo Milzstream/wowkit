@@ -21,7 +21,7 @@ Play with a controller? The glows also show on **Forever's own gamepad bars**, t
     *   **Paladins**: each class gets the blessing you last gave it; before that, Wisdom for casters and healers, Kings or Might for the rest. A Greater Blessing when enough of a class miss it, by the same setting. In a raid only the classes you buffed there.
 *   **Weapon buffs** – shaman imbues, rogue poisons (per hand) and warlock stones, when missing or about to run out.
 *   **Paladin seals** – in a fight (by default) with no seal up, the seal you used last glows gold, already a moment before it runs out. Before your first seal, the one of your talent tree.
-*   **Gathering** – a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow. Any tracking counts, so a hunter tracking beasts is left alone.
+*   **Gathering** – a miner or a herbalist with no tracking on sees Find Minerals or Find Herbs glow, and a dwarf Find Treasure. Any tracking counts, so a hunter tracking beasts is left alone.
 *   **Low reagents** – the group buff on your bar glows quietly while its reagent runs low (below 10, or the limit you set in the table), and in a town or an inn a message names what to buy.
 *   **Low stock, if you add it** – add any item by its *Item ID* (arrows, drinks, candles). When only a few are left, a message says how many. If the item is on your bars, its button glows too.
 *   **Cooldowns that are back** – in a fight, an important cooldown of your class or your race (Recklessness, Rapid Fire, Adrenaline Rush, Innervate, Swift Judgement, Blood Fury, Stoneform, Desperate Prayer…) glows for a few seconds when it is ready again. If you like, the ready ones also glow as a fight starts.

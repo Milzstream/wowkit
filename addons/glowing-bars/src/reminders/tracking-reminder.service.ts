@@ -9,7 +9,8 @@ import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 
 /** The trackings of the gathering professions, in the order the table lists them (their wow-data IDs). */
-export const GATHERING_TRACKINGS = [Tracking.FindMinerals, Tracking.FindHerbs];
+// The dwarves' Find Treasure too: like the gathering trackings, it is the one a player keeps on
+export const GATHERING_TRACKINGS = [Tracking.FindMinerals, Tracking.FindHerbs, Tracking.FindTreasure];
 
 /** No tracking to remind of: one empty list for every tick (nobody changes it). */
 const NO_TRACKINGS: number[] = [];

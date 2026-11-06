@@ -7,6 +7,7 @@ import {
     learnSpell,
     playAs,
     HUNTER,
+    PALADIN,
     type SpellDefinition,
     type World,
 } from "@wowkit/test-kit";
@@ -14,7 +15,32 @@ import { switchInTable } from "./table.helpers";
 
 const FIND_MINERALS: SpellDefinition = { id: 2580, name: "Find Minerals", rank: 1, icon: 136025, isHelpful: true };
 const FIND_HERBS: SpellDefinition = { id: 2383, name: "Find Herbs", rank: 1, icon: 133939, isHelpful: true };
+const FIND_TREASURE: SpellDefinition = { id: 2481, name: "Find Treasure", rank: 1, icon: 135725, isHelpful: true };
 const TRACK_BEASTS: SpellDefinition = { id: 1494, name: "Track Beasts", rank: 1, icon: 132328, isHelpful: true };
+
+describe("a dwarf with Find Treasure on the bar", () => {
+    let world!: World;
+
+    beforeEach(() => {
+        world = createWorld((state) => {
+            playAs(state, PALADIN);
+            learnSpell(state, FIND_TREASURE);
+            state.bars[1] = FIND_TREASURE.id;
+        });
+        world.advance(1);
+    });
+
+    it("sees it glow while no tracking is on", () => {
+        expect(world.glowsOn(1)).toBe(1);
+    });
+
+    it("sees it stop glowing once it is on", () => {
+        world.state.auras = [{ name: FIND_TREASURE.name, spellId: FIND_TREASURE.id, expirationTime: 0 }];
+        world.fire("UNIT_AURA", "player");
+        world.advance(1);
+        expect(world.glowsOn(1)).toBe(0);
+    });
+});
 
 describe("a hunter who is a miner and a herbalist", () => {
     let world!: World;
