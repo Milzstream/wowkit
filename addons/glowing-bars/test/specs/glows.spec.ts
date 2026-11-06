@@ -91,7 +91,7 @@ describe("a warrior with Overpower and Recklessness on the bars", () => {
     it("sees no glow on Overpower until the game says it can be used", () => {
         expect(world.glowsOn(1)).toBe(0);
         world.state.unusableSpells[OVERPOWER.id] = undefined;
-        world.advance(0.5);
+        world.advance(1);
         expect(world.glowsOn(1)).toBe(1);
     });
 

@@ -51,7 +51,7 @@ describe("a food and a drink the player has used", () => {
     function gain(world: World, ...auras: (typeof FOOD_FED)[]): void {
         world.state.auras.push(...auras);
         world.fire("UNIT_AURA", "player");
-        world.advance(0.5);
+        world.advance(1);
     }
 
     function readLearned(world: World): { [spell: string]: number | undefined } {

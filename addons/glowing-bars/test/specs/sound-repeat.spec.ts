@@ -33,7 +33,8 @@ describe("the sound of a missing buff", () => {
         expect(world.sounds).toEqual([ALARM_1]);
         world.advance(2);
         expect(world.sounds).toEqual([ALARM_1, ALARM_1]);
-        world.advance(10);
+        // Out of combat a look comes every second: a repeat may come up to a second late
+        world.advance(11);
         expect(world.sounds).toEqual([ALARM_1, ALARM_1, ALARM_1]);
     });
 

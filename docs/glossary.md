@@ -26,7 +26,7 @@ The words this project uses in its own sense, in plain terms. One word means one
 | Word | Meaning | In the code |
 |---|---|---|
 | **reminder** | Anything the addon wants the player to notice right now. | `Reminders` |
-| **tick** | One look at the game, every 0.5 seconds and sooner when something happens. | `tick/tick.service.ts` |
+| **tick** | One look at the game, every 0.5 seconds in combat, every second out of it, and sooner when something happens. | `tick/tick.service.ts` |
 | **stage** | One half of a tick: *find* what is due, then *show* it. | `tick/find-reminders.service.ts`, `tick/show-reminders.service.ts` |
 | **glow** and **notice** | The glow is the highlight on an action button; the notice is the message at the top of the screen (one frame shared by all the addons). | `packages/@wowkit/wow/src/glow.service.ts`, `notice.service.ts` |
 | **grace time** | After a cast, a "missing" reading is ignored for a few seconds, because the game's data lags behind. | `reminders/weapon/weapon-memory.service.ts` |

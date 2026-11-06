@@ -1,4 +1,5 @@
-// One tick: look at the game, then show what is due. Runs every 0.5 seconds, and sooner when something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look
+// One tick: look at the game, then show what is due. Runs every 0.5 seconds in combat and every second out of it, and
+// sooner when something happens (RefreshService asks for it). Between the two, each reminder found shows only when its look
 // says it may (the When column of the table): always, in combat, out of combat, with a living enemy targeted, or (the low
 // reagents and stock) in a town or an inn; and then for its glow time, again with its repeat (GlowSchedule). What is due
 // is the finders' to say; when it shows is the player's, for each type and spell.
@@ -15,6 +16,9 @@ import { createWhenState, readWhenState } from "./when-state";
 import { createEmptyReminders, filterReminders } from "./reminder-filter";
 import { GlowSchedule } from "./glow-schedule";
 
+/** Out of combat, a tick on the clock waits until this long after the last one (the clock comes every 0.5 seconds). */
+const QUIET_TICK_SECONDS = 0.9;
+
 type IsShown = (this: void, reminderType: ReminderType, id: number) => boolean;
 
 export class TickService implements OnFirstLogin, OnLogout, OnReady {
@@ -25,6 +29,7 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
     private wasInTown = false;
     /** Was the player in combat at the last tick: as a fight starts, a ready cooldown starts over. */
     private wasInCombat = false;
+    private lastTickAt = 0;
     /** What the filter of this tick asks: the When that holds, the time, the town and the start of a fight. */
     private readonly whenState = createWhenState();
     private time = 0;
@@ -55,9 +60,17 @@ export class TickService implements OnFirstLogin, OnLogout, OnReady {
         this.tick();
     }
 
+    /** A tick on the clock. Out of combat fewer are needed: what must come at once (procs, ready cooldowns) comes in combat. */
     @Interval(500)
+    tickOnClock(): void {
+        if (!this.player.isInCombat() && this.clock.getCurrentTime() - this.lastTickAt < QUIET_TICK_SECONDS) return;
+        this.tick();
+    }
+
+    /** Looks at the game and shows what is due, when its look says it may. Does nothing before the first login. */
     tick(): void {
         if (!this.isRunning) return;
+        this.lastTickAt = this.clock.getCurrentTime();
         this.shower.showReminders(this.filterShowing(this.finder.findReminders()));
     }
 

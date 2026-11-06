@@ -229,7 +229,7 @@ describe("the spells of other types a player adds", () => {
         expect(world.glowsOn(1)).toBe(1);
         world.state.auras.push(world.makeAura(DEMON_SKIN.name, DEMON_SKIN.id, 1800));
         world.fire("UNIT_AURA", "player");
-        world.advance(0.5);
+        world.advance(1);
         expect(world.glowsOn(1)).toBe(0);
     });
 
