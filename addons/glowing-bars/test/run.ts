@@ -12,4 +12,5 @@ config.addonPath = addonPath;
 const [addonName] = string.match(addonPath, "([^/\\]+)%.lua$");
 config.addonName = addonName ?? "";
 config.savedVariables = `${config.addonName}CharDB`;
+config.accountVariables = `${config.addonName}DB`;
 os.exit(runAll() ? 0 : 1);

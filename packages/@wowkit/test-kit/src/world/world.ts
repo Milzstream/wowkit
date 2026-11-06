@@ -54,6 +54,8 @@ export interface World {
     tooltipLines(kind: TooltipKind, id: number | undefined): string[];
     /** What the addon keeps in the character's saved variables. */
     getSavedSettings(): Record<string, unknown> | undefined;
+    /** What the addon keeps in the account's saved data (## SavedVariables). */
+    getAccountSaved(): Record<string, unknown> | undefined;
     findFrame(matches: (frame: FakeFrame) => boolean): FakeFrame | undefined;
 }
 
@@ -70,12 +72,15 @@ let lastFrames: FakeFrame[] = [];
 export function createWorld(setup: (state: ClientState) => void, savedSettings?: Record<string, unknown>): World {
     for (const frame of lastFrames) if (frame.name !== undefined) clearGlobal(frame.name);
     clearGlobal(config.savedVariables);
+    if (config.accountVariables !== "") clearGlobal(config.accountVariables);
     // The notice area of the earlier world is gone with its frames
     clearGlobal("WowkitNotices");
     // What the game loaded from the character's file before the addon started: a character that played before
     if (savedSettings !== undefined) defineValues({ [config.savedVariables]: savedSettings });
     const state = createClientState();
     setup(state);
+    // What the game loaded from the account's file: an account that played before
+    if (state.accountSaved !== undefined && config.accountVariables !== "") defineValues({ [config.accountVariables]: state.accountSaved });
     const clock = createClock();
     const frames = createFrameRegistry();
     lastFrames = frames.all;
@@ -153,6 +158,8 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
             return shared?.frame.isShown ? (shared.text.text ?? "") : "";
         },
         getSavedSettings: () => readGlobal(config.savedVariables) as Record<string, unknown> | undefined,
+        getAccountSaved: () =>
+            config.accountVariables !== "" ? (readGlobal(config.accountVariables) as Record<string, unknown> | undefined) : undefined,
         findFrame: (matches) => frames.all.find((frame) => matches(frame)),
     };
 }

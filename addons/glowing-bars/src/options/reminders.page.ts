@@ -4,15 +4,19 @@
 import type { AddonLocale } from "../locale/locale.interface";
 import type { ClassBuffsService } from "../reminders/class-buffs.service";
 import type { AddonSettingsService, AddonSettings } from "../settings/settings.interface";
-import type { AboutSection, ControlsService, OptionsPage, WidgetsService } from "@wowkit/ui";
+import { AboutSection, type ControlsService, type OptionsPage, type WidgetsService } from "@wowkit/ui";
 import type { BarsSection } from "./bars.section";
 import type { AnimationSection } from "./animation.section";
 import type { GlowsSection } from "./glows.section";
 import type { StyleTableService } from "./style-table.service";
+import type { WhatsNewService } from "./whats-new.service";
 import type { ReminderControlsService } from "./reminder-controls.service";
 import type { WeaponSection } from "./weapon.section";
 
 export class RemindersPage implements OptionsPage {
+    /** The Help section at the bottom: where to ask, and where to report a problem. */
+    private readonly about: AboutSection;
+
     constructor(
         private readonly locale: AddonLocale,
         private readonly classBuffs: ClassBuffsService,
@@ -21,14 +25,26 @@ export class RemindersPage implements OptionsPage {
         private readonly reminderControls: ReminderControlsService,
         private readonly weaponSection: WeaponSection,
         private readonly glowsSection: GlowsSection,
-        private readonly about: AboutSection,
         private readonly widgets: WidgetsService,
         private readonly table: StyleTableService,
         private readonly barsSection: BarsSection,
         private readonly animationSection: AnimationSection,
-    ) {}
+        private readonly whatsNew: WhatsNewService,
+    ) {
+        this.about = new AboutSection(
+            widgets,
+            {
+                header: locale.getText("HDR_ABOUT"),
+                githubLabel: locale.getText("INFO_GITHUB"),
+                issuesLabel: locale.getText("INFO_ISSUES"),
+            },
+            "https://github.com/vattiss/wowkit",
+        );
+    }
 
     buildPage(category: SettingsCategory, layout: SettingsLayout): void {
+        // What's new first: the window of the changes, and whether it opens by itself
+        this.addWhatsNew(category, layout);
         this.reminderControls.addHeader(layout, "HDR_REMINDERS");
         this.widgets.addButton(
             layout,
@@ -80,5 +96,26 @@ export class RemindersPage implements OptionsPage {
         this.barsSection.addFadedSection(category, layout);
 
         this.about.addAboutSection(layout);
+    }
+
+    /** The button to the What's new window, and the switch of its opening by itself after an update. */
+    private addWhatsNew(category: SettingsCategory, layout: SettingsLayout): void {
+        this.widgets.addButton(
+            layout,
+            this.locale.getText("OPT_WHATS_NEW"),
+            this.locale.getText("BTN_OPEN"),
+            () => this.whatsNew.open(),
+            this.locale.getText("TIP_WHATS_NEW"),
+        );
+        // The same choice as the box at the bottom of the window, the other way round
+        this.controls.addCheckbox(
+            category,
+            "showWhatsNew",
+            this.locale.getText("OPT_SHOW_WHATS_NEW"),
+            this.locale.getText("TIP_SHOW_WHATS_NEW"),
+            true,
+            () => !this.whatsNew.isOff(),
+            (isChecked) => this.whatsNew.setOff(!isChecked),
+        );
     }
 }

@@ -104,6 +104,8 @@ export interface ClientState {
     stances: number[];
     /** The spell on the class button of the gamepad bars (the paladin's aura, picked from a flyout). */
     gamepadClassSpell: number | undefined;
+    /** What the game loaded from the account's file (## SavedVariables); undefined: the first run. */
+    accountSaved: Record<string, unknown> | undefined;
     /** Bartender4 is loaded: its first two bars (BT4Button1 to 24, on the action slots 1 to 24). */
     hasBartender: boolean;
     /** Dominos is loaded: its bars 2 and 3 (DominosActionButton13 to 24, MultiBarRightActionButton1 to 12, slots 13 to 36). */
@@ -189,6 +191,7 @@ export function createClientState(): ClientState {
         areCooldownsHidden: false,
         stances: [],
         gamepadClassSpell: undefined,
+        accountSaved: undefined,
         hasBartender: false,
         hasDominos: false,
         hasEllesmere: false,

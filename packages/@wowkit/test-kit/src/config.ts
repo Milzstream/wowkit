@@ -6,4 +6,6 @@ export const config = {
     addonName: "",
     /** The global the TOC saves per character. By convention the addon's name and CharDB. */
     savedVariables: "",
+    /** The global of the account's saved data (## SavedVariables), when the addon has one. */
+    accountVariables: "",
 };

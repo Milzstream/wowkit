@@ -21,6 +21,8 @@ export function readWowUiSource(): WowUiSource {
 
 /** The package.json of an addon: its name, its version (for the TOC) and the folder name the game loads. */
 export interface AddonPackageJson {
+    /** The package's name (glowing-bars): its release tags are <name>-v<version>. */
+    name: string;
     version: string;
     addon: { name: string };
 }

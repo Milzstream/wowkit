@@ -38,3 +38,4 @@ import "./low-stock-table.spec";
 import "./food-buff-names.spec";
 import "./buff-groups.spec";
 import "./warlock.spec";
+import "./whats-new.spec";

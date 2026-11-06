@@ -8,7 +8,7 @@
     "name": "GlowingBars"
   },
   "scripts": {
-    "build": "tstl -p tsconfig.json && node ../../scripts/package-addon.ts",
+    "build": "node ../../scripts/generate-release-notes.ts && tstl -p tsconfig.json && node ../../scripts/package-addon.ts",
     "watch": "node ../../scripts/package-addon.ts && tstl -p tsconfig.json --watch",
     "build:tests": "tstl -p tsconfig.test.json",
     "test:run": "node ../../scripts/smoke-test.ts",

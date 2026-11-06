@@ -7,6 +7,14 @@ export const TEXTS = {
     INFO_GITHUB: "GitHub",
     INFO_ISSUES: "Report an issue",
     INFO_COPY: "Copy",
+    OPT_WHATS_NEW: "What's new",
+    TIP_WHATS_NEW: "The changes of each version of Glowing Bars. Also /gb changelog.",
+    TITLE_WHATS_NEW: "What's new in Glowing Bars",
+    OPT_WHATS_NEW_OFF: "Don't show this again when new features come out",
+    OPT_SHOW_WHATS_NEW: "Show what's new after an update",
+    TIP_SHOW_WHATS_NEW:
+        "After an update with new features, the What's new window opens once, on the first character you log in with. This choice is for your whole account.",
+    TEXT_WHATS_NEW_TIP: "Tip: open it any time with /gb changelog, or from the Settings page.",
     INFO_COPIED: "The link is in your chat box. Press Ctrl+C to copy it.",
 
     HDR_CHARACTER: "This character",

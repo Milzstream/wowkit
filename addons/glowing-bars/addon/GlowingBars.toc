@@ -6,6 +6,7 @@
 ## Author: Attila Varga (vattiss)
 ## Version: @version@
 ## IconTexture: Interface\AddOns\GlowingBars\images\logo
+## SavedVariables: GlowingBarsDB
 ## SavedVariablesPerCharacter: GlowingBarsCharDB
 ## DefaultState: enabled
 ## X-Website: https://github.com/vattiss/wowkit

@@ -3,7 +3,6 @@
 // function reach at most 60 outer names, and one function naming every service would reach more.
 import { Addon } from "@wowkit/core";
 import {
-    AboutSection,
     ControlsService,
     GreetingService,
     LocaleService,
@@ -59,6 +58,7 @@ import { StyleRowsService } from "./options/style-rows.service";
 import { StyleTableService } from "./options/style-table.service";
 import { StyleWindowService } from "./options/style-window.service";
 import { TableCommand } from "./options/table-command";
+import { WhatsNewService } from "./options/whats-new.service";
 import { RemindersPage } from "./options/reminders.page";
 import { WeaponSection } from "./options/weapon.section";
 import { ReagentsService } from "./reagents/reagents.service";
@@ -76,7 +76,7 @@ import { WeaponChoiceService } from "./reminders/weapon/weapon-choice.service";
 import { WeaponMemoryService } from "./reminders/weapon/weapon-memory.service";
 import { WeaponReadingService } from "./reminders/weapon/weapon-reading.service";
 import { WeaponReminderService } from "./reminders/weapon/weapon-reminder.service";
-import { SAVED_VARIABLES_NAME, createDefaultSettings, repairSettings } from "./settings/settings.constants";
+import { ACCOUNT_VARIABLES_NAME, SAVED_VARIABLES_NAME, createDefaultSettings, repairSettings } from "./settings/settings.constants";
 import type { AddonSettings } from "./settings/settings.interface";
 import { StyleService } from "./settings/style.service";
 import { EnabledService } from "./settings/enabled.service";
@@ -269,7 +269,6 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
         new StyleEditsService(locale, reminders.addedSpells, tableNotice, switches, rows, styles, reminders.limits, reminders.reagents),
     );
     const table = addon.register(new StyleTableService(locale, styles, rows, messages, choices, windows, edits));
-    addon.register(new TableCommand(table));
     return table;
 }
 
@@ -289,17 +288,10 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const table = makeTable(addon, addonName, game, texts, buffs, reminders);
     const barsSection = addon.register(new BarsSection(locale, settings, controls, reminderControls));
     const animationSection = addon.register(new AnimationSection(locale, settings, controls));
-    const about = addon.register(
-        new AboutSection(
-            widgets,
-            {
-                header: locale.getText("HDR_ABOUT"),
-                githubLabel: locale.getText("INFO_GITHUB"),
-                issuesLabel: locale.getText("INFO_ISSUES"),
-            },
-            "https://github.com/vattiss/wowkit",
-        ),
+    const whatsNew = addon.register(
+        new WhatsNewService(new SavedVariablesService(ACCOUNT_VARIABLES_NAME), locale, game.clock, game.player),
     );
+    addon.register(new TableCommand(table, whatsNew));
     const page = addon.register(
         new RemindersPage(
             locale,
@@ -309,11 +301,11 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
             reminderControls,
             weaponSection,
             glowsSection,
-            about,
             widgets,
             table,
             barsSection,
             animationSection,
+            whatsNew,
         ),
     );
     addon.register(new OptionsService(messages, locale.getText("TITLE"), page));

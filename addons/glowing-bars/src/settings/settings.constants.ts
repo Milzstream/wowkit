@@ -5,6 +5,8 @@ import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, Wh
 
 /** The global the TOC saves per character (## SavedVariablesPerCharacter). */
 export const SAVED_VARIABLES_NAME = "GlowingBarsCharDB";
+/** The account's saved data (## SavedVariables): what it has seen of the releases. */
+export const ACCOUNT_VARIABLES_NAME = "GlowingBarsDB";
 
 export function createDefaultSettings(): AddonSettings {
     return {

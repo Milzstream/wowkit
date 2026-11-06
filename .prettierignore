@@ -7,6 +7,7 @@ packages/@wowkit/wow-types/
 packages/@wowkit/wow-data/data/
 addons/*/addon/
 pnpm-lock.yaml
+*.generated.ts
 *.md
 docs/public/api/
 docs/.vitepress/cache/

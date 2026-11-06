@@ -11,7 +11,7 @@ import tseslint from "typescript-eslint";
 const QUESTION_WORDS = ["is", "has", "can", "should", "does", "did", "was", "will", "are", "had", "show", "hide"];
 
 export default defineConfig(
-    { ignores: ["dist/**", "dist-test/**", ".cache/**", "node_modules/**", "packages/@wowkit/wow-types/**"] },
+    { ignores: ["dist/**", "dist-test/**", ".cache/**", "node_modules/**", "packages/@wowkit/wow-types/**", "**/*.generated.ts"] },
     {
         files: [
             "packages/@*/*/src/**/*.ts",
