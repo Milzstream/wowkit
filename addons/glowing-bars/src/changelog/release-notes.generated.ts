@@ -1,7 +1,7 @@
 // Written by scripts/generate-release-notes.ts from release-notes/*.md, at each build: not to be edited by hand.
 
 /** The version of the addon this build is. */
-export const ADDON_VERSION = "2.4.1";
+export const ADDON_VERSION = "2.5.0";
 
 export interface ReleaseNote {
     version: string;
@@ -15,6 +15,7 @@ export interface ReleaseNote {
 
 /** Every release, the newest first. */
 export const RELEASE_NOTES: ReleaseNote[] = [
+    { version: "2.5.0", date: "2026-11-06", hasNew: true, text: "|cffffd100New|r\n\n• New looks for the glow: in the table (/gb), the Animation column now offers each movement in two looks. Ants is Blizzard's glow, as before; clean is a clean line running around the button, or a soft frame when the glow stands still. Your current choice stays as it was.\n• A What's new window lists the changes of every version. Open it with /gb changelog or from the top of the Settings page. After an update with new features, it opens once by itself; you can turn that off.\n• The login message in the chat can be turned off: untick Show the login message on the Settings page." },
     { version: "2.4.1", date: "2026-11-06", hasNew: false, text: "|cffffd100Fixed|r\n\n• A glow switched to Breathing, then to Circling and back to Breathing, no longer keeps circling." },
     { version: "2.4.0", date: "2026-11-06", hasNew: false, text: "|cffffd100Changed|r\n\n• The addon uses far less memory: it stays at a few MB instead of climbing to 20-25 MB before the game clears it.\n• Out of combat it checks once a second; in combat still twice a second, so procs and cooldowns are as quick as before.\n• In the table (/gb), spells you haven't learned yet have a faded name and icon. You can still set their look." },
     { version: "2.3.0", date: "2026-11-05", hasNew: true, text: "|cffffd100New|r\n\n• Overpower and Revenge glow in any stance, so you know when to switch. Overpower glows after your target dodges, Revenge after you block, dodge or parry.\n\n|cffffd100Changed|r\n\n• The addon uses much less memory and CPU. It checks your bars twice a second instead of five times, and does less work each time.\n\n|cffffd100Fixed|r\n\n• A food or drink you added as a buff no longer glows in every fight while you are Well Fed.\n• Old spell ranks no longer show for spells on the gamepad bars when you don't play in gamepad mode. This could happen to druids in bear form.\n• A buff that was only on the hidden gamepad bars now gets its reminder." },
