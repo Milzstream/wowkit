@@ -20,6 +20,9 @@ function getLastWeaponKey(isOffhand: boolean): string {
     return isOffhand ? "weapon:off" : "weapon:main";
 }
 
+/** A class with no weapon buff: one empty list (nobody changes it). */
+const NO_WEAPON_BUFFS: WeaponBuff[] = [];
+
 export class WeaponChoiceService {
     private weaponNames: LuaSet<string> | undefined;
     private readonly tokenCache = new LuaMap<WeaponBuff, string[]>();
@@ -40,7 +43,7 @@ export class WeaponChoiceService {
 
     getWeaponChoices(): WeaponBuff[] {
         const token = this.player.getClassToken();
-        return (token !== undefined ? WEAPON_BUFFS[token] : undefined) ?? [];
+        return (token !== undefined ? WEAPON_BUFFS[token] : undefined) ?? NO_WEAPON_BUFFS;
     }
 
     isWeaponBuffLearned(entry: WeaponBuff): boolean {
@@ -102,6 +105,8 @@ export class WeaponChoiceService {
 
     /** The player's pick if it is learned, otherwise the automatic one. */
     findSelectedWeaponBuff(isOffhand = false): PickedWeaponBuff | undefined {
+        // A class with no weapon buff: nothing to pick
+        if (this.getWeaponChoices().length === 0) return undefined;
         const key = isOffhand ? this.settings.get("weaponBuffOff") : this.settings.get("weaponBuff");
         const chosen =
             key !== undefined && key !== "auto"

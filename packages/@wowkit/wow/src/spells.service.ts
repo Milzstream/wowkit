@@ -77,7 +77,9 @@ export class SpellsService implements OnFirstLogin {
 
     /** The English spellbook name of a spell, for IDs the client does not name. */
     getHintName(spellId: number | undefined): string | undefined {
-        return this.getHintNames(spellId)[0];
+        // Read where it is, without a list: every label asks for it
+        const hint = spellId !== undefined ? SPELL_NAME_HINT[spellId] : undefined;
+        return type(hint) === "string" ? (hint as string) : (hint as string[] | undefined)?.[0];
     }
 
     /** Every English spellbook name a spell may have (a renamed spell has two). */

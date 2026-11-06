@@ -12,15 +12,37 @@ import type { LowStockService } from "../reminders/low-stock.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { PartyBuffsService } from "../reminders/party-buffs.service";
-import type { MissingBuffs, PartySuggestion } from "../reminders/reminders.interface";
+import type { LowStock, MissingBuffs, PartySuggestion } from "../reminders/reminders.interface";
 import type { WeaponReminderService } from "../reminders/weapon/weapon-reminder.service";
 import type { AddonSettingsService } from "../settings/settings.interface";
 import type { IdleService } from "../character/idle.service";
-import type { ActionBarsService, PlayerService, SpellsService } from "@wowkit/wow";
+import { OnEvent, OnGameEvent } from "@wowkit/core";
+import type { ActionBarsService, ClockService, PlayerService, SpellsService } from "@wowkit/wow";
 import type { LowReagent } from "../reagents/reagent.interface";
 import type { Reminders } from "./tick.interface";
+import { createEmptyReminders } from "./reminder-filter";
+
+/** The reagents and the stock are read again after this long at most, for what the client tells late (an item's name). */
+const STOCK_REUSE = 5;
+
+interface StockReminders {
+    reagentSpells: number[];
+    lowReagents: LowReagent[];
+    lowStock: LowStock[];
+    at: number;
+}
 
 export class FindRemindersService {
+    /** The reagents and the stock of the last look: they change with the bags, so they are kept until then. */
+    private stock: StockReminders | undefined;
+    /** What an idle tick finds: nothing, or only the reagents and the stock (never changed by those who read it). */
+    private readonly idleReminders = createEmptyReminders();
+    /** Empty lists that stay empty: no stock to tell. */
+    private readonly noReminders = createEmptyReminders();
+    /** What a tick finds: the same table each time, its lists the finders' own. */
+    private readonly found = createEmptyReminders();
+    private readonly noMissingBuffs: MissingBuffs = { glow: [], notOnBars: [] };
+
     constructor(
         private readonly lowStock: LowStockService,
         private readonly actionBars: ActionBarsService,
@@ -37,44 +59,53 @@ export class FindRemindersService {
         private readonly sealReminder: SealReminderService,
         private readonly trackingReminder: TrackingReminderService,
         private readonly settings: AddonSettingsService,
+        private readonly clock: ClockService,
     ) {}
+
+    @OnEvent("setting.changed", "bars.mapped", "spells.refreshed", "spells.invalidated", "spellbook.indexed")
+    @OnGameEvent("BAG_UPDATE", "BAG_UPDATE_DELAYED", "GET_ITEM_INFO_RECEIVED")
+    forgetStock(): void {
+        this.stock = undefined;
+    }
 
     findReminders(): Reminders {
         // Looks at the buffs out of combat even when nothing is due, so the aura memory knows them
         this.buffReminder.rememberSelfBuffs();
 
         // Nothing while dead, mounted or eating, or when the player muted the addon
-        if (this.idle.shouldStayIdle(false) || this.settings.get("isDisabled")) return this.createEmptyReminders();
+        if (this.idle.shouldStayIdle(false) || this.settings.get("isDisabled")) return this.findIdleReminders(undefined);
 
         // The reagents are bought in a town, so their hint stays there; the rest keeps quiet when asked
-        const reagentSpells = this.findReagentSpells();
-        const lowReagents = this.findLowReagents();
-        const lowStock = this.lowStock.findLowStock();
-        if (this.idle.shouldStayIdle(this.settings.get("shouldStayQuietInTowns")))
-            return { ...this.createEmptyReminders(), reagentSpells, lowReagents, lowStock };
+        const { reagentSpells, lowReagents, lowStock } = this.readStock();
+        if (this.idle.shouldStayIdle(this.settings.get("shouldStayQuietInTowns"))) return this.findIdleReminders(this.stock);
 
+        const none = this.noReminders;
+        const found = this.findBuffReminders();
+        const isWeaponBuffEnabled = this.settings.get("isWeaponBuffEnabled");
+        const weaponCheck = isWeaponBuffEnabled ? this.weaponReminder.check() : undefined;
+        found.weaponSpell = weaponCheck?.isNeeded ? weaponCheck.spellId : undefined;
+        found.addedWeaponSpells = isWeaponBuffEnabled ? this.addedReminders.findWeaponSpells() : none.addedWeaponSpells;
+        found.seals = this.sealReminder.findMissingSeal();
+        found.trackings = this.trackingReminder.findMissingTrackings();
+        found.outdatedRanks = this.settings.get("isOldRankEnabled") ? this.outdatedRanks.findOutdatedRanks() : none.outdatedRanks;
+        found.readyCooldowns = this.glowCues.findReadyCooldowns();
+        found.procs = this.glowCues.findProcs();
+        found.reagentSpells = reagentSpells;
+        found.lowReagents = lowReagents;
+        found.lowStock = lowStock;
+        return found;
+    }
+
+    /** The missing buffs, the player's and the party's, into the answer of this tick. */
+    private findBuffReminders(): Reminders {
+        const found = this.found;
         const isMissingBuffEnabled = this.settings.get("isMissingBuffEnabled");
-        const missingBuffs: MissingBuffs = isMissingBuffEnabled ? this.buffReminder.findMissingBuffs() : { glow: [], notOnBars: [] };
-        const partySuggestions = isMissingBuffEnabled ? this.partyBuffs.findPartyBuffSuggestions() : [];
-        const weaponCheck = this.settings.get("isWeaponBuffEnabled") ? this.weaponReminder.check() : undefined;
-        return {
-            buffsToCast: [
-                ...this.findBuffsToCast(missingBuffs.glow, partySuggestions),
-                ...(isMissingBuffEnabled ? this.addedReminders.findMissingBuffs() : []),
-            ],
-            weaponSpell: weaponCheck?.isNeeded ? weaponCheck.spellId : undefined,
-            addedWeaponSpells: this.settings.get("isWeaponBuffEnabled") ? this.addedReminders.findWeaponSpells() : [],
-            seals: this.sealReminder.findMissingSeal(),
-            trackings: this.trackingReminder.findMissingTrackings(),
-            buffsNotOnBars: missingBuffs.notOnBars,
-            partySuggestions,
-            outdatedRanks: this.settings.get("isOldRankEnabled") ? this.outdatedRanks.findOutdatedRanks() : [],
-            readyCooldowns: this.glowCues.findReadyCooldowns(),
-            procs: this.glowCues.findProcs(),
-            reagentSpells,
-            lowReagents,
-            lowStock,
-        };
+        const missingBuffs = isMissingBuffEnabled ? this.buffReminder.findMissingBuffs() : this.noMissingBuffs;
+        found.partySuggestions = isMissingBuffEnabled ? this.partyBuffs.findPartyBuffSuggestions() : this.noReminders.partySuggestions;
+        found.buffsToCast = this.findBuffsToCast(missingBuffs.glow, found.partySuggestions);
+        if (isMissingBuffEnabled) for (const id of this.addedReminders.findMissingBuffs()) found.buffsToCast.push(id);
+        found.buffsNotOnBars = missingBuffs.notOnBars;
+        return found;
     }
 
     /**
@@ -105,6 +136,7 @@ export class FindRemindersService {
      */
     private findBuffsToCast(ownBuffs: number[], partySuggestions: PartySuggestion[]): number[] {
         let buffs = [...ownBuffs];
+        if (partySuggestions.length === 0) return buffs;
         for (const suggestion of partySuggestions) {
             if (!this.actionBars.isOnBars(suggestion.spellId) || this.spells.isCastable(suggestion.spellId) === false) continue;
             if (suggestion.isForPlayer) buffs = buffs.filter((id) => id !== suggestion.buffId);
@@ -113,21 +145,25 @@ export class FindRemindersService {
         return buffs;
     }
 
-    private createEmptyReminders(): Reminders {
-        return {
-            buffsToCast: [],
-            weaponSpell: undefined,
-            addedWeaponSpells: [],
-            seals: [],
-            trackings: [],
-            buffsNotOnBars: [],
-            partySuggestions: [],
-            outdatedRanks: [],
-            readyCooldowns: [],
-            reagentSpells: [],
-            lowReagents: [],
-            lowStock: [],
-            procs: [],
-        };
+    private readStock(): StockReminders {
+        const now = this.clock.getCurrentTime();
+        if (this.stock === undefined || now - this.stock.at >= STOCK_REUSE) {
+            this.stock = {
+                reagentSpells: this.findReagentSpells(),
+                lowReagents: this.findLowReagents(),
+                lowStock: this.lowStock.findLowStock(),
+                at: now,
+            };
+        }
+        return this.stock;
+    }
+
+    /** Nothing, or only the stock: the same table each time. */
+    private findIdleReminders(stock: StockReminders | undefined): Reminders {
+        const idle = this.idleReminders;
+        idle.reagentSpells = stock?.reagentSpells ?? this.noReminders.reagentSpells;
+        idle.lowReagents = stock?.lowReagents ?? this.noReminders.lowReagents;
+        idle.lowStock = stock?.lowStock ?? this.noReminders.lowStock;
+        return idle;
     }
 }

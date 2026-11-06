@@ -28,7 +28,14 @@ export class NoticesService {
     /** The text showing now. */
     private lastText = "";
     /** When each part of a line last came; a part that is over is forgotten, so it comes again when it is back. */
-    private shownAt = new LuaMap<string, number>();
+    private readonly shownAt = new LuaMap<string, number>();
+    /** The parts of this tick's lines, to forget the others. */
+    private readonly parts = new LuaSet<string>();
+    /** The lines of this tick. */
+    private readonly lines: Line[] = [];
+    /** The weapon buffs and the old ranks of this tick, as spell IDs: lists used again. */
+    private readonly weaponIds: number[] = [];
+    private readonly rankIds: number[] = [];
 
     constructor(
         private readonly actionBars: ActionBarsService,
@@ -45,6 +52,13 @@ export class NoticesService {
         const now = this.clock.getCurrentTime();
         const lines = this.listLines(reminders);
         this.forgetOver(lines);
+        // Nothing to say, as at most ticks: nothing to build
+        if (lines.length === 0) {
+            if (this.lastText === "") return;
+            this.lastText = "";
+            this.notice.clearNotice();
+            return;
+        }
         const due = lines.filter((line) => this.isDue(line, now));
         const text = lines
             .filter((line) => due.includes(line) || this.isStillUp(line, now))
@@ -70,35 +84,39 @@ export class NoticesService {
     }
 
     private forgetOver(lines: Line[]): void {
-        const shownAt = new LuaMap<string, number>();
-        for (const line of lines) {
-            for (const part of line.parts) {
-                const at = this.shownAt.get(part);
-                if (at !== undefined) shownAt.set(part, at);
-            }
-        }
-        this.shownAt = shownAt;
+        const parts = this.parts;
+        for (const part of parts) parts.delete(part);
+        for (const line of lines) for (const part of line.parts) parts.add(part);
+        for (const [part] of this.shownAt) if (!parts.has(part)) this.shownAt.delete(part);
+    }
+
+    /** The weapon buff due and the added ones, in this tick's list. */
+    private listWeaponIds(reminders: Reminders): number[] {
+        const ids = this.weaponIds;
+        for (let index = ids.length; index > 0; index--) ids.pop();
+        if (reminders.weaponSpell !== undefined) ids.push(reminders.weaponSpell);
+        for (const id of reminders.addedWeaponSpells) ids.push(id);
+        return ids;
+    }
+
+    /** The spells of the old ranks, in this tick's list. */
+    private listRankIds(reminders: Reminders): number[] {
+        const ids = this.rankIds;
+        for (let index = ids.length; index > 0; index--) ids.pop();
+        for (const rank of reminders.outdatedRanks) ids.push(rank.id);
+        return ids;
     }
 
     private listLines(reminders: Reminders): Line[] {
-        const lines: Line[] = [];
+        const lines = this.lines;
+        for (let index = lines.length; index > 0; index--) lines.pop();
         this.addTypeLines(lines, "missingBuff", reminders.buffsToCast, "TEXT_BUFF");
-        this.addTypeLines(
-            lines,
-            "weaponBuff",
-            [...(reminders.weaponSpell !== undefined ? [reminders.weaponSpell] : []), ...reminders.addedWeaponSpells],
-            "TEXT_WEAPON",
-        );
+        this.addTypeLines(lines, "weaponBuff", this.listWeaponIds(reminders), "TEXT_WEAPON");
         this.addTypeLines(lines, "missingSeal", reminders.seals, "TEXT_SEAL");
         this.addTypeLines(lines, "missingTracking", reminders.trackings, "TEXT_TRACKING");
         this.addTypeLines(lines, "readyCooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
         this.addTypeLines(lines, "proc", reminders.procs, "TEXT_PROC");
-        this.addTypeLines(
-            lines,
-            "oldRank",
-            reminders.outdatedRanks.map((rank) => rank.id),
-            "TEXT_RANK",
-        );
+        this.addTypeLines(lines, "oldRank", this.listRankIds(reminders), "TEXT_RANK");
         for (const stock of reminders.lowStock) {
             const style = this.styles.getStyle("lowStock", stock.key);
             const text = this.styles.applyTextColor(
@@ -133,6 +151,7 @@ export class NoticesService {
 
     /** One line that names the reagents running low, in the color of the first; it repeats with the row that repeats soonest. */
     private addReagentLine(lines: Line[], reminders: Reminders): void {
+        if (reminders.lowReagents.length === 0) return;
         const told = reminders.lowReagents
             .map((stock) => ({ stock, style: this.styles.getStyle("lowReagent", stock.spellId) }))
             .filter(({ style }) => this.isTold(style, reminders));

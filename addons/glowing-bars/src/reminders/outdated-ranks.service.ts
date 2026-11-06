@@ -35,6 +35,8 @@ export class OutdatedRanksService {
         this.found ??= this.readOutdatedRanks();
         // The spells the player switched off
         const enabledRanks = this.settings.get("enabledRanks");
+        // None switched off, as for most players: the kept answer itself (nobody changes it)
+        if (next(enabledRanks)[0] === undefined) return this.found;
         return this.found.filter((rank) => enabledRanks[rank.name] !== false);
     }
 

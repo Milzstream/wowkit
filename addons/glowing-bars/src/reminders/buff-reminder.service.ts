@@ -10,7 +10,27 @@ import type { ClassBuff } from "./class-buff.interface";
 import type { ClassBuffsService } from "./class-buffs.service";
 import type { BuffCheck, MissingBuffs } from "./reminders.interface";
 
+/** The two answers of a buff's check, made once (nobody changes them). */
+const NOT_WANTED: BuffCheck = { isWanted: false };
+const WANTED: BuffCheck = { isWanted: true };
+
+function clearList(list: unknown[]): void {
+    for (let index = list.length; index > 0; index--) list.pop();
+}
+
 export class BuffReminderService {
+    /** The answer of the last look at the buffs: the same lists each time (whoever keeps them past a tick copies them). */
+    private readonly missing: MissingBuffs = { glow: [], notOnBars: [] };
+    /** The tables the look at the buffs works in, used again at each tick. */
+    private readonly scratch = {
+        groups: [] as ClassBuff[][],
+        groupOf: new LuaMap<object, ClassBuff[]>(),
+        candidateIds: [] as number[],
+        candidateCategories: [] as object[],
+        categoryOnBars: new LuaSet<object>(),
+        named: new LuaSet<object>(),
+    };
+
     constructor(
         private readonly auras: BuffStateService,
         private readonly spells: SpellsService,
@@ -23,14 +43,14 @@ export class BuffReminderService {
     /** Is this buff worth asking for now? */
     checkBuff(classBuff: ClassBuff): BuffCheck {
         const id = this.spells.resolve(classBuff.id);
-        if (id === undefined || !this.spells.isLearned(id)) return { isWanted: false };
-        if (classBuff.isSwimmingOnly && !this.player.isSwimming()) return { isWanted: false };
+        if (id === undefined || !this.spells.isLearned(id)) return NOT_WANTED;
+        if (classBuff.isSwimmingOnly && !this.player.isSwimming()) return NOT_WANTED;
         for (const other of classBuff.categoryMembers ?? []) {
-            if (this.auras.hasAura(other)) return { isWanted: false };
+            if (this.auras.hasAura(other)) return NOT_WANTED;
         }
         // hasAura reads the aura, and falls back on what was seen or cast while the client hides auras
-        if (this.auras.hasAura(id, classBuff.lead)) return { isWanted: false };
-        return { isWanted: true };
+        if (this.auras.hasAura(id, classBuff.lead)) return NOT_WANTED;
+        return WANTED;
     }
 
     /**
@@ -88,43 +108,63 @@ export class BuffReminderService {
      * is named in the "not on your bars" message, else the first one.
      */
     findMissingBuffs(): MissingBuffs {
-        // The buffs that could glow, by group (a buff of no group is a group of its own), in list order
-        const groups: ClassBuff[][] = [];
-        const groupOf = new LuaMap<object, ClassBuff[]>();
-        const candidates: { id: number; category: object }[] = [];
-        const categoryOnBars = new LuaSet<object>();
+        // The buffs that could glow, by group (a buff of no group is a group of its own), in list order; the tables of the
+        // last tick are used again, so a tick with every buff up makes none
+        const scratch = this.scratch;
+        this.clearScratch();
         for (const classBuff of this.classBuffs.getClassBuffs()) {
             if (!this.classBuffs.isBuffEnabled(classBuff) || !this.checkBuff(classBuff).isWanted) continue;
             const id = this.spells.resolve(classBuff.id) ?? classBuff.id;
             const category = classBuff.categoryMembers ?? classBuff;
             if (!this.actionBars.isOnBars(id)) {
-                candidates.push({ id, category });
+                scratch.candidateIds.push(id);
+                scratch.candidateCategories.push(category);
                 continue;
             }
-            categoryOnBars.add(category);
+            scratch.categoryOnBars.add(category);
             // Only a buff that can be cast now glows (Battle Shout waits for rage); one the client gives no answer about
             // still does
             if (this.spells.isCastable(id) === false) continue;
-            let members = groupOf.get(category);
+            let members = scratch.groupOf.get(category);
             if (members === undefined) {
                 members = [];
-                groupOf.set(category, members);
-                groups.push(members);
+                scratch.groupOf.set(category, members);
+                scratch.groups.push(members);
             }
             members.push(classBuff);
         }
-        const glow = groups.map((members) => {
+        const found = this.missing;
+        for (const members of scratch.groups) {
             const picked = this.classBuffs.pickGroupBuff(members);
-            return this.spells.resolve(picked.id) ?? picked.id;
-        });
-        const notOnBars: number[] = [];
-        const named = new LuaSet<object>();
-        for (const candidate of candidates) {
-            if (!categoryOnBars.has(candidate.category) && !named.has(candidate.category)) {
-                named.add(candidate.category);
-                notOnBars.push(candidate.id);
+            found.glow.push(this.spells.resolve(picked.id) ?? picked.id);
+        }
+        this.addNotOnBars(found);
+        return found;
+    }
+
+    /** The buffs on no bar, one of each group, when no member of the group is on the bars. */
+    private addNotOnBars(found: MissingBuffs): void {
+        const scratch = this.scratch;
+        for (let index = 0; index < scratch.candidateIds.length; index++) {
+            const id = scratch.candidateIds[index]!;
+            const category = scratch.candidateCategories[index]!;
+            if (!scratch.categoryOnBars.has(category) && !scratch.named.has(category)) {
+                scratch.named.add(category);
+                found.notOnBars.push(id);
             }
         }
-        return { glow, notOnBars };
+    }
+
+    /** Empties the tables of the last look at the buffs, and its answer. */
+    private clearScratch(): void {
+        const scratch = this.scratch;
+        clearList(scratch.groups);
+        clearList(scratch.candidateIds);
+        clearList(scratch.candidateCategories);
+        clearList(this.missing.glow);
+        clearList(this.missing.notOnBars);
+        for (const [category] of scratch.groupOf) scratch.groupOf.delete(category);
+        for (const category of scratch.categoryOnBars) scratch.categoryOnBars.delete(category);
+        for (const category of scratch.named) scratch.named.delete(category);
     }
 }

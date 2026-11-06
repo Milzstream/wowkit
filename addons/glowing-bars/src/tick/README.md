@@ -7,7 +7,7 @@ The reminder loop. A *tick* looks at the game and shows what is due, in two stag
 
 | Service | What it does |
 |---|---|
-| `tick.service.ts` | One tick, every 0.5 seconds (`@Interval(500)`). |
+| `tick.service.ts` | One tick, every 0.5 seconds (`@Interval(500)`). A tick makes as few new tables as it can: the reminders go into lists used again at every tick, and what changes only with an event (the added spells, the cooldown lists, the reagents and the stock, the old ranks) is kept until that event. |
 | `refresh.service.ts` | When to look sooner: merges the requests that event bursts cause into one tick. The spells and the bars keep themselves fresh (`@wowkit/wow`); this asks for a tick when they say they changed. |
 | `display.service.ts` | Redraws when the spell book, the bars or a setting changed (`@OnEvent`). |
 

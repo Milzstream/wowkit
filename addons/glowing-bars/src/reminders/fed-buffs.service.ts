@@ -63,6 +63,8 @@ export class FedBuffsService {
     /** Looks for a new Well Fed. */
     @Interval(500)
     checkWellFed(): void {
+        // No food or drink added, and none being eaten: nothing to learn or remember
+        if (this.used.length === 0 && this.addedSpells.listAdded("missingBuff").length === 0) return;
         const auras = this.buffState.findAuras(Consumable.WellFed);
         if (auras === undefined) return;
         // Seen or gone, for the fight: the game hides the buffs then, and only what was remembered counts
@@ -109,6 +111,7 @@ export class FedBuffsService {
 
     /** Which of these foods and drinks are not up. Spells of one name are one: the player eats either. */
     findMissing(spellIds: number[]): number[] {
+        if (spellIds.length === 0) return spellIds;
         const auras = this.buffState.findAuras(Consumable.WellFed);
         if (auras === undefined) return this.buffState.hasAura(Consumable.WellFed) ? [] : spellIds;
         const keyByAura = this.listLearned();

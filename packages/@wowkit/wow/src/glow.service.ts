@@ -170,7 +170,9 @@ export class GlowService {
 
     /** Is a glow lit on the button? */
     isGlowing(button: ActionButton): boolean {
-        for (const [, entry] of this.overlays.get(button) ?? new LuaMap<string, Overlay>()) if (entry.isWanted === true) return true;
+        const entries = this.overlays.get(button);
+        if (entries === undefined) return false;
+        for (const [, entry] of entries) if (entry.isWanted === true) return true;
         return false;
     }
 

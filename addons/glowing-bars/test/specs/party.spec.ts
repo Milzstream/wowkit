@@ -62,6 +62,7 @@ describe("a priest in a party", () => {
 
         it("is told to cast the group version once there are candles", () => {
             world.state.bags[HOLY_CANDLE] = 20;
+            world.fire("BAG_UPDATE_DELAYED");
             world.fire("GROUP_ROSTER_UPDATE");
             world.advance(2);
             expect(world.notice()).toContain("Prayer of Fortitude missing on: Bob, Alice");
@@ -69,6 +70,7 @@ describe("a priest in a party", () => {
 
         it("sees the group version glow on its button", () => {
             world.state.bags[HOLY_CANDLE] = 20;
+            world.fire("BAG_UPDATE_DELAYED");
             world.fire("GROUP_ROSTER_UPDATE");
             world.advance(2);
             expect(world.glowsOn(2)).toBe(1);
@@ -85,6 +87,7 @@ describe("a priest in a party", () => {
 
         it("is told about the single buff again when only one member misses it", () => {
             world.state.bags[HOLY_CANDLE] = 20;
+            world.fire("BAG_UPDATE_DELAYED");
             world.state.party[1]?.auras.push(world.makeAura(FORTITUDE.name, FORTITUDE.id, 1800));
             world.fire("GROUP_ROSTER_UPDATE");
             world.advance(2);
@@ -95,6 +98,7 @@ describe("a priest in a party", () => {
         it("does not look at the party in combat, when the game hides other people's auras", () => {
             // Without candles Prayer of Fortitude would glow as a low reagent, which shows in combat too
             world.state.bags[HOLY_CANDLE] = 20;
+            world.fire("BAG_UPDATE_DELAYED");
             world.state.isInCombat = true;
             world.fire("GROUP_ROSTER_UPDATE");
             world.advance(2);

@@ -1,11 +1,15 @@
 // The player's own say in the spells: a fixed ID for a spell of the lists (when the client knows it by another one: every
 // question about the spell then goes to that ID), and spells the player added by their ID. Both are the character's.
+import { OnEvent } from "@wowkit/core";
 import { type CooldownsService, type SpellsService, isKnownItem } from "@wowkit/wow";
 import type { TextKey } from "../locale/texts.constants";
 import type { ReagentsService } from "../reagents/reagents.service";
 import type { AddonSettingsService, AddableType, AddedSpell } from "../settings/settings.interface";
 
 export class AddedSpellsService {
+    /** The IDs added as each type, kept until the list changes: every tick asks for them. */
+    private readonly addedByType = new LuaMap<AddableType, number[]>();
+
     constructor(
         private readonly spells: SpellsService,
         private readonly settings: AddonSettingsService,
@@ -45,9 +49,18 @@ export class AddedSpellsService {
 
     /** The IDs of the spells the player added as this type. */
     listAdded(reminderType: AddableType): number[] {
+        const kept = this.addedByType.get(reminderType);
+        if (kept !== undefined) return kept;
         const ids: number[] = [];
         for (const spell of this.settings.get("addedSpells")) if (spell.reminderType === reminderType) ids.push(spell.id);
+        this.addedByType.set(reminderType, ids);
         return ids;
+    }
+
+    @OnEvent("setting.changed")
+    forgetAdded(key: string): void {
+        if (key !== "addedSpells") return;
+        for (const [reminderType] of this.addedByType) this.addedByType.delete(reminderType);
     }
 
     /** Adds a spell by its ID. False when the client knows no spell by it; a spell added already stays as it is. */

@@ -30,11 +30,14 @@ interface Member {
     isPlayer?: boolean;
 }
 
+/** No member to tell of: one empty list for every tick (nobody changes it). */
+const NO_SUGGESTIONS: PartySuggestion[] = [];
+
 export class PartyBuffsService {
     private cachedAt = -10;
     /** Was the player in a raid at the last look; undefined before the first (a reload in a raid forgets nothing). */
     private wasInRaid: boolean | undefined;
-    private cached: PartySuggestion[] = [];
+    private cached: PartySuggestion[] = NO_SUGGESTIONS;
 
     constructor(
         private readonly auras: BuffStateService,
@@ -61,7 +64,13 @@ export class PartyBuffsService {
         const now = this.clock.getCurrentTime();
         if (now - this.cachedAt < REFRESH_SECONDS) return this.cached;
         this.cachedAt = now;
-        const others: Member[] = (isInRaid ? this.party.getRaidUnits() : this.party.getPartyUnits())
+        const units = isInRaid ? this.party.getRaidUnits() : this.party.getPartyUnits();
+        // Alone: no member to look at
+        if (units.length === 0) {
+            this.cached = NO_SUGGESTIONS;
+            return this.cached;
+        }
+        const others: Member[] = units
             .filter((unit) => this.party.isReachable(unit))
             .map((unit) => ({ unit, ...this.party.getUnitIdentity(unit) }));
         const members = [...others, { unit: "player" as UnitToken, ...this.party.getUnitIdentity("player"), isPlayer: true }];

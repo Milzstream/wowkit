@@ -243,6 +243,7 @@ describe("the spells of other types a player adds", () => {
         addAs(RITUAL.id, "Low reagent");
         expect(world.glowsOn(3)).toBe(1);
         world.state.bags[6265] = 20;
+        world.fire("BAG_UPDATE_DELAYED");
         world.advance(0.5);
         expect(world.glowsOn(3)).toBe(0);
     });

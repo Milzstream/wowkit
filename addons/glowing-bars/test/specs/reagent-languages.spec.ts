@@ -73,6 +73,7 @@ describe("a reagent on a client in another language", () => {
         const world = createPriest("Heilige Kerze", undefined);
         expect(world.glowsOn(1)).toBe(0);
         world.state.itemNames[HOLY_CANDLE] = "Heilige Kerze";
+        world.fire("GET_ITEM_INFO_RECEIVED", HOLY_CANDLE, true);
         world.advance(2);
         expect(world.glowsOn(1)).toBe(1);
     });

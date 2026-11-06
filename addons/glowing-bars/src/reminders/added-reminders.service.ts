@@ -26,6 +26,7 @@ export class AddedRemindersService {
     /** The added buffs that are on a button and not on the player (in combat a cast one counts until the fight ends). */
     findMissingBuffs(): number[] {
         const ids = this.listOnBars("missingBuff");
+        if (ids.length === 0) return ids;
         const missingFed = this.fedBuffs.findMissing(ids.filter((id) => this.fedBuffs.isFedSpell(id)));
         return ids.filter((id) => (this.fedBuffs.isFedSpell(id) ? missingFed.includes(id) : !this.buffState.hasAura(id)));
     }
@@ -62,9 +63,12 @@ export class AddedRemindersService {
 
     /** The added spells of a type that are switched on, learned and on a button that has not run out, as the IDs the buttons hold. */
     private listOnBars(reminderType: AddableType): number[] {
+        const added = this.addedSpells.listAdded(reminderType);
+        // None added as this type: the list itself, empty (nobody changes it)
+        if (added.length === 0) return added;
         const found: number[] = [];
         const enabledSpells = this.settings.get("enabledSpells");
-        for (const id of this.addedSpells.listAdded(reminderType)) {
+        for (const id of added) {
             if (enabledSpells[string.format("%d", id)] === false) continue;
             const learned = this.spells.resolve(id) ?? id;
             const isOnBars = this.fedBuffs.isFedSpell(learned)

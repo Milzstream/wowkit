@@ -224,6 +224,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
             reminders.seal,
             reminders.tracking,
             settings,
+            game.clock,
         ),
     );
     const notices = addon.register(new NoticesService(game.actionBars, game.clock, game.notice, game.spells, locale, styles));

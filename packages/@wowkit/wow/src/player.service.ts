@@ -1,6 +1,7 @@
 // The player: combat, the states that keep reminders quiet (dead, mounted, eating, in town), the
 // class and the equipped weapons.
 
+import { OnGameEvent } from "@wowkit/core";
 import { Consumable } from "@wowkit/wow-data";
 import { attempt, attemptMulti, tryCall } from "./utils/protected-call.utils";
 import { getReadable, isReadable } from "./utils/secret-value.utils";
@@ -13,8 +14,8 @@ export interface WorldPosition {
     mapId: number;
 }
 
-/** The main talent tree is read again after this many seconds: it reads every talent, and rarely changes. */
-const MAIN_TREE_REUSE = 3;
+/** The main talent tree is read again after this many seconds at most: it reads every talent, and changes only with them. */
+const MAIN_TREE_REUSE = 30;
 
 export class PlayerService {
     /** The lowercase names of the eating and drinking buffs, in the client's language. */
@@ -71,6 +72,12 @@ export class PlayerService {
      * with no points, or when the client does not say. Forever keeps the three classic trees side by side in one tree of
      * the trait system, each a third of its width, so a talent's tree is the third its position falls in.
      */
+    /** The talents changed: the main tree is read again when next asked. */
+    @OnGameEvent("PLAYER_TALENT_UPDATE", "TRAIT_CONFIG_UPDATED", "CHARACTER_POINTS_CHANGED", "ACTIVE_TALENT_GROUP_CHANGED")
+    forgetMainTalentTree(): void {
+        this.mainTreeAt = 0;
+    }
+
     findMainTalentTree(): number | undefined {
         const now = GetTime();
         if (this.mainTreeAt > 0 && now - this.mainTreeAt < MAIN_TREE_REUSE) return this.mainTree;

@@ -3,14 +3,17 @@
 import type { PlayerService } from "@wowkit/wow";
 import type { When } from "../settings/settings.interface";
 
-/** For each When, does it hold now? */
-export function readWhenState(player: PlayerService): { [when in When]: boolean } {
+export type WhenState = { [when in When]: boolean };
+
+export function createWhenState(): WhenState {
+    return { always: true, inCombat: false, outOfCombat: true, enemyTargeted: false, townAlert: true };
+}
+
+/** For each When, does it hold now? Read into `state`, the same table at every tick. */
+export function readWhenState(player: PlayerService, state: WhenState): WhenState {
     const isInCombat = player.isInCombat();
-    return {
-        always: true,
-        inCombat: isInCombat,
-        outOfCombat: !isInCombat,
-        enemyTargeted: player.hasEnemyTarget(),
-        townAlert: true,
-    };
+    state.inCombat = isInCombat;
+    state.outOfCombat = !isInCombat;
+    state.enemyTargeted = player.hasEnemyTarget();
+    return state;
 }

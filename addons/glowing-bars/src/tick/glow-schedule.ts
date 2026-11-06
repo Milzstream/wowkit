@@ -8,12 +8,12 @@ export class GlowSchedule {
     /** When each reminder ("buff:21562") became due; one that is no longer due is forgotten, and starts over when back. */
     private dueSince = new LuaMap<string, number>();
     /** The reminders seen due in this tick. */
-    private seen = new LuaSet<string>();
+    private readonly seen = new LuaSet<string>();
 
     /** A new tick: the reminders not seen due in the last one are over. */
     startTick(): void {
         for (const [key] of this.dueSince) if (!this.seen.has(key)) this.dueSince.delete(key);
-        this.seen = new LuaSet<string>();
+        for (const key of this.seen) this.seen.delete(key);
     }
 
     /** Does the due reminder show now? `isStartingOver`: its time starts again, as if it had just become due. */

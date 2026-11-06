@@ -2,7 +2,7 @@
 // In combat a cooldown counts only once it comes back: one that was never on cooldown in this fight is not news. How long
 // it glows then is its glow time (a few seconds by default: one that waits for the right moment should not glow all the
 // while).
-import { OnGameEvent } from "@wowkit/core";
+import { OnEvent, OnGameEvent } from "@wowkit/core";
 import type { ActionBarsService, PlayerService, SpellDetailsService, SpellsService } from "@wowkit/wow";
 import type { AddonSettingsService, AddableType } from "../settings/settings.interface";
 import type { AddedSpellsService } from "./added-spells.service";
@@ -13,6 +13,8 @@ import type { StanceProcsService } from "./stance-procs.service";
 export class GlowCuesService {
     /** The cooldowns that have been running at some point of this fight (or ready as it started, if the player asked). */
     private usedInCombat = new LuaSet<number>();
+    /** The spells of each type, kept until the settings or the spells change: every tick asks for them. */
+    private readonly cueIds = new LuaMap<AddableType, number[]>();
 
     constructor(
         private readonly player: PlayerService,
@@ -83,11 +85,20 @@ export class GlowCuesService {
 
     /** The spells of a type: the lists', and the ones the player added. */
     listCueIds(reminderType: AddableType): number[] {
+        const kept = this.cueIds.get(reminderType);
+        if (kept !== undefined) return kept;
         // Once each: a spell the player added may be on a list too (the Settings page cannot have two switches of one name)
         const ids: number[] = [];
         for (const id of this.listBuiltInIds(reminderType)) if (!ids.includes(id)) ids.push(id);
         for (const id of this.addedSpells.listAdded(reminderType)) if (!ids.includes(id)) ids.push(id);
+        // Before the class is known (the first moments of the login) the list is not the class's yet
+        if (this.player.getClassToken() !== undefined) this.cueIds.set(reminderType, ids);
         return ids;
+    }
+
+    @OnEvent("setting.changed", "spells.refreshed", "spells.invalidated", "spellbook.indexed")
+    forgetCueIds(): void {
+        for (const [reminderType] of this.cueIds) this.cueIds.delete(reminderType);
     }
 
     /** The cues that are learned, switched on, and on an action button, as the IDs the buttons hold. */

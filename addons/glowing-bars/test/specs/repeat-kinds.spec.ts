@@ -153,6 +153,7 @@ describe("the message of a low reagent that repeats in a town", () => {
         const world = createPriest(100, { styles: { lowReagent: { isMessageOn: true, repeat: 5 } } });
         expect(world.notice()).not.toContain("Running low");
         world.state.bags[HOLY_CANDLE] = 3;
+        world.fire("BAG_UPDATE_DELAYED");
         world.advance(2);
         expect(world.notice()).toContain("Running low: Holy Candle (3)");
     });
@@ -242,6 +243,7 @@ describe("a reagent that runs low after the town message came", () => {
         expect(world.notice()).toContain("Running low: Holy Candle (1)");
         expect(world.notice()).not.toContain("Soul Shard");
         world.state.bags[6265] = 2;
+        world.fire("BAG_UPDATE_DELAYED");
         world.advance(2);
         expect(world.notice()).toContain("Holy Candle (1), Soul Shard (2)");
         world.advance(11);
