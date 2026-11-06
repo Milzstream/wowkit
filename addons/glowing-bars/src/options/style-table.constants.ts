@@ -34,10 +34,10 @@ export const COLUMN = {
     repeat: { x: 672, width: 62 },
     when: { x: 734, width: 108 },
     glowTime: { x: 842, width: 76 },
-    animation: { x: 918, width: 86 },
-    belowLimits: { x: 1004, width: 56 },
-    enabled: { x: 1060, width: 66 },
-    actions: { x: 1126, width: 72 },
+    animation: { x: 918, width: 110 },
+    belowLimits: { x: 1028, width: 56 },
+    enabled: { x: 1084, width: 66 },
+    actions: { x: 1150, width: 72 },
 } satisfies { [name: string]: Column };
 
 /** The columns of the Basic view: the ones everybody needs. The others keep working, unseen. */

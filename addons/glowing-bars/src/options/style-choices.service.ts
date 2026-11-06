@@ -61,7 +61,7 @@ export class StyleChoicesService {
             glowTime: this.createChoiceButton(frame, COLUMN.glowTime, 72, getRow, "glowTime", () =>
                 GLOW_TIME_CHOICES.map((seconds) => ({ value: seconds, label: this.findGlowTimeText(seconds) })),
             ),
-            animation: this.createChoiceButton(frame, COLUMN.animation, 82, getRow, "animation", () =>
+            animation: this.createChoiceButton(frame, COLUMN.animation, 106, getRow, "animation", () =>
                 ANIMATION_CHOICES.map((animation) => ({ value: animation, label: this.locale.getText(ANIMATION_TEXTS[animation]) })),
             ),
         };

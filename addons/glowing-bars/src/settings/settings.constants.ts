@@ -166,7 +166,7 @@ export const REPEAT_CHOICES = [0, 5, 10, 30, 60];
 export const FADED_OPACITY_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90];
 
 /** The choices of how a glow moves. */
-export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "breathing", "none"];
+export const ANIMATION_CHOICES: GlowAnimation[] = ["circling", "clean", "breathing", "breathingClean", "none", "noneClean"];
 
 /** The choices of how long a reminder shows once it is due (seconds; 0 = until it is done). */
 export const GLOW_TIME_CHOICES = [0, 1, 2, 3, 5, 10];

@@ -102,13 +102,19 @@ describe("a priest who chose how the glow moves", () => {
         return world.frames.find((frame) => frame.parent === button && frame.template === "ActionButtonSpellAlertTemplate")!;
     }
 
+    /** What glows on the first button: Blizzard's glow (circling), or the drawn border (standing still). */
+    function listShown(world: World) {
+        const button = world.findFrame((frame) => frame.name === "ActionButton1");
+        return world.frames.filter((frame) => frame.parent === button && frame.isShown);
+    }
+
     function setUp(state: Parameters<Parameters<typeof createWorld>[0]>[0]): void {
         playAs(state, PRIEST);
         learnSpell(state, FORTITUDE);
         state.bars[1] = FORTITUDE.id;
     }
 
-    it("sees the missing buff glow standing still: Blizzard's glow, without the flash it starts with", () => {
+    it("sees the missing buff glow standing still with None (ants): Blizzard's glow, without the flash it starts with", () => {
         const world = createWorld(setUp, { styles: { missingBuff: { animation: "none" } } });
         world.advance(1);
         const alert = findAlert(world);
@@ -117,13 +123,15 @@ describe("a priest who chose how the glow moves", () => {
         expect(alert.ProcLoopFlipbook!.isShown).toBe(true);
     });
 
-    it("sees the glow breathing as Blizzard's glow standing still, without the flash", () => {
-        const world = createWorld(setUp, { styles: { missingBuff: { animation: "breathing" } } });
-        world.advance(1);
-        const alert = findAlert(world);
-        expect(alert.ProcStartFlipbook!.isShown).toBe(false);
-        expect(alert.ProcLoopFlipbook!.isShown).toBe(true);
-    });
+    for (const animation of ["noneClean", "breathingClean"] as const) {
+        it(`sees the glow standing still with ${animation} as a soft frame around the button, not Blizzard's glow`, () => {
+            const world = createWorld(setUp, { styles: { missingBuff: { animation } } });
+            world.advance(1);
+            const shown = listShown(world);
+            expect(shown.length).toBe(1);
+            expect(shown[0]!.template).toBeUndefined();
+        });
+    }
 
     it("sees the animation, with its flash, by default", () => {
         const world = createWorld(setUp);
@@ -137,20 +145,18 @@ describe("a priest who chose how the glow moves", () => {
         toggleTable();
         const row = findLabel(world, FORTITUDE.name)!.parent;
         const button = world.frames.find(
-            (frame) => frame.parent === row && frame.frameType === "Button" && frame.text === "Circling" && frame.width === 82,
+            (frame) => frame.parent === row && frame.frameType === "Button" && frame.text === "Circling (ants)" && frame.width === 106,
         )!;
-        world.pickFromMenu(button, "Breathing");
-        expect(button.text).toBe("Breathing");
-        world.pickFromMenu(button, "None");
-        expect(button.text).toBe("None");
+        world.pickFromMenu(button, "Breathing (ants)");
+        expect(button.text).toBe("Breathing (ants)");
+        world.pickFromMenu(button, "None (clean)");
+        expect(button.text).toBe("None (clean)");
         world.advance(1);
-        const buttonFrame = world.findFrame((frame) => frame.name === "ActionButton1");
-        const shown = world.frames.find(
-            (frame) => frame.parent === buttonFrame && frame.template === "ActionButtonSpellAlertTemplate" && frame.isShown,
-        )!;
-        expect(shown.ProcStartFlipbook!.isShown).toBe(false);
+        // Standing still now: the drawn border, not Blizzard's glow
+        expect(listShown(world).some((frame) => frame.template === "ActionButtonSpellAlertTemplate")).toBe(false);
+        expect(listShown(world).length).toBe(1);
         const typeRow = findLabel(world, "Missing buff")!.parent;
-        expect(world.frames.some((frame) => frame.parent === typeRow && frame.text === "Circling")).toBe(true);
+        expect(world.frames.some((frame) => frame.parent === typeRow && frame.text === "Circling (ants)")).toBe(true);
     });
 
     it("keeps, on the Settings page, only what a circling glow does on a round button: breathing by default", () => {

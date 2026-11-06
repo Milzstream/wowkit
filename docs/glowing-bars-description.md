@@ -40,7 +40,7 @@ Type **/gb** to open the table. It opens in a **Basic** view with the columns mo
 *   **Message** at the top of the screen, on or off
 *   **Sound**, from a short list of game sounds, or your own
 *   **Glow time**: how long the glow and the message show once it is due: 1 to 10 seconds, or until done (the default; 3 seconds for the ready cooldowns)
-*   **Animation**: circling (Blizzard's own), breathing, or none
+*   **Animation**: circling, breathing or none, each in two looks: ants (Blizzard's own glow) or clean (a clean line running around, or a soft frame standing still)
 *   **Repeat**: every 5, 10, 30 or 60 seconds the glow, the message and the sound come again, for the glow time (off by default)
 *   **When**: always, in combat, out of combat, or only with an enemy targeted; the low reagents and the low stock can also keep their message and sound to towns and inns
 *   **Enabled**: turn a whole type, or one spell, on or off

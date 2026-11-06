@@ -10,8 +10,17 @@ import type { ControlsService } from "@wowkit/ui";
 /** The words of each style (the table's Animation column says them too). */
 export const ANIMATION_TEXTS: { [style in GlowAnimation]: TextKey } = {
     circling: "ANIMATION_CIRCLING",
+    clean: "ANIMATION_CLEAN",
     breathing: "ANIMATION_BREATHING",
+    breathingClean: "ANIMATION_BREATHING_CLEAN",
     none: "ANIMATION_NONE",
+    noneClean: "ANIMATION_NONE_CLEAN",
+};
+
+/** The words of the round buttons' choices: their ring is neither ants nor clean. */
+const ROUND_TEXTS: { [style in GlowAnimation]?: TextKey } = {
+    breathing: "ANIMATION_ROUND_BREATHING",
+    none: "ANIMATION_ROUND_NONE",
 };
 
 export class AnimationSection {
@@ -37,7 +46,7 @@ export class AnimationSection {
                     key,
                     styles.includes(value as GlowAnimation) ? (value as GlowAnimation) : this.settings.getDefault(key),
                 ),
-            () => styles.map((style): [string, string] => [style, this.locale.getText(ANIMATION_TEXTS[style])]),
+            () => styles.map((style): [string, string] => [style, this.locale.getText(ROUND_TEXTS[style] ?? ANIMATION_TEXTS[style])]),
             false,
         );
     }

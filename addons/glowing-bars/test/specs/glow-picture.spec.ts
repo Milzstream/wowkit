@@ -17,7 +17,7 @@ function findPicture(world: World): FakeFrame {
     return world.frames.find((frame) => frame.template === "ActionButtonSpellAlertTemplate" && frame.isShown)!.ProcLoopFlipbook!;
 }
 
-describe("a glow switched to Breathing, to Circling, then to Breathing again", () => {
+describe("a glow switched to Breathing (ants), to Circling (ants), then back", () => {
     it("stands still again: the picture it stood on before does not hide the sheet", () => {
         const world = createWorld(
             (state) => {
@@ -31,8 +31,8 @@ describe("a glow switched to Breathing, to Circling, then to Breathing again", (
         expect(findPicture(world).alpha).toBe(1);
         toggleTable();
         const row = findLabel(world, "Missing buff")!.parent;
-        for (const choice of ["Circling", "Breathing"]) {
-            const button = world.frames.find((frame) => frame.parent === row && frame.frameType === "Button" && frame.width === 82)!;
+        for (const choice of ["Circling (ants)", "Breathing (ants)"]) {
+            const button = world.frames.find((frame) => frame.parent === row && frame.frameType === "Button" && frame.width === 106)!;
             world.pickFromMenu(button, choice);
             world.advance(2);
         }

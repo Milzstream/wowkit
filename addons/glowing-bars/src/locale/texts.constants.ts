@@ -69,10 +69,15 @@ export const TEXTS = {
     BTN_OPEN: "Open",
     OPT_ROUND_ANIMATION: "Circling on round buttons (alpha)",
     TIP_ROUND_ANIMATION:
-        "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling, a round button breathes instead, or stands still.",
-    ANIMATION_CIRCLING: "Circling",
-    ANIMATION_BREATHING: "Breathing",
-    ANIMATION_NONE: "None",
+        "A round button (the gamepad bars, or another addon's round buttons) cannot have a glow running around it. Where the table's Animation column says Circling (ants or clean), a round button breathes instead, or stands still.",
+    ANIMATION_CIRCLING: "Circling (ants)",
+    ANIMATION_CLEAN: "Circling (clean)",
+    ANIMATION_BREATHING: "Breathing (ants)",
+    ANIMATION_BREATHING_CLEAN: "Breathing (clean)",
+    ANIMATION_NONE: "None (ants)",
+    ANIMATION_NONE_CLEAN: "None (clean)",
+    ANIMATION_ROUND_BREATHING: "Breathing",
+    ANIMATION_ROUND_NONE: "None",
     BTN_RESET: "Reset",
     TABLE_TITLE: "Glowing Bars",
     HDR_TABLE_DEFAULTS: "Defaults",
@@ -122,7 +127,7 @@ export const TEXTS = {
         "Every so many seconds, the glow, the message and the sound come again, for the glow time (with Until done the glow stays, and the sound and the message come again). Off shows them once, as the reminder starts.",
     COL_ANIMATION: "Animation",
     TIP_ANIMATION:
-        "How the glow moves. Circling: it runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes. Round buttons cannot circle: there Circling does what the Settings page says (Breathing by default).",
+        "How the glow moves. Circling: it runs around the button. Breathing: it stands still and slowly fades out and in. None: it stands still, fading in and out only as it comes and goes. Ants is Blizzard's glow; clean is a clean line when circling, and a soft frame when standing still. Round buttons cannot circle: there both Circling choices do what the Settings page says (Breathing by default).",
     COL_GLOW_TIME: "Glow time",
     GLOW_UNTIL_DONE: "Until done",
     TIP_GLOW_TIME:

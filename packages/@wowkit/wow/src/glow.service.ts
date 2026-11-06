@@ -8,6 +8,9 @@
 // SetPreferredGamepadInteractTarget). The glow follows the button through hooks on its showing and hiding instead.
 
 import { showLoopPicture } from "./utils/glow-picture.utils";
+import { createLineGlow } from "./utils/glow-line.utils";
+import { BORDER_SCALE, createSoftFrame } from "./utils/glow-border.utils";
+import { createStillFades } from "./utils/glow-fade.utils";
 import type { ActionBarsService } from "./action-bars.service";
 import { tryCall } from "./utils/protected-call.utils";
 import { getReadable } from "./utils/secret-value.utils";
@@ -17,10 +20,21 @@ import type { HiddenAlpha } from "./value-curves.service";
 export type Rgb = [r: number, g: number, b: number];
 
 /**
- * How a glow moves: Blizzard's animation running around the button; the glow standing still, slowly fading out and in;
- * or standing still, fading in as it lights and out as it goes.
+ * How a glow moves, in two looks: ants (Blizzard's proc glow) or clean (the clean line running around, and Blizzard's soft
+ * square frame standing still). Circling runs around the button; breathing stands still, slowly fading out and in; none
+ * stands still, fading in as it lights and out as it goes. The ants that stand still are Blizzard's glow stopped on a picture.
  */
-export type GlowAnimation = "circling" | "breathing" | "none";
+export type GlowAnimation = "circling" | "clean" | "breathing" | "breathingClean" | "none" | "noneClean";
+
+/** Does the glow breathe (in either look)? */
+export function isBreathing(animation: GlowAnimation): boolean {
+    return animation === "breathing" || animation === "breathingClean";
+}
+
+/** Does the glow stand still, only fading in and out (in either look)? */
+export function isStill(animation: GlowAnimation): boolean {
+    return animation === "none" || animation === "noneClean";
+}
 
 /** Fallback art if the spell-alert glow template is missing; built-in client art only. */
 const GLOW_FALLBACK = "Interface\\Cooldown\\star4";
@@ -44,13 +58,15 @@ const RING_PULSE_SECONDS = 0.5;
  * picture's opacity, so a fade could not change it.
  */
 const LOOP_ATLAS = "UI-HUD-ActionBar-Proc-Loop-Flipbook";
-/** A still glow fades in and out this fast. */
-const STILL_FADE_SECONDS = 0.25;
 
 interface Overlay {
     frame: Frame;
     alert?: SpellAlertFrame;
     texture?: Texture;
+    /** The strips of the drawn border of a still glow, tinted together. */
+    parts?: Texture[];
+    /** Its size against the button's, where it is not the glow's own (the drawn border). */
+    scale?: number;
     /** The fading in and out of a still glow, and the breathing of a breathing one. */
     fadeIn?: AnimationGroup;
     fadeOut?: AnimationGroup;
@@ -157,7 +173,7 @@ export class GlowService {
     /** Puts a glow out; a still one fades out first. */
     private hideOverlay(entry: Overlay): void {
         entry.isWanted = false;
-        if (entry.animation === "none" && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
+        if (isStill(entry.animation) && entry.fadeOut !== undefined && entry.frame.IsShown()) entry.fadeOut.Play();
         else entry.frame.Hide();
     }
 
@@ -208,7 +224,7 @@ export class GlowService {
             }
             entry.frame.SetAlpha(GLOW_ALPHA);
         } else {
-            entry.texture!.SetVertexColor(r, g, b, GLOW_ALPHA);
+            for (const part of entry.parts ?? [entry.texture!]) part.SetVertexColor(r, g, b, GLOW_ALPHA);
             entry.halo?.SetVertexColor(r, g, b, GLOW_ALPHA);
         }
         return entry;
@@ -218,7 +234,7 @@ export class GlowService {
     private applySize(entry: Overlay, button: ActionButton): void {
         const [width, height, buttonScale] = this.readButtonSize(button);
         // A glow beside the button is sized in its own parent's scale
-        const scale = (entry.isRing === true ? RING_SCALE : GLOW_SCALE) * (entry.isBeside === true ? buttonScale : 1);
+        const scale = (entry.isRing === true ? RING_SCALE : (entry.scale ?? GLOW_SCALE)) * (entry.isBeside === true ? buttonScale : 1);
         entry.frame.SetSize(width * scale, height * scale);
         entry.halo?.SetSize(width * scale * HALO_SCALE, height * scale * HALO_SCALE);
     }
@@ -253,8 +269,8 @@ export class GlowService {
     }
 
     /**
-     * The alert as it shows: the animation from its start, or the loop of the glow stopped on its first picture, without the
-     * flash it starts with. The loop is stopped a frame after it starts: before, its flipbook shows the whole sheet.
+     * The alert as it shows: the animation from its start, or the loop of the glow stopped on a picture, without the flash
+     * it starts with. The loop is stopped a frame after it starts: before, its flipbook shows the whole sheet.
      */
     private startAlert(alert: SpellAlertFrame, fades: Pick<Overlay, "fadeIn" | "breathe" | "animation">): void {
         alert.ProcLoop!.Stop();
@@ -267,29 +283,27 @@ export class GlowService {
             alert.ProcStartAnim!.Play();
             return;
         }
-        showLoopPicture(alert, LOOP_ATLAS, () => {
-            if (fades.animation === "none") {
-                fades.fadeIn?.Play();
-            } else if (fades.breathe !== undefined) {
-                this.pulses.add(fades.breathe);
-                this.syncPulses();
-            }
-        });
+        showLoopPicture(alert, LOOP_ATLAS, () => this.startStill(fades));
     }
 
-    /**
-     * A fade of a still alert's glow, on its loop's picture (the frame's opacity is the glow's own). Undefined where the
-     * client (or the fake game) has no animations: the glow then comes and goes at once.
-     */
-    private createFade(alert: SpellAlertFrame, fromAlpha: number, toAlpha: number, seconds: number): AnimationGroup | undefined {
-        const group = alert.CreateAnimationGroup() as AnimationGroup | undefined;
-        const fade = group?.CreateAnimation("Alpha") as AlphaAnimation | undefined;
-        if (group === undefined || fade === undefined || alert.ProcLoopFlipbook === undefined) return undefined;
-        fade.SetTarget(alert.ProcLoopFlipbook);
-        fade.SetFromAlpha(fromAlpha);
-        fade.SetToAlpha(toAlpha);
-        fade.SetDuration(seconds);
-        return group;
+    /** A still glow as it lights: it fades in, or starts breathing, in step with the others that breathe. */
+    private startStill(fades: Pick<Overlay, "fadeIn" | "breathe" | "animation">): void {
+        if (isStill(fades.animation)) fades.fadeIn?.Play();
+        else if (fades.breathe !== undefined) {
+            this.pulses.add(fades.breathe);
+            this.syncPulses();
+        }
+    }
+
+    /** The drawn border, still: it breathes, or fades in as it lights and out as it goes. */
+    private setUpBorder(frame: Frame, inner: Frame, parts: Texture[], animation: GlowAnimation): Overlay {
+        const fades = createStillFades(frame, inner);
+        frame.SetScript("OnShow", () => this.startStill({ ...fades, animation }));
+        frame.SetScript("OnHide", () => {
+            for (const fade of [fades.fadeIn, fades.fadeOut, fades.breathe]) fade?.Stop();
+            if (fades.breathe !== undefined) this.pulses.delete(fades.breathe);
+        });
+        return { frame, texture: parts[0], parts, animation, scale: BORDER_SCALE, ...fades };
     }
 
     private createOverlay(button: ActionButton, animation: GlowAnimation): Overlay {
@@ -305,6 +319,12 @@ export class GlowService {
     private createOverlayIn(parent: Frame, button: ActionButton, animation: GlowAnimation): Overlay {
         const level = button.GetFrameLevel() + 6;
         if (this.isRoundButton(button)) return this.createRing(parent, button, level, animation);
+        if (animation === "clean") return { ...createLineGlow(parent, button, level), animation };
+        // Clean, standing still (breathing, or none): Blizzard's soft square frame around the button
+        if (animation === "breathingClean" || animation === "noneClean") {
+            const border = createSoftFrame(parent, button, level);
+            return this.setUpBorder(border.frame, border.inner, border.parts, animation);
+        }
         // Blizzard's own spell-alert glow, but our own instance, never the one the action bar manager
         // drives, so real procs are unaffected
         const [didSucceed, created] = tryCall(() => CreateFrame("Frame", undefined, parent, "ActionButtonSpellAlertTemplate"));
@@ -313,15 +333,7 @@ export class GlowService {
             alert.SetFrameStrata("MEDIUM");
             alert.SetFrameLevel(level);
             alert.SetPoint("CENTER", button, "CENTER", 0, 0);
-            const fades = {
-                animation,
-                fadeIn: this.createFade(alert, 0, 1, STILL_FADE_SECONDS),
-                fadeOut: this.createFade(alert, 1, 0, STILL_FADE_SECONDS),
-                breathe: this.createFade(alert, 1, RING_PULSE_ALPHA, RING_PULSE_SECONDS),
-            };
-            fades.breathe?.SetLooping("BOUNCE");
-            // Faded out, the glow goes
-            fades.fadeOut?.SetScript("OnFinished", () => alert.Hide());
+            const fades = { animation, ...createStillFades(alert, alert.ProcLoopFlipbook) };
             alert.SetScript("OnShow", () => this.startAlert(alert, fades));
             alert.SetScript("OnHide", () => {
                 alert.ProcStartAnim!.Stop();
@@ -375,7 +387,9 @@ export class GlowService {
             fade.SetDuration(RING_PULSE_SECONDS);
             pulse.SetLooping("BOUNCE");
             frame.SetScript("OnShow", () => {
-                if ((animation === "circling" ? this.roundAnimation : animation) !== "breathing") return;
+                // Neither way of circling can run around a round button: there it does what the round buttons' animation says
+                const isCircling = animation === "circling" || animation === "clean";
+                if (!isBreathing(isCircling ? this.roundAnimation : animation)) return;
                 this.pulses.add(pulse);
                 this.syncPulses();
             });

@@ -40,7 +40,8 @@ Your Rotation.
   Counterattack, Mongoose Bite, Hammer of Wrath.
 - **Old ranks**: a spell on your action bars that is a lower rank than the one you know glows, quietly. A spell in a macro doesn't count.
 - Quiet while dead, mounted, on a taxi, or (unless switched off) resting in town.
-- The glow runs around the button; in the table's Animation column, for each type or spell, it can breathe (stand still,
+- The glow runs around the button; in the table's Animation column, for each type or spell, it can be a clean line
+  running around it instead (Blizzard's art of its rotation helper), breathe (stand still, as Blizzard's glow or its soft frame of a stealable buff,
   slowly fading out and in) or stand still, fading in and out only as it comes and goes. A round button cannot have a
   glow running around it: there circling breathes, or stands still, as the Settings page says.
 - Each of the eight action bars can be switched off, for example to have the glow only on a big bar of cooldowns next to
