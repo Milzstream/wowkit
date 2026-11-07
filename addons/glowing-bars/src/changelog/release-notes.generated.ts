@@ -1,7 +1,7 @@
 // Written by scripts/generate-release-notes.ts from release-notes/*.md, at each build: not to be edited by hand.
 
 /** The version of the addon this build is. */
-export const ADDON_VERSION = "2.6.0";
+export const ADDON_VERSION = "2.7.0";
 
 export interface ReleaseNote {
     version: string;
@@ -15,6 +15,7 @@ export interface ReleaseNote {
 
 /** Every release, the newest first. */
 export const RELEASE_NOTES: ReleaseNote[] = [
+    { version: "2.7.0", date: "2026-11-07", hasNew: true, text: "|cffffd100New|r\n\n• Shield Block glows for warriors in a fight while it is not up. It comes back when its 7 seconds are over, or as soon as your blocks have used it up and it is off cooldown. It glows only when you can use it: in Defensive Stance, with a shield and enough rage.\n\n|cffffd100Changed|r\n\n• A missing buff glows only when you can cast it now and it is off its cooldown. This goes for the buffs you added too.\n\n|cffffd100Fixed|r\n\n• Revenge now glows after a normal block too, not only after a dodge, a parry or a full block." },
     { version: "2.6.0", date: "2026-11-06", hasNew: true, text: "|cffffd100New|r\n\n• Find Treasure: on a dwarf with no tracking on, it glows like Find Herbs and Find Minerals do." },
     { version: "2.5.0", date: "2026-11-06", hasNew: true, text: "|cffffd100New|r\n\n• New looks for the glow: in the table (/gb), the Animation column now offers each movement in two looks. Ants is Blizzard's glow, as before; clean is a clean line running around the button, or a soft frame when the glow stands still. Your current choice stays as it was.\n• A What's new window lists the changes of every version. Open it with /gb changelog or from the top of the Settings page. After an update with new features, it opens once by itself; you can turn that off.\n• The login message in the chat can be turned off: untick Show the login message on the Settings page." },
     { version: "2.4.1", date: "2026-11-06", hasNew: false, text: "|cffffd100Fixed|r\n\n• A glow switched to Breathing, then to Circling and back to Breathing, no longer keeps circling." },
