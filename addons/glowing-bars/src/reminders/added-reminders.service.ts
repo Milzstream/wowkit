@@ -28,7 +28,9 @@ export class AddedRemindersService {
         const ids = this.listOnBars("missingBuff");
         if (ids.length === 0) return ids;
         const missingFed = this.fedBuffs.findMissing(ids.filter((id) => this.fedBuffs.isFedSpell(id)));
-        return ids.filter((id) => (this.fedBuffs.isFedSpell(id) ? missingFed.includes(id) : !this.buffState.hasAura(id)));
+        return ids.filter((id) =>
+            this.fedBuffs.isFedSpell(id) ? missingFed.includes(id) : !this.buffState.hasAura(id) && this.spells.isCastable(id) !== false,
+        );
     }
 
     /** The added weapon buffs, when the main-hand weapon has no temporary enchant (poison, imbue or stone) at all. */

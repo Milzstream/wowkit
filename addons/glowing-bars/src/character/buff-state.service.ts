@@ -11,6 +11,7 @@ import {
     buildNameKey,
     hasKnownExpiry,
 } from "@wowkit/wow";
+import { Warrior } from "@wowkit/wow-data";
 import type { BuffCategory } from "../knowledge/buff-categories.constants";
 import type { BuffKnowledgeService } from "../knowledge/buff-knowledge.service";
 import type { BuffMemoryService } from "./buff-memory.service";
@@ -22,7 +23,13 @@ export interface BuffRead extends AuraRead {
 
 export type UnitBuffState = "has" | "missing" | "unknown";
 
+/** Shield Block ends after this many blocks (its stacks on Forever), or when its time is up. */
+const SHIELD_BLOCK_CHARGES = 2;
+
 export class BuffStateService {
+    /** The blocks Shield Block has left since it was cast; 0 when it is not up. */
+    private shieldBlockCharges = 0;
+
     constructor(
         private readonly auras: AurasService,
         private readonly spells: SpellsService,
@@ -75,6 +82,15 @@ export class BuffStateService {
     noteSelfBuff(spellId: number | undefined): void {
         if (spellId === undefined || !isReadable(spellId)) return;
         this.memory.remember(spellId, undefined, undefined, true);
+        if (this.spells.getSpellName(spellId) === this.spells.getSpellName(Warrior.ShieldBlock))
+            this.shieldBlockCharges = SHIELD_BLOCK_CHARGES;
+    }
+
+    /** The player blocked: a charge of Shield Block is used, and with the last one it is gone, before its time. */
+    noteBlock(): void {
+        if (this.shieldBlockCharges === 0) return;
+        this.shieldBlockCharges -= 1;
+        if (this.shieldBlockCharges === 0) this.memory.forget(Warrior.ShieldBlock);
     }
 
     /** A shapeshift happened. */

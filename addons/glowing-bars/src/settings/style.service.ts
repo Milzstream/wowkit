@@ -1,8 +1,8 @@
-// The look of a reminder: the default of its type, what the player changed for the type, and what the player changed for the
-// spell, in that order of weight. A spell's look belongs to one type of it: a buff that also has ranks keeps the quiet yellow
+// The look of a reminder: the default of its type, what the player changed for the type, the spell's own default (a few have
+// one), and what the player changed for the spell, in that order of weight. A spell's look belongs to one type of it: a buff that also has ranks keeps the quiet yellow
 // of its old rank when the player colors the buff.
 import type { Rgb, SpellsService } from "@wowkit/wow";
-import { STYLE_DEFAULTS } from "./settings.constants";
+import { SPELL_STYLE_DEFAULTS, STYLE_DEFAULTS } from "./settings.constants";
 import type { AddonSettingsService, ReminderType, Style, StyleOverride } from "./settings.interface";
 
 /** The parts of a look. */
@@ -26,6 +26,7 @@ export class StyleService {
     getStyle(reminderType: ReminderType, spellId?: number): Style {
         const layers: StyleOverride[] = [
             spellId !== undefined ? this.getOverride(reminderType, spellId) : {},
+            this.getSpellDefault(reminderType, spellId),
             this.getOverride(reminderType),
             STYLE_DEFAULTS[reminderType],
         ];
@@ -39,6 +40,22 @@ export class StyleService {
             glowTime: this.pickPart(layers, "glowTime"),
             animation: this.pickPart(layers, "animation"),
         };
+    }
+
+    /** The spell's own default look, where it has one; the same for every rank (by name). */
+    private getSpellDefault(reminderType: ReminderType, spellId: number | undefined): StyleOverride {
+        const defaults = SPELL_STYLE_DEFAULTS[reminderType];
+        if (defaults === undefined || spellId === undefined) return {};
+        for (const [id, look] of pairs(defaults)) {
+            if (id === spellId || this.spells.getSpellName(id as number) === this.spells.getSpellName(spellId)) return look ?? {};
+        }
+        return {};
+    }
+
+    /** The look a spell has without what the player changed for it: its own default, else its type's. */
+    private getInheritedStyle(reminderType: ReminderType, spellId: number): Style {
+        const style = this.getStyle(reminderType);
+        return { ...style, ...this.getSpellDefault(reminderType, spellId) };
     }
 
     /** What the player changed for a type or a spell (nothing inherited). */
@@ -58,7 +75,7 @@ export class StyleService {
      * kept: it follows the type (or the default) again.
      */
     changeStyle(reminderType: ReminderType, spellId: number | undefined, change: StyleOverride): void {
-        const inherited = spellId === undefined ? STYLE_DEFAULTS[reminderType] : this.getStyle(reminderType);
+        const inherited = spellId === undefined ? STYLE_DEFAULTS[reminderType] : this.getInheritedStyle(reminderType, spellId);
         const merged: StyleOverride = { ...this.getOverride(reminderType, spellId) };
         for (const part of PARTS) {
             const value = change[part];

@@ -90,7 +90,11 @@ export const BUFF_LISTS: { [classToken: string]: ClassBuff[] | undefined } = {
         }),
         createClassBuff("RighteousFury", P.RighteousFury, { last: 1800 }, false),
     ],
-    WARRIOR: [createClassBuff("BattleShout", W.BattleShout, { last: 120, lead: BATTLE_SHOUT_LEAD })],
+    WARRIOR: [
+        createClassBuff("BattleShout", W.BattleShout, { last: 120, lead: BATTLE_SHOUT_LEAD }),
+        // A tank's: it glows only when it can be cast (Defensive Stance, a shield, rage, off cooldown), in a fight by default
+        createClassBuff("ShieldBlock", W.ShieldBlock, { last: 7 }),
+    ],
     HUNTER: [
         createClassBuff("AspectHawk", H.AspectHawk, { categoryMembers: hunterAspects }),
         createClassBuff("AspectMonkey", H.AspectMonkey, { categoryMembers: hunterAspects }),

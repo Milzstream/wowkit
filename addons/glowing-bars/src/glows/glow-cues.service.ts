@@ -62,6 +62,11 @@ export class GlowCuesService {
         return ready;
     }
 
+    /** Is the spell on its own cooldown (the global cooldown ignored)? A buff on cooldown cannot be cast again yet. */
+    isOnCooldown(spellId: number): boolean {
+        return this.tracker.getRemaining(spellId) > READY_MARGIN;
+    }
+
     /** The procs of the class that the game says are usable now (Overpower and Revenge in any stance), and on a button. */
     findProcs(): number[] {
         if (!this.settings.get("isProcEnabled")) return [];

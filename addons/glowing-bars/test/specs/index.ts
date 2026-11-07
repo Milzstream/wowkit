@@ -25,6 +25,7 @@ import "./glow-time.spec";
 import "./food-buff.spec";
 import "./food-buff-learning.spec";
 import "./gathering.spec";
+import "./shield-block.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";
 import "./custom-sounds.spec";

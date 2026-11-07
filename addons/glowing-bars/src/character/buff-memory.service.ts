@@ -76,6 +76,14 @@ export class BuffMemoryService {
         }
     }
 
+    /** The buff ended before its time, as the game showed (its charges used up): it is not remembered any more. */
+    forget(spellId: number): void {
+        const name = this.spells.getSpellLabel(spellId);
+        if (name === undefined || name === "") return;
+        this.heldNames.delete(buildNameKey(name));
+        this.castAt.delete(buildNameKey(name));
+    }
+
     /**
      * A shapeshift happened: the remembered form is out of date (in combat the aura cannot be read
      * again). A form cast a moment ago is the new one and is kept.

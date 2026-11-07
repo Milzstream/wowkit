@@ -1,5 +1,6 @@
 import { isSoundKey } from "@wowkit/ui";
 import { tryCall, type GlowAnimation } from "@wowkit/wow";
+import { Warrior } from "@wowkit/wow-data";
 import { convertOldSettings } from "./settings-migration";
 import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, When } from "./settings.interface";
 
@@ -52,6 +53,12 @@ export function createDefaultSettings(): AddonSettings {
 }
 
 /** The look of each type of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
+/** The default looks of some spells, by type and spell ID: what they want unlike the rest of their type. */
+export const SPELL_STYLE_DEFAULTS: { [key in ReminderType]?: { [spellId: number]: StyleOverride | undefined } } = {
+    // Shield Block lasts 7 seconds: out of a fight it is no use
+    missingBuff: { [Warrior.ShieldBlock]: { when: "inCombat" } },
+};
+
 export const STYLE_DEFAULTS: { [key in ReminderType]: Style } = {
     missingBuff: {
         color: [0.2, 0.55, 1],
