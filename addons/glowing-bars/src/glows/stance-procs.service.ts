@@ -6,7 +6,7 @@
 //     seconds after it.
 // Casting the spell ends its opening (Overpower's combo point goes; Revenge is forgotten here).
 import { OnEvent, OnGameEvent, type EventBus } from "@wowkit/core";
-import { isReadable, type ClockService, type PlayerService, type PlayerSpellCast, type SpellsService } from "@wowkit/wow";
+import { isBlockedHit, isReadable, type ClockService, type PlayerService, type PlayerSpellCast, type SpellsService } from "@wowkit/wow";
 import { Warrior } from "@wowkit/wow-data";
 
 declare module "@wowkit/core/event-bus" {
@@ -32,11 +32,11 @@ export class StanceProcsService {
         private readonly bus: EventBus,
     ) {}
 
-    /** The player blocked, dodged or parried (a partial block says so in its flag text). */
+    /** The player blocked (fully or partly), dodged or parried. */
     @OnGameEvent("UNIT_COMBAT")
     noteCombat(unit: UnitToken, action: string, flagText: string): void {
         if (unit !== "player" || !this.isWarrior()) return;
-        const isAvoided = (isReadable(action) && AVOIDED_ACTIONS.includes(action)) || (isReadable(flagText) && flagText === "BLOCK");
+        const isAvoided = (isReadable(action) && AVOIDED_ACTIONS.includes(action)) || isBlockedHit(action, flagText);
         if (!isAvoided) return;
         this.revengeUntil = this.clock.getCurrentTime() + REVENGE_SECONDS;
         this.bus.emit("procs.changed");

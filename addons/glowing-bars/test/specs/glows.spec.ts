@@ -54,6 +54,7 @@ describe("a warrior in a stance where Overpower and Revenge cannot be used", () 
         ["PARRY", ""],
         ["BLOCK", ""],
         ["WOUND", "BLOCK"],
+        ["WOUND", "BLOCK_REDUCED"],
     ]) {
         it(`sees Revenge glow after "${action} ${flagText}", for five seconds`, () => {
             world.fire("UNIT_COMBAT", "player", action, flagText, 0, 1);
