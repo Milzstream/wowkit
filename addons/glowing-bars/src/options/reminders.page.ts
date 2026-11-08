@@ -83,8 +83,6 @@ export class RemindersPage implements OptionsPage {
         this.reminderControls.addSwitch(category, "shouldStayQuietInTowns", "OPT_STAY_QUIET_IN_TOWNS", "TIP_STAY_QUIET_IN_TOWNS");
         this.reminderControls.addSwitch(category, "shouldShowGreeting", "OPT_SHOW_GREETING", "TIP_SHOW_GREETING");
 
-        this.addMessages(category, layout);
-
         // The party members: a part of the buff reminder that is not one buff
         if (this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party !== undefined)) {
             this.reminderControls.addHeader(layout, "HDR_BUFFS");
@@ -100,6 +98,8 @@ export class RemindersPage implements OptionsPage {
 
         this.weaponSection.addWeaponSection(category, layout);
         this.glowsSection.addGlowsSection(category, layout);
+
+        this.addMessages(category, layout);
 
         // The bars last: eight switches and eight more for the faded bars
         this.barsSection.addBarsSection(category, layout);
@@ -126,7 +126,7 @@ export class RemindersPage implements OptionsPage {
             "messageTop",
             this.locale.getText("OPT_MESSAGE_TOP"),
             this.locale.getText("TIP_MESSAGE_TOP"),
-            { min: 20, max: 700, step: 10, defaultValue: 180 },
+            { min: 0, max: 1000, step: 10, defaultValue: 180 },
             (value) => string.format("%d", value),
             () => this.settings.get("messageTop"),
             (value) => this.settings.change("messageTop", value),
@@ -134,6 +134,16 @@ export class RemindersPage implements OptionsPage {
         for (const [key, label, tip] of MESSAGE_SWITCHES) {
             this.controls.addSwitchCheckbox(category, key, this.locale.getText(label), this.locale.getText(tip));
         }
+        this.controls.addSlider(
+            category,
+            "messagePulseSpeed",
+            this.locale.getText("OPT_MESSAGE_PULSE_SPEED"),
+            this.locale.getText("TIP_MESSAGE_PULSE_SPEED"),
+            { min: 50, max: 200, step: 5, defaultValue: 100 },
+            (value) => string.format("%d%%", value),
+            () => this.settings.get("messagePulseSpeed"),
+            (value) => this.settings.change("messagePulseSpeed", value),
+        );
         this.controls.addSwitchCheckbox(
             category,
             "isOneLinePerType",

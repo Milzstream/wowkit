@@ -70,6 +70,8 @@ export interface AddonSettings {
     isMessageFadePulseOn: boolean;
     /** Do the messages keep growing and shrinking while they are on screen? */
     isMessageSizePulseOn: boolean;
+    /** How fast and how strong the pulses of the messages are, in percent. */
+    messagePulseSpeed: number;
     /** Do all the messages of one type share a line? */
     isOneLinePerType: boolean;
     /** Does the greeting in the chat come at each login? */

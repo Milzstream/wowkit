@@ -200,9 +200,33 @@ describe("a sample message", () => {
         expect(world.notice()).not.toContain("Sample");
     });
 
-    it("does not show for a checkbox", () => {
+    for (const key of ["isMessageZoomInOn", "isMessageZoomOutOn", "isMessageFadePulseOn", "isMessageSizePulseOn"]) {
+        it(`shows when ${key} changes too`, () => {
+            const world = createWarrior({});
+            world.setOption(key, key === "isMessageFadePulseOn" || key === "isMessageSizePulseOn");
+            expect(world.notice()).toBe("Sample message");
+        });
+    }
+
+    it("shows two messages for One line per type, as the setting says", () => {
         const world = createWarrior({});
-        world.setOption("isMessageZoomInOn", false);
+        world.setOption("isOneLinePerType", true);
+        expect(world.notice()).toBe("Sample message, Second message");
+        world.setOption("isOneLinePerType", false);
+        expect(world.notice()).toBe("Sample message\nSecond message");
+    });
+
+    it("goes sooner for Zoom out, so its going is seen", () => {
+        const world = createWarrior({});
+        world.setOption("isMessageZoomOutOn", false);
+        expect(world.notice()).toBe("Sample message");
+        world.advance(1.5);
+        expect(world.notice()).toBe("");
+    });
+
+    it("does not show for a setting of something else", () => {
+        const world = createWarrior({});
+        world.setOption("isDisabled", true);
         expect(world.notice()).toBe("");
     });
 });

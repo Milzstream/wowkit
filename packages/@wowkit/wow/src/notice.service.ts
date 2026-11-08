@@ -17,7 +17,7 @@ const ZOOM_SMALL = 0.4;
 const ZOOM_SECONDS = 0.25;
 /** A message that pulses fades to this much, or grows by this much, and back, each way in this long. */
 const PULSE_FADED = 0.5;
-const PULSE_GROWTH = 0.12;
+const PULSE_GROWTH = 0.5;
 const PULSE_SECONDS = 0.5;
 
 /** The kinds of sound file the game plays, in the order they are tried: the addon cannot see which one is there. */
@@ -39,6 +39,8 @@ export interface NoticeLook {
     shouldZoomOut: boolean;
     isFadePulsing: boolean;
     isSizePulsing: boolean;
+    /** How fast and how strong the pulses are: 1 is the normal. */
+    pulseSpeed?: number;
     /** Seconds it stays; 0: until it is taken away (clearNotice, or a newer message); none: NOTICE_SECONDS. */
     seconds?: number;
 }
@@ -48,10 +50,17 @@ interface SharedNotices {
     text: FontString;
     /** The look of the latest message: how it goes. */
     look?: NoticeLook;
-    /** Each made the first time it is needed. */
-    zoomIn?: AnimationGroup;
-    zoomOut?: AnimationGroup;
+    /** The zoom going on now. */
+    zoom?: { from: number; to: number; elapsed: number; isLeaving: boolean };
+    /** Counts the times the message started to go: a later one, or a new message, overrules the wait of an earlier one. */
+    leaving?: number;
+    /** How long the text has been growing and shrinking. */
+    pulseElapsed?: number;
+    /** Made the first time it is needed. */
     pulse?: AnimationGroup;
+    pulseFade?: AlphaAnimation;
+    /** How fast and how strong the pulses are now. */
+    pulseSpeed?: number;
     /** Is its text growing and shrinking now? */
     isSizePulsing?: boolean;
     /** In the order the addons first showed something. */
@@ -164,7 +173,7 @@ export class NoticeService {
             this.hide(shared);
             return;
         }
-        shared.zoomOut?.Stop();
+        this.stopLeaving(shared);
         shared.text.SetText(shared.entries.map((entry) => entry.text).join("\n"));
         shared.frame.Show();
     }
@@ -176,17 +185,17 @@ export class NoticeService {
         // A scale counts for the frame's distance from the top too: its place stays where it is
         shared.frame.ClearAllPoints();
         shared.frame.SetPoint("TOP", UIParent, "TOP", 0, -(look?.top ?? NOTICE_TOP) / scale);
-        if (look?.shouldZoomIn === true) {
-            shared.zoomIn ??= this.createZoom(shared.frame, ZOOM_SMALL, 1);
-            shared.zoomIn?.Stop();
-            shared.zoomIn?.Play();
-        }
+        if (look?.shouldZoomIn === true) this.startZoom(shared, ZOOM_SMALL, 1, false);
         this.applyPulse(shared, look);
     }
 
     private applyPulse(shared: SharedNotices, look: NoticeLook | undefined): void {
+        const speed = look?.pulseSpeed ?? 1;
+        const isNewSpeed = speed !== shared.pulseSpeed;
+        shared.pulseSpeed = speed;
         if (look?.isFadePulsing === true) {
-            shared.pulse ??= this.createFadePulse(shared.frame);
+            shared.pulse ??= this.createFadePulse(shared);
+            if (isNewSpeed) this.applyFadeSpeed(shared, speed);
             if (shared.pulse?.IsPlaying() === false) shared.pulse.Play();
         } else {
             shared.pulse?.Stop();
@@ -195,64 +204,95 @@ export class NoticeService {
         else this.stopSizePulse(shared);
     }
 
-    /** The text's own size, not a picture of it stretched: the letters stay sharp. */
-    private startSizePulse(shared: SharedNotices): void {
-        if (shared.isSizePulsing === true) return;
-        shared.isSizePulsing = true;
-        let elapsed = 0;
-        shared.frame.SetScript("OnUpdate", (_frame, seconds) => {
-            elapsed += seconds;
-            shared.text.SetTextScale(1 + PULSE_GROWTH * (0.5 - 0.5 * math.cos((elapsed * math.pi) / PULSE_SECONDS)));
-        });
-    }
-
-    private stopSizePulse(shared: SharedNotices): void {
-        if (shared.isSizePulsing !== true) return;
-        shared.isSizePulsing = false;
-        shared.frame.SetScript("OnUpdate", undefined);
-        shared.text.SetTextScale(1);
-    }
-
     /** The message goes: at once, or (as its addon asked) shrinking away first. */
     private hide(shared: SharedNotices): void {
         shared.pulse?.Stop();
         this.stopSizePulse(shared);
         if (shared.look?.shouldZoomOut !== true || !shared.frame.IsShown()) {
-            shared.frame.Hide();
+            this.hideNow(shared);
             return;
         }
-        shared.zoomOut ??= this.createZoomOut(shared);
-        if (shared.zoomOut === undefined) {
-            shared.frame.Hide();
-            return;
-        }
-        shared.zoomOut.Stop();
-        shared.zoomOut.Play();
-    }
-
-    /** A client without animations leaves the message as it is: undefined. */
-    private createZoom(frame: Frame, from: number, to: number): AnimationGroup | undefined {
-        const zoom = frame.CreateAnimationGroup() as AnimationGroup | undefined;
-        this.addScale(zoom, from, to);
-        return zoom;
-    }
-
-    /** It shrinks and fades, and goes out as that ends; a new message in the meantime stops it, and it stays. */
-    private createZoomOut(shared: SharedNotices): AnimationGroup | undefined {
-        const zoom = this.createZoom(shared.frame, 1, ZOOM_SMALL);
-        if (zoom === undefined) return undefined;
-        const fade = zoom.CreateAnimation("Alpha") as AlphaAnimation;
-        fade.SetFromAlpha(1);
-        fade.SetToAlpha(0);
-        fade.SetDuration(ZOOM_SECONDS);
-        zoom.SetScript("OnFinished", () => {
-            if (shared.entries.length === 0) shared.frame.Hide();
+        this.startZoom(shared, 1, ZOOM_SMALL, true);
+        shared.leaving = (shared.leaving ?? 0) + 1;
+        const leaving = shared.leaving;
+        C_Timer.After(ZOOM_SECONDS, () => {
+            if (shared.leaving === leaving && shared.entries.length === 0) this.hideNow(shared);
         });
-        return zoom;
     }
 
-    private createFadePulse(frame: Frame): AnimationGroup | undefined {
-        const pulse = frame.CreateAnimationGroup() as AnimationGroup | undefined;
+    private hideNow(shared: SharedNotices): void {
+        shared.frame.Hide();
+        this.resetText(shared);
+    }
+
+    /** A message came while the last one was going: it stays, as it was. */
+    private stopLeaving(shared: SharedNotices): void {
+        shared.leaving = (shared.leaving ?? 0) + 1;
+        if (shared.zoom?.isLeaving === true) this.resetText(shared);
+    }
+
+    private resetText(shared: SharedNotices): void {
+        shared.zoom = undefined;
+        shared.text.SetAlpha(1);
+        shared.text.SetTextScale(1);
+    }
+
+    /** The text's own size, not a picture of it stretched: the letters stay sharp, and it grows from its middle. */
+    private startZoom(shared: SharedNotices, from: number, to: number, isLeaving: boolean): void {
+        shared.zoom = { from, to, elapsed: 0, isLeaving };
+        shared.text.SetTextScale(from);
+        this.startUpdating(shared);
+    }
+
+    private startSizePulse(shared: SharedNotices): void {
+        if (shared.isSizePulsing === true) return;
+        shared.isSizePulsing = true;
+        shared.pulseElapsed = 0;
+        this.startUpdating(shared);
+    }
+
+    private stopSizePulse(shared: SharedNotices): void {
+        if (shared.isSizePulsing !== true) return;
+        shared.isSizePulsing = false;
+        if (shared.zoom === undefined) shared.text.SetTextScale(1);
+    }
+
+    private startUpdating(shared: SharedNotices): void {
+        shared.frame.SetScript("OnUpdate", (_frame, seconds) => this.updateText(shared, seconds));
+    }
+
+    /** One frame of the text's zoom and pulse; with neither going on, nothing more is asked. */
+    private updateText(shared: SharedNotices, seconds: number): void {
+        let scale = this.updateZoom(shared, seconds);
+        if (shared.isSizePulsing === true) {
+            shared.pulseElapsed = (shared.pulseElapsed ?? 0) + seconds;
+            const speed = shared.pulseSpeed ?? 1;
+            scale *= 1 + PULSE_GROWTH * speed * (0.5 - 0.5 * math.cos((shared.pulseElapsed * math.pi * speed) / PULSE_SECONDS));
+        }
+        shared.text.SetTextScale(scale);
+        if (shared.zoom === undefined && shared.isSizePulsing !== true) shared.frame.SetScript("OnUpdate", undefined);
+    }
+
+    /** The size the zoom has come to now; 1 with none going on. A message going away fades as it shrinks, and stays so until it is hidden. */
+    private updateZoom(shared: SharedNotices, seconds: number): number {
+        const zoom = shared.zoom;
+        if (zoom === undefined) return 1;
+        zoom.elapsed += seconds;
+        const progress = math.min(zoom.elapsed / ZOOM_SECONDS, 1);
+        if (zoom.isLeaving) shared.text.SetAlpha(1 - progress);
+        else if (progress >= 1) shared.zoom = undefined;
+        return zoom.from + (zoom.to - zoom.from) * progress;
+    }
+
+    /** A pulse of another speed starts over: what is running keeps the old one to the end of its round. */
+    private applyFadeSpeed(shared: SharedNotices, speed: number): void {
+        shared.pulse?.Stop();
+        shared.pulseFade?.SetToAlpha(math.max(1 - (1 - PULSE_FADED) * speed, 0));
+        shared.pulseFade?.SetDuration(PULSE_SECONDS / speed);
+    }
+
+    private createFadePulse(shared: SharedNotices): AnimationGroup | undefined {
+        const pulse = shared.frame.CreateAnimationGroup() as AnimationGroup | undefined;
         if (pulse === undefined) return undefined;
         pulse.SetLooping("BOUNCE");
         const fade = pulse.CreateAnimation("Alpha") as AlphaAnimation;
@@ -260,17 +300,9 @@ export class NoticeService {
         fade.SetToAlpha(PULSE_FADED);
         fade.SetDuration(PULSE_SECONDS);
         fade.SetSmoothing("IN_OUT");
+        shared.pulseFade = fade;
+        this.applyFadeSpeed(shared, shared.pulseSpeed ?? 1);
         return pulse;
-    }
-
-    private addScale(group: AnimationGroup | undefined, from: number, to: number): void {
-        if (group === undefined) return;
-        const scale = group.CreateAnimation("Scale") as ScaleAnimation;
-        scale.SetScaleFrom(from, from);
-        scale.SetScaleTo(to, to);
-        scale.SetDuration(ZOOM_SECONDS);
-        scale.SetOrigin("CENTER", 0, 0);
-        scale.SetSmoothing("IN_OUT");
     }
 
     private getSharedNotices(): SharedNotices {

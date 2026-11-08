@@ -38,11 +38,15 @@ const LOOK_SETTINGS = [
     "isMessageZoomOutOn",
     "isMessageFadePulseOn",
     "isMessageSizePulseOn",
+    "isOneLinePerType",
+    "messagePulseSpeed",
 ];
 
-/** The sliders of how a message looks: moved with nothing on screen, a sample shows what they do. */
-const SLIDER_SETTINGS = ["messageSize", "messageTop"];
+/** The sliders of how a message looks: dragged, the message does not zoom again at every step. */
+const SLIDER_SETTINGS = ["messageSize", "messageTop", "messagePulseSpeed"];
 const SAMPLE_SECONDS = 3;
+/** Of the Zoom out: it is its going that is to be seen. */
+const SAMPLE_SECONDS_SHORT = 1;
 
 /** How long the message of a look stays. */
 function findShowFor(style: Style): number {
@@ -108,11 +112,20 @@ export class NoticesService {
             );
     }
 
-    /** A setting of how messages come changed: the one on screen takes it at once. */
+    /** A setting of how messages come changed: the one on screen takes it at once; with none, a sample shows what it does. */
     @OnEvent("setting.changed")
     applyMessageSetting(key: string): void {
-        if (LOOK_SETTINGS.includes(key) && this.lastText !== "") this.showText(this.lastText, false, this.lastSeconds);
-        else if (SLIDER_SETTINGS.includes(key)) this.showText(this.locale.getText("TEXT_MESSAGE_SAMPLE"), false, SAMPLE_SECONDS);
+        if (!LOOK_SETTINGS.includes(key)) return;
+        const isNew = !SLIDER_SETTINGS.includes(key);
+        if (this.lastText !== "") this.showText(this.lastText, isNew, this.lastSeconds);
+        else this.showText(this.buildSample(key), isNew, key === "isMessageZoomOutOn" ? SAMPLE_SECONDS_SHORT : SAMPLE_SECONDS);
+    }
+
+    /** The sample: of the lines per type, two, side by side or not. */
+    private buildSample(key: string): string {
+        const sample = this.locale.getText("TEXT_MESSAGE_SAMPLE");
+        if (key !== "isOneLinePerType") return sample;
+        return `${sample}${this.settings.get("isOneLinePerType") ? ", " : "\n"}${this.locale.getText("TEXT_MESSAGE_SAMPLE_2")}`;
     }
 
     private showText(text: string, isNew: boolean, seconds: number): void {
@@ -124,6 +137,7 @@ export class NoticesService {
             shouldZoomOut: this.settings.get("isMessageZoomOutOn"),
             isFadePulsing: this.settings.get("isMessageFadePulseOn"),
             isSizePulsing: this.settings.get("isMessageSizePulseOn"),
+            pulseSpeed: this.settings.get("messagePulseSpeed") / 100,
             seconds,
         });
     }

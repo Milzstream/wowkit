@@ -23,6 +23,7 @@ export function createDefaultSettings(): AddonSettings {
         isMessageZoomOutOn: true,
         isMessageFadePulseOn: false,
         isMessageSizePulseOn: false,
+        messagePulseSpeed: 100,
         isOneLinePerType: false,
         showPartyBuffs: true,
         showRaidBuffs: true,
