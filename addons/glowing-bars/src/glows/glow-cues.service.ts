@@ -6,7 +6,7 @@ import { OnEvent, OnGameEvent } from "@wowkit/core";
 import type { ActionBarsService, PlayerService, SpellDetailsService, SpellsService } from "@wowkit/wow";
 import type { AddonSettingsService, AddableType } from "../settings/settings.interface";
 import type { AddedSpellsService } from "./added-spells.service";
-import { COOLDOWN_CUES, PROC_CUES, RACIAL_COOLDOWNS } from "./glow-cues.constants";
+import { ALPHA_PROC_CUES, COOLDOWN_CUES, PROC_CUES, RACIAL_COOLDOWNS } from "./glow-cues.constants";
 import { READY_MARGIN, type CooldownTrackerService } from "./cooldown-tracker.service";
 import type { StanceProcsService } from "./stance-procs.service";
 
@@ -70,11 +70,23 @@ export class GlowCuesService {
     /** The procs of the class that the game says are usable now (Overpower and Revenge in any stance), and on a button. */
     findProcs(): number[] {
         if (!this.settings.get("isProcEnabled")) return [];
-        return this.listCues(this.listCueIds("proc")).filter(
-            (id) =>
-                (this.spellDetails.readUsability(id).isUsable === true || this.stanceProcs.isOpen(id)) &&
-                this.tracker.getRemaining(id) <= READY_MARGIN,
-        );
+        return this.listCues(this.listCueIds("proc")).filter((id) => this.isProcUp(id) && this.tracker.getRemaining(id) <= READY_MARGIN);
+    }
+
+    /** Is this one of the procs that are told by their spell, not by the game calling it usable? (Marked alpha in the table.) */
+    isAlphaProc(listId: number): boolean {
+        return this.listAlphaProcs().some((proc) => proc.id === listId);
+    }
+
+    private listAlphaProcs() {
+        return ALPHA_PROC_CUES[this.player.getClassToken() ?? ""] ?? [];
+    }
+
+    private isProcUp(id: number): boolean {
+        const name = this.spells.getSpellLabel(id);
+        const alpha = this.listAlphaProcs().find((proc) => this.spells.getSpellLabel(proc.id) === name);
+        if (alpha !== undefined) return alpha.sign === "free" ? this.spellDetails.isFreeNow(id) : this.spellDetails.isInstantNow(id);
+        return this.spellDetails.readUsability(id).isUsable === true || this.stanceProcs.isOpen(id);
     }
 
     /**
@@ -83,7 +95,7 @@ export class GlowCuesService {
      */
     listBuiltInIds(reminderType: AddableType): number[] {
         const classToken = this.player.getClassToken() ?? "";
-        if (reminderType === "proc") return PROC_CUES[classToken] ?? [];
+        if (reminderType === "proc") return [...(PROC_CUES[classToken] ?? []), ...this.listAlphaProcs().map((proc) => proc.id)];
         const racials = RACIAL_COOLDOWNS.filter((id) => this.spells.isLearned(this.addedSpells.getEffectiveId(id)));
         return (COOLDOWN_CUES[classToken] ?? []).concat(racials);
     }

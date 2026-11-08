@@ -62,7 +62,10 @@ export function installSpells(state: ClientState): void {
         IsSpellHarmful: (idOrName) => findSpell(idOrName)?.isHarmful === true,
         IsSpellHelpful: (idOrName) => findSpell(idOrName)?.isHelpful === true,
         IsAutoRepeatSpell: () => false,
-        GetSpellPowerCost: () => [],
+        GetSpellPowerCost: (idOrName) => {
+            const cost = state.spellCosts[findSpell(idOrName)?.id ?? 0];
+            return (cost !== undefined ? [{ cost, type: 0 }] : []) as SpellPowerCostInfo[];
+        },
         GetSpellDescription: (idOrName) => findSpell(idOrName)?.description ?? "",
         GetSpellCooldown: (idOrName) => {
             if (state.areCooldownsHidden) return undefined;

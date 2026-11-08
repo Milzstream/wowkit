@@ -140,6 +140,10 @@ export const TEXTS = {
     TIP_MESSAGE_FADE_PULSE: "Messages keep fading a little and back while they are on screen. Default: off.",
     OPT_MESSAGE_SIZE_PULSE: "Pulse (size)",
     TIP_MESSAGE_SIZE_PULSE: "Messages keep growing and shrinking while they are on screen. Default: off.",
+    TIP_ALPHA_PROC:
+        "Experimental: it glows when the game shows this spell as free or instant. If it doesn't work for you, switch it off with Enabled and tell me.",
+    TIP_ALPHA_EXECUTE:
+        "Experimental: the game shows this glow by itself on a low target, without telling the addon. If it doesn't work for you, switch it off with Enabled and tell me.",
     TIP_FADE_ONLY: "The game hides the target's health, so the addon can't tell when this glow starts: it can't play a sound or time it.",
     TIP_ADD:
         'Low stock needs an Item ID, every other type a Spell ID. To see them, turn on "Show spell and item IDs in tooltips" in the Settings.',

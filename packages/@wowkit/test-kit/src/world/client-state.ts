@@ -101,6 +101,8 @@ export interface ClientState {
     /** In combat the game hides the spell cooldowns: no answer. */
     areCooldownsHidden: boolean;
     /** The spells of the stance bar (forms, a paladin's auras), the first stance first. */
+    /** The mana a spell costs now, by spell ID; not given: the game names no cost. */
+    spellCosts: { [spellId: number]: number | undefined };
     stances: number[];
     /** The spell of the stance the player is in. */
     activeStance: number | undefined;
@@ -191,6 +193,7 @@ export function createClientState(): ClientState {
         isInCombat: false,
         areAurasHidden: false,
         areCooldownsHidden: false,
+        spellCosts: {},
         stances: [],
         activeStance: undefined,
         gamepadClassSpell: undefined,

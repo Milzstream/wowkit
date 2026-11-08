@@ -51,6 +51,18 @@ export class SpellDetailsService {
         return { isUsable: getReadable(isUsable), isOutOfPower: getReadable(isOutOfPower) };
     }
 
+    /** Does the game say the spell has no cast time now? Not when it hides the answer. */
+    isInstantNow(spellId: number): boolean {
+        const info = attempt(C_Spell.GetSpellInfo, spellId);
+        return info !== undefined && getReadable(info.castTime) === 0;
+    }
+
+    /** Does the game say the spell costs nothing now? Not when it hides the answer. */
+    isFreeNow(spellId: number): boolean {
+        const costs = this.listCosts(spellId);
+        return costs.length > 0 && costs.every((cost) => cost.amount === 0);
+    }
+
     /** What the spell costs, the readable parts only. */
     listCosts(spellId: number): SpellCost[] {
         const costs = attempt(C_Spell.GetSpellPowerCost, spellId);

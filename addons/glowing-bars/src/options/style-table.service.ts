@@ -23,8 +23,8 @@ import {
     findWindowWidth,
 } from "./style-table.constants";
 import { showHeaderTip } from "./header-tip";
-import { setFadeOnly } from "./fade-only-controls";
-import { applyRowView, createIcon, createStripe, createText, createSwatch } from "./style-row-layout";
+import { setFadeOnly, setRowTip } from "./fade-only-controls";
+import { applyRowView, createIcon, createNameHover, createStripe, createText, createSwatch } from "./style-row-layout";
 import type { StyleWindowService } from "./style-window.service";
 import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
 import type { StyleEditsService } from "./style-edits.service";
@@ -37,6 +37,7 @@ interface RowWidgets {
     stripe: Texture;
     icon: Texture;
     name: FontString;
+    nameHover: Frame;
     typeText: FontString;
     swatch: Button;
     swatchColor: Texture;
@@ -230,6 +231,7 @@ export class StyleTableService {
         // The client takes an icon's file ID as well as a path; the typing knows only the path
         if (row.iconId !== undefined) widgets.icon.SetTexture(row.iconId as unknown as string);
         widgets.name.SetText(row.label);
+        setRowTip(widgets.nameHover, row.alphaTip !== undefined ? this.locale.getText(row.alphaTip) : undefined);
         const [r, g, b] = isOverridden && row.spellId !== undefined ? OVERRIDDEN_COLOR : [1, 1, 1];
         widgets.name.SetTextColor(r, g, b);
         widgets.typeText.SetTextColor(BRONZE_TEXT[0], BRONZE_TEXT[1], BRONZE_TEXT[2]);
@@ -258,6 +260,7 @@ export class StyleTableService {
             stripe: createStripe(frame),
             icon: createIcon(frame),
             name: createText(frame, COLUMN.name, "GameFontHighlight"),
+            nameHover: createNameHover(frame),
             typeText: createText(frame, COLUMN.type, "GameFontNormalSmall"),
             ...createSwatch(frame),
             glowPercent: this.createGlowPercentBox(frame),

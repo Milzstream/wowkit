@@ -28,6 +28,7 @@ import "./food-buff-learning.spec";
 import "./gathering.spec";
 import "./shield-block.spec";
 import "./defensive-execute.spec";
+import "./alpha-procs.spec";
 import "./message-look.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";

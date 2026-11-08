@@ -34,6 +34,8 @@ export interface StyleRow {
     itemId?: number;
     /** The ID of a spell of the lists that this row shows and changes too (the same spell, a row of its own). */
     sharesIdOf?: number;
+    /** An experimental row: what the tooltip of its name says. */
+    alphaTip?: TextKey;
     /** A glow only the game itself can light: what would have to know when it starts is faded on the row. */
     isFadeOnly?: boolean;
 }
@@ -160,15 +162,29 @@ export class StyleRowsService {
         // The spells that have ranks (a spell with one rank has no "Rank" in its subtext), on a bar or not. The ranks are read
         // off the bars, by the IDs there: a rank row's ID is not one to fix
         for (const id of this.spells.listSpellBookIds()) if (this.spells.getSpellRank(id) !== undefined) add("oldRank", id);
-        if (this.player.getClassToken() === "WARRIOR") rows.push(this.createDefensiveExecuteRow());
+        this.addAlphaRows(rows);
         rows.sort((a, b) => this.compareRows(a, b));
         return rows;
+    }
+
+    /** What is experimental says so: a warrior's Execute in Defensive Stance, and the procs told by their spell. */
+    private addAlphaRows(rows: StyleRow[]): void {
+        if (this.player.getClassToken() === "WARRIOR") rows.push(this.createDefensiveExecuteRow());
+        for (const row of rows) {
+            if (row.reminderType === "proc" && row.listId !== undefined && this.glowCues.isAlphaProc(row.listId))
+                this.markAlpha(row, "TIP_ALPHA_PROC");
+        }
+    }
+
+    private markAlpha(row: StyleRow, tip: TextKey): void {
+        row.label = `${row.label} (alpha)`;
+        row.alphaTip = tip;
     }
 
     /** Execute in Defensive Stance: a row of its own beside the one of Execute, whose glow can do all that this one cannot. */
     private createDefensiveExecuteRow(): StyleRow {
         const stance = this.spells.getSpellLabel(Warrior.DefensiveStance) ?? "";
-        return {
+        const row: StyleRow = {
             reminderType: "proc",
             spellId: DEFENSIVE_EXECUTE_ROW,
             label: `${this.spells.getSpellLabel(Warrior.Execute) ?? ""} (${stance})`,
@@ -177,6 +193,8 @@ export class StyleRowsService {
             sharesIdOf: Warrior.Execute,
             isFadeOnly: true,
         };
+        this.markAlpha(row, "TIP_ALPHA_EXECUTE");
+        return row;
     }
 
     private compareRows(a: StyleRow, b: StyleRow): number {

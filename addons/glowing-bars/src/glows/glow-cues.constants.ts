@@ -64,6 +64,15 @@ export const PROC_CUES: { [classToken: string]: number[] | undefined } = {
 };
 
 /**
+ * Procs the game hides in a fight, as buffs: their spell tells instead, by turning free or instant. Alpha: the table says so.
+ * Without the talent the spell never does, so no other check is needed.
+ */
+export const ALPHA_PROC_CUES: { [classToken: string]: { id: number; sign: "free" | "instant" }[] | undefined } = {
+    MAGE: [{ id: Mage.ArcaneMissiles, sign: "free" }],
+    WARLOCK: [{ id: Warlock.ShadowBolt, sign: "instant" }],
+};
+
+/**
  * Cooldowns that start when another spell is cast, not when they are: Swift Judgement makes the next Judgement cheap, and
  * its cooldown starts as that Judgement uses it up, however long that takes. Until then the spell is not ready.
  */

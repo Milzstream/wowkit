@@ -1,6 +1,6 @@
 // Where the controls of a row of the table go in a view: the same controls, in the columns of the Basic or the Advanced
 // view; the ones of a column that the view does not have are hidden. What they hold keeps working.
-import { ICON_SIZE, findCenteredX, COLUMN, type Column, type findColumns } from "./style-table.constants";
+import { ICON_SIZE, ROW_HEIGHT, findCenteredX, COLUMN, type Column, type findColumns } from "./style-table.constants";
 
 /** The controls of a row that move, or hide, with the view. */
 export interface RowControls {
@@ -68,4 +68,12 @@ export function createSwatch(frame: Frame): { swatch: Button; swatchColor: Textu
     swatchColor.SetPoint("TOPLEFT", swatch, "TOPLEFT", 1, -1);
     swatchColor.SetPoint("BOTTOMRIGHT", swatch, "BOTTOMRIGHT", -1, 1);
     return { swatch, swatchColor };
+}
+
+/** Over the name of a row, for the tooltip of an experimental one. */
+export function createNameHover(frame: Frame): Frame {
+    const hover = CreateFrame("Frame", undefined, frame);
+    hover.SetSize(COLUMN.name.width, ROW_HEIGHT);
+    hover.SetPoint("LEFT", frame, "LEFT", COLUMN.name.x, 0);
+    return hover;
 }

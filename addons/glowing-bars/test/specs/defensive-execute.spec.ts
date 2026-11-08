@@ -16,7 +16,7 @@ import { findLabel, findRow } from "./table.helpers";
 const EXECUTE: SpellDefinition = { id: 5308, name: "Execute", rank: 1, icon: 135358, maxRange: 5, isHarmful: true };
 const DEFENSIVE_STANCE: SpellDefinition = { id: 71, name: "Defensive Stance", rank: 0, icon: 132341, isHelpful: true };
 const BATTLE_STANCE = 2457;
-const ROW_LABEL = "Execute (Defensive Stance)";
+const ROW_LABEL = "Execute (Defensive Stance) (alpha)";
 
 /** A warrior in this stance, Execute on button 1 and unusable as the game says, an enemy at this health in a fight. */
 function createExecuteWorld(stance: number, health: number, saved?: Record<string, unknown>): World {
@@ -84,7 +84,7 @@ describe("the row of Execute in Defensive Stance", () => {
 
     it("fades Sound, Repeat and Glow time, and says why", () => {
         const world = openWorld();
-        expect(listTips(world, ROW_LABEL).length).toBe(3);
+        expect(listTips(world, ROW_LABEL).length).toBe(4);
         expect(findRow(world, ROW_LABEL).sound.alpha).toBe(0.4);
         expect(findRow(world, ROW_LABEL).message.alpha).toBe(1);
     });
