@@ -137,6 +137,7 @@ describe("the table of looks", () => {
             "No sound",
             "Raid warning",
             "Battleground start",
+            "Ready check",
             "Role check",
             "Alarm clock 1",
             "Alarm clock 2",

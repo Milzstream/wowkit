@@ -1,4 +1,5 @@
-export type SoundKey = "none" | "raidwarning" | "battlegroundstart" | "rolecheck" | "alarm1" | "alarm2" | "alarm3" | `custom:${string}`;
+export type SoundKey =
+    "none" | "raidwarning" | "battlegroundstart" | "readycheck" | "rolecheck" | "alarm1" | "alarm2" | "alarm3" | `custom:${string}`;
 
 export interface SoundChoice {
     key: SoundKey;
@@ -67,6 +68,7 @@ export const SOUNDS: SoundChoice[] = [
     { key: "none", label: "No sound" },
     { key: "raidwarning", label: "Raid warning", kit: "RAID_WARNING", id: 8959 },
     { key: "battlegroundstart", label: "Battleground start", kit: "UI_BATTLEGROUND_COUNTDOWN_FINISHED", id: 25478 },
+    { key: "readycheck", label: "Ready check", kit: "READY_CHECK", id: 8960 },
     { key: "rolecheck", label: "Role check", kit: "LFG_ROLE_CHECK", id: 17317 },
     { key: "alarm1", label: "Alarm clock 1", kit: "ALARM_CLOCK_WARNING_1", id: 18871 },
     { key: "alarm2", label: "Alarm clock 2", kit: "ALARM_CLOCK_WARNING_2", id: 12867 },

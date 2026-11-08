@@ -70,7 +70,7 @@ describe("the Custom sounds section of the table", () => {
         expect(boxes.length).toBe(1);
         expect(boxes[0]!.text).toBe(MAIN_FOLDER);
         expect(findCountBox(boxes[0]!).text).toBe("0");
-        expect(listSoundLabels().length).toBe(7);
+        expect(listSoundLabels().length).toBe(8);
     });
 
     it("says to reload after adding a folder, next to its button", () => {
@@ -82,9 +82,9 @@ describe("the Custom sounds section of the table", () => {
     });
 
     it("adds as many sounds to the list as typed, after the game's", () => {
-        expect(listSoundLabels().slice(7)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3"]);
+        expect(listSoundLabels().slice(8)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3"]);
         enterText(findCountBox(listFolderBoxes()[0]!), "5");
-        expect(listSoundLabels().length).toBe(12);
+        expect(listSoundLabels().length).toBe(13);
     });
 
     it("keeps the number when the box is left empty", () => {
@@ -114,7 +114,7 @@ describe("the Custom sounds section of the table", () => {
         listSoundLabels();
         expect(world.isMenuScrolling()).toBe(false);
         enterText(findCountBox(listFolderBoxes()[0]!), "40");
-        expect(listSoundLabels().length).toBe(47);
+        expect(listSoundLabels().length).toBe(48);
         expect(world.isMenuScrolling()).toBe(true);
     });
 
@@ -158,7 +158,7 @@ describe("the Custom sounds section of the table", () => {
         expect(boxes.length).toBe(2);
         enterText(boxes[1]!, HORNS_FOLDER);
         enterText(findCountBox(boxes[1]!), "2");
-        expect(listSoundLabels().slice(7)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3", "Horns 1", "Horns 2"]);
+        expect(listSoundLabels().slice(8)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3", "Horns 1", "Horns 2"]);
         world.state.soundFiles = [`Interface\\AddOns\\${HORNS_FOLDER}\\custom2.ogg`];
         world.pickFromMenu(findRow(world, "Recklessness").sound, "Horns 2");
         expect(world.state.playedSoundFiles).toEqual([`Interface\\AddOns\\${HORNS_FOLDER}\\custom2.ogg`]);
@@ -169,7 +169,7 @@ describe("the Custom sounds section of the table", () => {
         const box = listFolderBoxes()[1]!;
         expect(box.text).toBe("GlowingBars_My_Sounds");
         enterText(findCountBox(box), "1");
-        expect(listSoundLabels().slice(10)).toEqual(["My Sounds 1"]);
+        expect(listSoundLabels().slice(11)).toEqual(["My Sounds 1"]);
         world.state.soundFiles = ["Interface\\AddOns\\GlowingBars_My_Sounds\\custom1.ogg"];
         const { sound } = findRow(world, "Recklessness");
         world.pickFromMenu(sound, "My Sounds 1");
@@ -185,14 +185,14 @@ describe("the Custom sounds section of the table", () => {
         remove.scripts.OnClick!(remove);
         expect(listFolderBoxes().length).toBe(1);
         expect(listFolderBoxes()[0]!.text).toBe(HORNS_FOLDER);
-        expect(listSoundLabels().slice(7)).toEqual(["Horns 1", "Horns 2"]);
+        expect(listSoundLabels().slice(8)).toEqual(["Horns 1", "Horns 2"]);
     });
 
     it("does not list a folder twice", () => {
         clickAddFolder();
         enterText(listFolderBoxes()[1]!, MAIN_FOLDER);
         enterText(findCountBox(listFolderBoxes()[1]!), "3");
-        expect(listSoundLabels().slice(7)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3"]);
+        expect(listSoundLabels().slice(8)).toEqual(["Sounds 1", "Sounds 2", "Sounds 3"]);
     });
 });
 
