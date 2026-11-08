@@ -284,7 +284,7 @@ export class StyleTableService {
 
     /** What a glow only the game can light cannot use: all of it needs to know when the glow starts. */
     private listFadeOnlyControls(widgets: RowWidgets): Button[] {
-        return [widgets.message, widgets.messageGear, widgets.sound, widgets.choices.repeat, widgets.choices.glowTime];
+        return [widgets.sound, widgets.choices.repeat, widgets.choices.glowTime];
     }
 
     private createGlowPercentBox(frame: Frame): EditBox {

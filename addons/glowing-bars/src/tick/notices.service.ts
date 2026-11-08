@@ -10,19 +10,13 @@ import type { TextKey } from "../locale/texts.constants";
 import type { AddonSettingsService, ReminderType, Style } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import { NOTICE_SECONDS, type ActionBarsService, type ClockService, type NoticeService, type Rgb, type SpellsService } from "@wowkit/wow";
+import { findWords, type Words } from "./message-words";
 import type { Reminders } from "./tick.interface";
 
 /** A party message names this many members at most; past them, it counts them (a raid). */
 const NAMES_MAX = 5;
 /** After the bars changed they are mapped again; until then the old map would call every spell missing. */
 const NOTICE_AFTER_BAR_CHANGE = 1.5;
-
-/** What a line says; `prefix` and `body` are its two halves where it says "Type: name". */
-interface Words {
-    words: string;
-    prefix?: string;
-    body?: string;
-}
 
 interface Line extends Words {
     /** What it is about: it comes again only when one of these is new, or with its repeat. */
@@ -260,11 +254,8 @@ export class NoticesService {
 
     /** What a line says, by what the player chose for it. */
     private findWords(reminderType: ReminderType, id: number, style: Style, text: TextKey, name: string | undefined): Words {
-        const typeWords = this.locale.getText(text);
         const choice = this.styles.getMessageTextChoice(reminderType, id);
-        if (choice === "custom") return { words: style.messageText ?? typeWords };
-        if (choice === "typeOnly" || name === undefined) return { words: typeWords };
-        return choice === "name" ? { words: name } : { words: `${typeWords}: ${name}`, prefix: typeWords, body: name };
+        return findWords(choice, style.messageText, this.locale.getText(text), name);
     }
 
     /** A line that names what it is about, in the buff color of the spell. */

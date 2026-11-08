@@ -6,6 +6,7 @@ import { MESSAGE_SHOW_FOR_CHOICES, MESSAGE_TEXT_CHOICES } from "../settings/sett
 import { NOTICE_SECONDS } from "@wowkit/wow";
 import type { MessageTextChoice } from "../settings/settings.interface";
 import { connectChoiceMenu } from "./choice-menu";
+import { setFadeOnly } from "./fade-only-controls";
 import type { StyleRow } from "./style-rows.service";
 import { connectEscape, createFrameWithBorder } from "./window-frame";
 
@@ -65,6 +66,7 @@ export class MessageWindow {
         parts.swatchColor.SetColorTexture(r, g, b, 1);
         const choice = this.styles.getMessageTextChoice(row.reminderType, row.spellId);
         parts.choice.SetText(this.locale.getText(CHOICE_TEXTS[choice]));
+        setFadeOnly([parts.showFor], row.isFadeOnly === true, this.locale.getText("TIP_FADE_ONLY"));
         parts.showFor.SetText(this.findShowForLabel(style.messageShowFor ?? NOTICE_SECONDS));
         parts.box.SetEnabled(choice === "custom");
         parts.box.SetAlpha(choice === "custom" ? 1 : OFF_ALPHA);

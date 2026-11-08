@@ -3,7 +3,6 @@
 // every spell of the book that has ranks. Plain lists; the window draws them.
 import { type PlayerService, type SpellsService, getItemButtonKey, readItemLook } from "@wowkit/wow";
 import { Warrior } from "@wowkit/wow-data";
-import { DEFENSIVE_EXECUTE_ROW } from "../glows/defensive-execute.service";
 import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { AddonLocale } from "../locale/locale.interface";
@@ -14,7 +13,7 @@ import type { FedBuffsService } from "../reminders/fed-buffs.service";
 import type { SealReminderService } from "../reminders/seal-reminder.service";
 import type { TrackingReminderService } from "../reminders/tracking-reminder.service";
 import type { WeaponChoiceService } from "../reminders/weapon/weapon-choice.service";
-import { ADDABLE_TYPES, TYPE_ORDER } from "../settings/settings.constants";
+import { ADDABLE_TYPES, TYPE_ORDER, DEFENSIVE_EXECUTE_ROW } from "../settings/settings.constants";
 import type { ReminderType, AddableType } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 

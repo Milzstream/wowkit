@@ -4,9 +4,12 @@
 // first one creates it and leaves it in the global WowkitNotices). Each addon owns a block of lines in it, so two
 // addons showing a message at the same time stack their blocks instead of drawing over each other.
 import { attempt } from "./utils/protected-call.utils";
+import type { HiddenAlpha } from "./value-curves.service";
 
 export const NOTICE_SECONDS = 10;
 const NOTICE_WIDTH = 700;
+/** How far above the shared messages the faded line is. */
+const FADED_LINE_ROOM = 36;
 /** How far below the top of the screen the messages are. */
 const NOTICE_TOP = 180;
 /** A message that zooms starts, or ends, this small, and takes this long. */
@@ -60,6 +63,9 @@ declare global {
 }
 
 export class NoticeService {
+    /** The line of showFadedText, made the first time it is asked for. */
+    private faded: { frame: Frame; text: FontString } | undefined;
+
     constructor(
         /** The addon that shows the messages: its block of lines in the shared notice. */
         private readonly owner: string,
@@ -101,6 +107,37 @@ export class NoticeService {
         this.applyLook(shared, look);
         const seconds = look?.seconds ?? NOTICE_SECONDS;
         if (seconds > 0) C_Timer.After(seconds, () => this.removeExpired(token));
+    }
+
+    /**
+     * A line whose opacity the client worked out from a value it hides from addons: its own frame, above the shared messages,
+     * since fading those would fade every other line too.
+     */
+    showFadedText(text: string, alpha: HiddenAlpha, look: { scale: number; top: number }): void {
+        const faded = this.faded ?? this.createFadedText();
+        faded.text.SetText(text);
+        faded.frame.SetScale(look.scale);
+        faded.frame.ClearAllPoints();
+        faded.frame.SetPoint("TOP", UIParent, "TOP", 0, -math.max(look.top - FADED_LINE_ROOM, 0) / look.scale);
+        // The client accepts the secret curve result here; addon code never reads it
+        faded.frame.SetAlpha(alpha as unknown as number);
+        faded.frame.Show();
+    }
+
+    clearFadedText(): void {
+        this.faded?.frame.Hide();
+    }
+
+    private createFadedText(): { frame: Frame; text: FontString } {
+        const frame = CreateFrame("Frame", undefined, UIParent);
+        frame.SetSize(NOTICE_WIDTH, 40);
+        frame.SetFrameStrata("FULLSCREEN_DIALOG");
+        const text = frame.CreateFontString(undefined, "OVERLAY", "GameFontNormalHuge");
+        text.SetPoint("CENTER");
+        text.SetWidth(NOTICE_WIDTH);
+        text.SetJustifyH("CENTER");
+        this.faded = { frame, text };
+        return this.faded;
     }
 
     /** This addon's message goes out now, without waiting for its time. */

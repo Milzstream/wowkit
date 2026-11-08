@@ -61,7 +61,12 @@ export function createDefaultSettings(): AddonSettings {
 
 /** The look of each type of reminder until the player changes it. The old ranks and the low reagents are a quiet hint. */
 /** The default looks of some spells, by type and spell ID: what they want unlike the rest of their type. */
+/** The row of Execute in Defensive Stance in the table: no spell has this ID, so its look and its switch are its own. */
+export const DEFENSIVE_EXECUTE_ROW = -Warrior.Execute;
+
 export const SPELL_STYLE_DEFAULTS: { [key in ReminderType]?: { [spellId: number]: StyleOverride | undefined } } = {
+    // Its row has a type of its own to tell apart from: "Proc" alone would say little
+    proc: { [DEFENSIVE_EXECUTE_ROW]: { messageTextChoice: "name" } },
     // Shield Block lasts 7 seconds: out of a fight it is no use
     missingBuff: { [Warrior.ShieldBlock]: { when: "inCombat" } },
 };

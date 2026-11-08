@@ -82,10 +82,11 @@ describe("the row of Execute in Defensive Stance", () => {
         return world;
     }
 
-    it("fades Message, its gear, Sound, Repeat and Glow time, and says why", () => {
+    it("fades Sound, Repeat and Glow time, and says why", () => {
         const world = openWorld();
-        expect(listTips(world, ROW_LABEL).length).toBe(5);
-        expect(findRow(world, ROW_LABEL).message.alpha).toBe(0.4);
+        expect(listTips(world, ROW_LABEL).length).toBe(3);
+        expect(findRow(world, ROW_LABEL).sound.alpha).toBe(0.4);
+        expect(findRow(world, ROW_LABEL).message.alpha).toBe(1);
     });
 
     it("leaves the row of Execute as it is", () => {
@@ -120,5 +121,37 @@ describe("the Spell ID of the row of Execute in Defensive Stance", () => {
         expect(world.getSavedSettings()?.idOverrides).toEqual({ "5308": 20662 });
         expect(findIdBox(world, ROW_LABEL).text).toBe("20662");
         expect(findIdBox(world, "Execute").text).toBe("20662");
+    });
+});
+
+describe("the message of Execute in Defensive Stance", () => {
+    /** The frame of a text on the screen, with no table open. */
+    function findText(world: World, text: string): FakeFrame | undefined {
+        return world.frames.find((frame) => frame.fontStrings.some((font) => font.text?.includes(text) === true));
+    }
+
+    const MESSAGE_ON = { spellStyles: { "proc:-5308": { isMessageOn: true } } };
+
+    it("is off by default", () => {
+        expect(findText(createExecuteWorld(DEFENSIVE_STANCE.id, 15), "Execute")).toBeUndefined();
+    });
+
+    it("shows the spell's name on a low target, and is unseen on a healthy one", () => {
+        expect(findText(createExecuteWorld(DEFENSIVE_STANCE.id, 15, MESSAGE_ON), "Execute")?.alpha).toBe(1);
+        expect(findText(createExecuteWorld(DEFENSIVE_STANCE.id, 80, MESSAGE_ON), "Execute")?.alpha).toBe(0);
+    });
+
+    it("says the player's own words", () => {
+        const world = createExecuteWorld(DEFENSIVE_STANCE.id, 15, {
+            spellStyles: { "proc:-5308": { isMessageOn: true, messageTextChoice: "custom", messageText: "SWITCH" } },
+        });
+        expect(findText(world, "SWITCH")).toBeDefined();
+    });
+
+    it("goes when the stance changes", () => {
+        const world = createExecuteWorld(DEFENSIVE_STANCE.id, 15, MESSAGE_ON);
+        world.state.activeStance = BATTLE_STANCE;
+        world.advance(1);
+        expect(findText(world, "Execute")?.isShown).toBe(false);
     });
 });

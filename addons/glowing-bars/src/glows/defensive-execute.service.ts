@@ -1,26 +1,27 @@
 // Execute in Defensive Stance. The game calls it unusable there, whatever the target's health, and hides that health from
 // addons, so nothing can tell when it could be used after a change of stance. The game can still do it itself: the glow is
 // lit on the button all the while, and its opacity comes from the target's hidden health through a curve (see
-// ValueCurvesService), so it shows only on a low target. The addon never learns whether it shows: no sound, no message and
-// no glow time can follow it. The table fades those on this row.
+// ValueCurvesService), so it shows only on a low target. Its message, if the player wants one, does the same. The addon
+// never learns whether they show: no sound and no glow time can follow them. The table fades those on this row.
 import { Interval } from "@wowkit/core";
 import type {
     ActionBarsService,
     ButtonGlow,
     GlowAnimation,
     GlowService,
+    NoticeService,
     PlayerService,
     SpellsService,
     ValueCurvesService,
 } from "@wowkit/wow";
 import { Warrior } from "@wowkit/wow-data";
 import type { IdleService } from "../character/idle.service";
-import type { AddonSettingsService } from "../settings/settings.interface";
+import type { AddonLocale } from "../locale/locale.interface";
+import { DEFENSIVE_EXECUTE_ROW } from "../settings/settings.constants";
+import type { AddonSettingsService, Style } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
+import { findWords } from "../tick/message-words";
 import { createWhenState, readWhenState } from "../tick/when-state";
-
-/** The row of this glow in the table: no spell has this ID, so its look and its switch are its own. */
-export const DEFENSIVE_EXECUTE_ROW = -Warrior.Execute;
 
 /** The curve ends here: its short ramp is over at 20%, where Execute can be used. */
 const CURVE_END_PERCENT = 22;
@@ -37,9 +38,11 @@ export class DefensiveExecuteService {
         private readonly spells: SpellsService,
         private readonly actionBars: ActionBarsService,
         private readonly glows: GlowService,
+        private readonly notice: NoticeService,
         private readonly curves: ValueCurvesService,
         private readonly styles: StyleService,
         private readonly settings: AddonSettingsService,
+        private readonly locale: AddonLocale,
         private readonly idle: IdleService,
     ) {}
 
@@ -54,12 +57,28 @@ export class DefensiveExecuteService {
                 : undefined;
         if (spellId === undefined || alpha === undefined) {
             this.glow?.clear();
+            this.notice.clearFadedText();
             return;
         }
+        this.updateText(style);
         const glow = this.takeGlow(style.animation);
         this.spellIds[0] = spellId;
         glow.show(this.spellIds, style.color);
         glow.setAlpha(alpha);
+    }
+
+    /** Its message, if the player wants one: as hidden from the addon as the glow is. */
+    private updateText(style: Style): void {
+        const alpha = style.isMessageOn ? this.curves.getHealthAlpha("target", CURVE_END_PERCENT, "below") : undefined;
+        if (alpha === undefined) {
+            this.notice.clearFadedText();
+            return;
+        }
+        const choice = this.styles.getMessageTextChoice("proc", DEFENSIVE_EXECUTE_ROW);
+        const name = this.spells.getSpellLabel(Warrior.Execute);
+        const { words } = findWords(choice, style.messageText, this.locale.getText("TEXT_PROC"), name);
+        const text = this.styles.applyTextColor(style.messageColor ?? style.color, words);
+        this.notice.showFadedText(text, alpha, { scale: this.settings.get("messageSize") / 100, top: this.settings.get("messageTop") });
     }
 
     /** The Execute to light: learned, on a bar and switched on, in Defensive Stance with a living enemy targeted. */

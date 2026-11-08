@@ -148,7 +148,6 @@ export class StyleChoicesService {
     /** Only in the Advanced view; dim until something was changed in it. */
     fillMessageGear(gear: Button, row: StyleRow, isAdvanced: boolean): void {
         gear.SetShown(isAdvanced);
-        if (row.isFadeOnly === true) return;
         const override = this.styles.getOverride(row.reminderType, row.spellId);
         gear.SetAlpha(
             (["messageTextChoice", "messageText", "messageColor", "messageShowFor"] as const).some((part) => override[part] !== undefined)

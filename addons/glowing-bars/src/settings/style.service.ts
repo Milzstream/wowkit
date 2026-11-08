@@ -77,7 +77,8 @@ export class StyleService {
         const defaults = SPELL_STYLE_DEFAULTS[reminderType];
         if (defaults === undefined || spellId === undefined) return {};
         for (const [id, look] of pairs(defaults)) {
-            if (id === spellId || this.spells.getSpellName(id as number) === this.spells.getSpellName(spellId)) return look ?? {};
+            const name = this.spells.getSpellName(spellId);
+            if (id === spellId || (name !== undefined && this.spells.getSpellName(id as number) === name)) return look ?? {};
         }
         return {};
     }
