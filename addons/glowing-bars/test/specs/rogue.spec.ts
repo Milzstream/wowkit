@@ -187,3 +187,33 @@ describe("a rogue with the poison items on the bars, as in the game", () => {
         expect(createRogueWorld([], []).glowsOn(11)).toBe(0);
     });
 });
+
+describe("a rogue with Instant Poison II in a macro, and a When on the row of Instant Poison", () => {
+    const MACRO = "#showtooltip\n/use [button:1] Instant Poison II; [button:2] Coarse Weightstone\n/use 17";
+
+    function createMacroWorld(isInCombat: boolean): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, ROGUE);
+                state.spells[8679] = { id: 8679, name: "Instant Poison", rank: 1, icon: 132273, isHelpful: true };
+                state.spells[8686] = { id: 8686, name: "Instant Poison II", rank: 1, icon: 132273, isHelpful: true };
+                state.itemUseSpells[6949] = 8686;
+                state.bags[6949] = 5;
+                state.barMacros[1] = { body: MACRO };
+                state.equippedItems[MAIN_HAND] = 1234;
+                state.isInCombat = isInCombat;
+            },
+            { spellStyles: { "weaponBuff:Instant Poison": { when: "inCombat" } } },
+        );
+        world.advance(2);
+        return world;
+    }
+
+    it("sees the macro glow in combat", () => {
+        expect(createMacroWorld(true).glowsOn(1)).toBe(1);
+    });
+
+    it("sees no glow out of combat, as the row says", () => {
+        expect(createMacroWorld(false).glowsOn(1)).toBe(0);
+    });
+});

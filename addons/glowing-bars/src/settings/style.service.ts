@@ -11,6 +11,8 @@ const PARTS: (keyof Style)[] = ["color", "glowPercent", "isMessageOn", "sound", 
 export class StyleService {
     /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
     private hasOwnLook: (this: void, spellId: number) => boolean = () => false;
+    /** The spell of the table's row of a weapon buff, for one of its ranks (see useWeaponBuffLooks). */
+    private findWeaponBuffRow: (this: void, spellId: number) => number = (spellId) => spellId;
 
     constructor(
         private readonly spells: SpellsService,
@@ -20,6 +22,11 @@ export class StyleService {
     /** Spells that share a name but are different things (foods, drinks) each keep a look of their own. */
     useOwnLooks(hasOwnLook: (this: void, spellId: number) => boolean): void {
         this.hasOwnLook = hasOwnLook;
+    }
+
+    /** The ranks of a poison or a stone each have a name of their own (Instant Poison II): their look is the one of the buff's row. */
+    useWeaponBuffLooks(findWeaponBuffRow: (this: void, spellId: number) => number): void {
+        this.findWeaponBuffRow = findWeaponBuffRow;
     }
 
     /** The look of a type of reminder, or of one spell of it: the spell's own, else the type's, else the default. */
@@ -119,7 +126,8 @@ export class StyleService {
 
     /** The key of a spell's look: its type and its name ("rank:Smite"). */
     private getStyleKey(reminderType: ReminderType, spellId: number): string {
-        return `${reminderType}:${this.hasOwnLook(spellId) ? string.format("%d", spellId) : this.getSpellKey(spellId)}`;
+        const id = reminderType === "weaponBuff" ? this.findWeaponBuffRow(spellId) : spellId;
+        return `${reminderType}:${this.hasOwnLook(id) ? string.format("%d", id) : this.getSpellKey(id)}`;
     }
 
     private isSameValue(a: unknown, b: unknown): boolean {
