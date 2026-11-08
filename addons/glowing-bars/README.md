@@ -4,6 +4,12 @@ A World of Warcraft: Forever addon (TOC `16001`) that lights up your action bars
 button you should press anyway glows. It replaces Buff Reminder, Rank Reminder and Reagent Reminder, and retires Know
 Your Rotation.
 
+**Works with your bars:** Blizzard's, Bartender4, Dominos, ElvUI, EllesmereUI and DaylightUI, and other bar addons are detected automatically. Not sure it sees yours? Type `/gb welcome`.
+
+**Shape your messages:** choose what each message says, its color, size and position, and how it appears.
+
+**New here?** The welcome window shows the two places for settings: Esc > Options > AddOns and `/gb`.
+
 - **Missing buffs**: every missing buff of your class list (Fortitude, Mark of the Wild, aspects, paladin auras,
   armors...) glows on its action button, all at once (one per group). Of a group (one aspect, one aura, one armor) any
   member counts. In combat, when the client hides auras, buffs you saw or cast are remembered.
