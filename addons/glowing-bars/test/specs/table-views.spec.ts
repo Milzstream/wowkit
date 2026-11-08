@@ -157,3 +157,14 @@ describe("the list of spells of the table", () => {
         expect(texts.indexOf("Spells (override the defaults)") < texts.indexOf("Ready cooldown")).toBe(true);
     });
 });
+
+describe("the X of the table", () => {
+    it("closes it by itself, also in a fight", () => {
+        const world = createOpenTable({});
+        world.state.isInCombat = true;
+        const window = world.findFrame((frame) => frame.name === "GlowingBarsLooks")!;
+        const close = world.frames.find((frame) => frame.parent === window && frame.template === "UIPanelCloseButton")!;
+        close.scripts.OnClick!(close);
+        expect(window.isShown).toBe(false);
+    });
+});
