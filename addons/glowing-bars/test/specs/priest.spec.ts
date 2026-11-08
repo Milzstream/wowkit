@@ -120,6 +120,7 @@ describe("a priest", () => {
     });
 
     it("stays quiet while resting in town", () => {
+        world.setOption("shouldStayQuietInTowns", true);
         world.state.isResting = true;
         world.fire("PLAYER_UPDATE_RESTING");
         world.advance(1);

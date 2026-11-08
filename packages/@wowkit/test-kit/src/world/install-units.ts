@@ -123,6 +123,7 @@ export function installUnits(state: ClientState): void {
         IsMounted: () => false,
         IsResting: () => state.isResting,
         IsSwimming: () => false,
+        UnitIsAFK: () => state.isAfk,
         GetInventoryItemID: (_unit, slot) => state.equippedItems[slot],
         GetNumShapeshiftForms: () => state.stances.length,
         // icon, active, castable, spell

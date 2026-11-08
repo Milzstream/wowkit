@@ -13,7 +13,8 @@ export function createDefaultSettings(): AddonSettings {
     return {
         isDisabled: false,
         shouldShowGreeting: true,
-        shouldStayQuietInTowns: true,
+        shouldStayQuietInTowns: false,
+        isAfkRainbowOn: false,
         roundAnimation: "breathing",
         isMissingBuffEnabled: true,
         isWeaponBuffEnabled: true,

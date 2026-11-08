@@ -63,7 +63,7 @@ describe("a priest with Smite rank 1 on the bar, who knows rank 2", () => {
     });
 
     it("keeps its settings in the character's saved variables", () => {
-        expect(world.getSavedSettings()?.shouldStayQuietInTowns).toBe(true);
+        expect(world.getSavedSettings()?.shouldStayQuietInTowns).toBe(false);
     });
 });
 
@@ -129,8 +129,8 @@ describe("a priest who knows Smite rank 2, with a macro for it on the bar", () =
 });
 
 describe("a priest resting in a town", () => {
-    it("is told nothing by default", () => {
-        const world = createWorld((state) => setUpPriest(state, true));
+    it("is told nothing with the quiet mode on", () => {
+        const world = createWorld((state) => setUpPriest(state, true), { shouldStayQuietInTowns: true });
         world.advance(3);
         expect(world.notice()).toBe("");
     });

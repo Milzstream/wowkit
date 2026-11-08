@@ -23,4 +23,9 @@ if (existsSync(logo)) {
     mkdirSync(`${outDir}/images`, { recursive: true });
     writeFileSync(`${outDir}/images/logo.tga`, convertPngToTga(readFileSync(logo), ICON_SIZE));
 }
+const welcomeHeader = `${addonDir}/assets/welcome-header.png`;
+if (existsSync(welcomeHeader)) {
+    mkdirSync(`${outDir}/images`, { recursive: true });
+    writeFileSync(`${outDir}/images/welcome-header.tga`, convertPngToTga(readFileSync(welcomeHeader), 512, 128));
+}
 console.log(`Packaged ${outDir}`);

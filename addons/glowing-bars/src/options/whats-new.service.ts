@@ -17,6 +17,8 @@ interface AccountData {
     lastVersion?: string;
     /** The player ticked the box: the window does not open by itself. */
     isWhatsNewOff?: boolean;
+    /** The welcome window has been shown to this account. */
+    isWelcomeDone?: boolean;
 }
 
 /** Is version `a` newer than `b`? Their numbers compared one by one. */
@@ -38,6 +40,8 @@ export class WhatsNewService implements OnAddonLoaded, OnLogin {
     private readonly window: WhatsNewWindow;
     /** The window is due, and waits for the fight to end. */
     private isWaitingForPeace = false;
+    /** The window is due, and waits for the welcome window to be closed. */
+    private isWaitingForWelcome = false;
 
     constructor(
         private readonly saved: SavedVariablesService,
@@ -66,7 +70,24 @@ export class WhatsNewService implements OnAddonLoaded, OnLogin {
         const hasNew = RELEASE_NOTES.some(
             (note) => note.hasNew && isNewerVersion(note.version, last) && !isNewerVersion(note.version, ADDON_VERSION),
         );
-        if (hasNew) this.clock.runAfter(OPEN_DELAY, () => this.openWhenAtPeace());
+        if (!hasNew) return;
+        if (this.isWelcomeDone()) this.clock.runAfter(OPEN_DELAY, () => this.openWhenAtPeace());
+        else this.isWaitingForWelcome = true;
+    }
+
+    /** The welcome window was closed: What's new, if it waited for that. */
+    openAfterWelcome(): void {
+        if (!this.isWaitingForWelcome) return;
+        this.isWaitingForWelcome = false;
+        this.openWhenAtPeace();
+    }
+
+    isWelcomeDone(): boolean {
+        return this.data.isWelcomeDone === true;
+    }
+
+    noteWelcomeDone(): void {
+        this.data.isWelcomeDone = true;
     }
 
     isOff(): boolean {

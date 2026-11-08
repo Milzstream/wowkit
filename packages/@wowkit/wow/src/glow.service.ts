@@ -7,6 +7,7 @@
 // through the children of its buttons, and a frame an addon made there taints it (the game then blocks its
 // SetPreferredGamepadInteractTarget). The glow follows the button through hooks on its showing and hiding instead.
 
+import { isSameButtons } from "./utils/glow-buttons.utils";
 import { showLoopPicture } from "./utils/glow-picture.utils";
 import { createLineGlow } from "./utils/glow-line.utils";
 import { BORDER_SCALE, createSoftFrame } from "./utils/glow-border.utils";
@@ -147,7 +148,7 @@ export class GlowService {
                     .filter((button) => isButtonShown === undefined || isButtonShown(button));
                 // The same spells on the same buttons: nothing to redraw. The buttons count too: the bars are mapped a few
                 // buttons a frame, so a spell may be found on more buttons than when it was first lit
-                if (key === last && !glowing.isEmpty() && this.isSameButtons(glowing, buttons)) return;
+                if (key === last && !glowing.isEmpty() && isSameButtons(glowing, buttons)) return;
                 clearGlow();
                 for (const button of buttons) {
                     if (!glowing.has(button)) {
@@ -159,6 +160,16 @@ export class GlowService {
                 last = key;
             },
         };
+    }
+
+    /** One button lit on its own, in a glow of its own key. */
+    showButtonGlow(glowKey: string, button: ActionButton, color: Rgb, animation: GlowAnimation): void {
+        this.showOverlay(this.getOverlay(button, glowKey, color, animation), button);
+    }
+
+    clearButtonGlow(glowKey: string, button: ActionButton): void {
+        const entry = this.overlays.get(button)?.get(glowKey);
+        if (entry !== undefined) this.hideOverlay(entry);
     }
 
     /** Lights a glow; one that is fading out is back at once, without fading in again. */
@@ -190,18 +201,6 @@ export class GlowService {
         if (entries === undefined) return false;
         for (const [, entry] of entries) if (entry.isWanted === true) return true;
         return false;
-    }
-
-    /** Does the glow already light exactly these buttons? */
-    private isSameButtons(glowing: LuaSet<ActionButton>, buttons: ActionButton[]): boolean {
-        const wanted = new LuaSet<ActionButton>();
-        for (const button of buttons) {
-            if (!glowing.has(button)) return false;
-            wanted.add(button);
-        }
-        // Every wanted button glows already; none glows that is not wanted
-        for (const button of glowing) if (!wanted.has(button)) return false;
-        return true;
     }
 
     private getOverlay(button: ActionButton, key: string, [r, g, b]: Rgb, animation: GlowAnimation): Overlay {

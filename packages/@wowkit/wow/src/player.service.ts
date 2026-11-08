@@ -36,6 +36,11 @@ export class PlayerService {
         return attempt(IsResting) === true;
     }
 
+    /** Is the player away from the keyboard? */
+    isAfk(): boolean {
+        return getReadable(attempt(UnitIsAFK, "player")) === true;
+    }
+
     isSwimming(): boolean {
         return attempt(IsSwimming) === true;
     }

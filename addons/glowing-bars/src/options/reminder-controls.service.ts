@@ -10,6 +10,7 @@ import type { AddonSettings, AddonSettingsService } from "../settings/settings.i
 type FeatureKey =
     | "shouldShowGreeting"
     | "shouldStayQuietInTowns"
+    | "isAfkRainbowOn"
     | "isMissingBuffEnabled"
     | "isWeaponBuffEnabled"
     | "showPartyBuffs"

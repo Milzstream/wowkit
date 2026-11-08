@@ -1,6 +1,7 @@
 // Putting the addon together: every service is made here, with the services it needs, dependencies first.
 // The order of the lines is also the order the lifecycle hooks run in. The wiring is split in stages: Lua 5.1 lets a
 // function reach at most 60 outer names, and one function naming every service would reach more.
+import { makeGame, type Game } from "./game-services";
 import { Addon } from "@wowkit/core";
 import {
     ControlsService,
@@ -11,30 +12,7 @@ import {
     SettingsService,
     WidgetsService,
 } from "@wowkit/ui";
-import {
-    ActionBarsService,
-    AurasService,
-    BagsService,
-    BarFadeService,
-    BarRefreshService,
-    ButtonRegistryService,
-    ClockService,
-    CooldownsService,
-    GlowService,
-    NoticeService,
-    PartyService,
-    PlayerService,
-    SavedVariablesService,
-    SpellBookService,
-    SpellCastService,
-    SpellDetailsService,
-    SpellRefreshService,
-    SpellsService,
-    TooltipService,
-    WeaponEnchantsService,
-    ValueCurvesService,
-} from "@wowkit/wow";
-import { registerPublicApi } from "./api/public-api";
+import { NoticeService, SavedVariablesService, ValueCurvesService } from "@wowkit/wow";
 import { AuraWatchService } from "./character/aura-watch.service";
 import { BlockedActionService } from "./character/blocked-action.service";
 import { BuffMemoryService } from "./character/buff-memory.service";
@@ -46,6 +24,7 @@ import { RosterService } from "./character/roster.service";
 import { CooldownTrackerService } from "./glows/cooldown-tracker.service";
 import { AddedSpellsService } from "./glows/added-spells.service";
 import { GlowCuesService } from "./glows/glow-cues.service";
+import { AfkRainbowService } from "./glows/afk-rainbow.service";
 import { StanceProcsService } from "./glows/stance-procs.service";
 import { BuffKnowledgeService } from "./knowledge/buff-knowledge.service";
 import { TEXTS } from "./locale/texts.constants";
@@ -60,6 +39,8 @@ import { StyleRowsService } from "./options/style-rows.service";
 import { StyleTableService } from "./options/style-table.service";
 import { StyleWindowService } from "./options/style-window.service";
 import { TableCommand } from "./options/table-command";
+import { ScanReport } from "./options/scan-report";
+import { WelcomeService } from "./options/welcome.service";
 import { WhatsNewService } from "./options/whats-new.service";
 import { RemindersPage } from "./options/reminders.page";
 import { WeaponSection } from "./options/weapon.section";
@@ -79,7 +60,7 @@ import { WEAPON_BUFF_BY_SPELL } from "./reminders/weapon/weapon-buffs.constants"
 import { WeaponMemoryService } from "./reminders/weapon/weapon-memory.service";
 import { WeaponReadingService } from "./reminders/weapon/weapon-reading.service";
 import { WeaponReminderService } from "./reminders/weapon/weapon-reminder.service";
-import { ACCOUNT_VARIABLES_NAME, SAVED_VARIABLES_NAME, createDefaultSettings, repairSettings } from "./settings/settings.constants";
+import { ACCOUNT_VARIABLES_NAME, createDefaultSettings, repairSettings } from "./settings/settings.constants";
 import type { AddonSettings } from "./settings/settings.interface";
 import { StyleService } from "./settings/style.service";
 import { EnabledService } from "./settings/enabled.service";
@@ -96,54 +77,10 @@ export function startAddon(addonName: string): void {
     const texts = makeTexts(addon, game);
     const buffs = makeBuffs(addon, game, texts);
     const reminders = makeReminders(addon, addonName, game, texts, buffs);
-    makeTick(addon, addonName, game, texts, buffs, reminders);
-    makeOptions(addon, addonName, game, texts, buffs, reminders);
+    const finder = makeTick(addon, addonName, game, texts, buffs, reminders);
+    makeOptions(addon, addonName, game, texts, buffs, reminders, finder);
     addon.start();
 }
-
-/** The game's door. */
-function makeGame(addon: Addon, addonName: string) {
-    const clock = addon.register(new ClockService());
-    const player = addon.register(new PlayerService());
-    const party = addon.register(new PartyService());
-    const bags = addon.register(new BagsService());
-    const savedVariables = addon.register(new SavedVariablesService(SAVED_VARIABLES_NAME));
-    const spellBook = addon.register(new SpellBookService(addon.events));
-    const spells = addon.register(new SpellsService(spellBook, addon.events));
-    addon.register(new SpellCastService(player, spells, addon.events));
-    addon.register(new SpellRefreshService(spells, clock, addon.events));
-    const spellDetails = addon.register(new SpellDetailsService());
-    const cooldowns = addon.register(new CooldownsService());
-    const auras = addon.register(new AurasService(spells));
-    const buttonRegistry = addon.register(new ButtonRegistryService());
-    registerPublicApi(buttonRegistry);
-    const actionBars = addon.register(new ActionBarsService(clock, spells, addon.events, buttonRegistry));
-    const barRefresh = addon.register(new BarRefreshService(actionBars, clock, buttonRegistry));
-    const weaponEnchants = addon.register(new WeaponEnchantsService());
-    const glow = addon.register(new GlowService(actionBars));
-    const barFade = addon.register(new BarFadeService(glow, buttonRegistry));
-    const notice = addon.register(new NoticeService(addonName));
-    const tooltips = addon.register(new TooltipService());
-    return {
-        clock,
-        player,
-        party,
-        bags,
-        savedVariables,
-        spells,
-        spellDetails,
-        cooldowns,
-        auras,
-        actionBars,
-        barRefresh,
-        weaponEnchants,
-        glow,
-        barFade,
-        notice,
-        tooltips,
-    };
-}
-type Game = ReturnType<typeof makeGame>;
 
 /** Settings, texts and messages. */
 function makeTexts(addon: Addon, game: Game) {
@@ -190,6 +127,7 @@ function makeReminders(addon: Addon, addonName: string, game: Game, texts: Texts
     // A spell the player gave another ID is asked of that ID everywhere: buffs, weapon buffs, reagents, cooldowns, procs
     game.spells.useIdAlias((spellId) => addedSpells.getEffectiveId(spellId));
     const tracker = addon.register(new CooldownTrackerService(game.spells, game.cooldowns, game.clock));
+    addon.register(new AfkRainbowService(game.buttonSearch, game.glow, game.clock, game.player, settings));
     const stanceProcs = addon.register(new StanceProcsService(game.player, game.spells, game.clock, addon.events));
     const glowCues = addon.register(
         new GlowCuesService(game.player, game.spells, game.spellDetails, game.actionBars, tracker, settings, addedSpells, stanceProcs),
@@ -247,6 +185,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
     addon.register(new AuraWatchService(refresh, buffs.state, reminders.weapon));
     addon.register(new RosterService(refresh, reminders.party));
     addon.register(new BlockedActionService(addonName, game.player, messages, locale));
+    return finder;
 }
 
 /** The table of looks (/gb), and its command. */
@@ -280,7 +219,15 @@ function makeTable(addon: Addon, addonName: string, game: Game, texts: Texts, bu
 }
 
 /** The Settings panel. */
-function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, buffs: Buffs, reminders: Reminders) {
+function makeOptions(
+    addon: Addon,
+    addonName: string,
+    game: Game,
+    texts: Texts,
+    buffs: Buffs,
+    reminders: Reminders,
+    finder: FindRemindersService,
+) {
     const { settings, locale, messages } = texts;
     const controls = addon.register(new ControlsService<AddonSettings>(settings, messages, addonName));
     const widgets = addon.register(
@@ -298,7 +245,10 @@ function makeOptions(addon: Addon, addonName: string, game: Game, texts: Texts, 
     const whatsNew = addon.register(
         new WhatsNewService(new SavedVariablesService(ACCOUNT_VARIABLES_NAME), locale, game.clock, game.player),
     );
-    addon.register(new TableCommand(table, whatsNew));
+    const { buttonSearch, glow, clock, player } = game;
+    const report = new ScanReport(game.actionBars, game.spells, player, () => finder.findReminders());
+    const welcome = addon.register(new WelcomeService(buttonSearch, glow, clock, player, locale, settings, whatsNew, messages, report));
+    addon.register(new TableCommand(table, whatsNew, welcome));
     const page = addon.register(
         new RemindersPage(
             locale,

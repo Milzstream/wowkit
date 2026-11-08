@@ -221,7 +221,7 @@ describe("a priest with an old rank on the bar who arrives in a town", () => {
                 for (const spell of [SMITE_RANK_1, SMITE_RANK_2]) learnSpell(state, spell);
                 state.bars[3] = SMITE_RANK_1.id;
             },
-            { styles: { lowReagent: { isMessageOn: true } } },
+            { shouldStayQuietInTowns: true, styles: { lowReagent: { isMessageOn: true } } },
         );
         world.advance(3);
         expect(world.notice()).toContain("Old spell rank");

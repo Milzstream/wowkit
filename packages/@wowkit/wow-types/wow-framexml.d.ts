@@ -31,6 +31,8 @@ declare function GetActionInfo(
 declare function GetMacroSpell(macro: number | string): number | undefined;
 declare function GetMacroBody(macro: number | string): string | undefined;
 declare function GetActionText(slot: number): string | undefined;
+/** The next frame of the game after this one; the first with none given. */
+declare function EnumerateFrames(frame?: Frame): Frame | undefined;
 declare function GetMacroIndexByName(name: string): number;
 declare function GetNumShapeshiftForms(): number;
 declare function GetShapeshiftFormInfo(

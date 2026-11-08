@@ -1,27 +1,28 @@
 import { PNG } from "pngjs";
 
 /**
- * Turns a PNG into the bytes of a square TGA (32 bit, uncompressed, rows bottom to top): the image format the game
- * reads for an addon's icon. The picture is scaled to `size` by averaging the pixels each new pixel covers, so a
- * large PNG (512 px) becomes a smooth small icon (128 px). The size must be a power of two, as the game wants.
+ * Turns a PNG into the bytes of a TGA (32 bit, uncompressed, rows bottom to top): the image format the game reads for an
+ * addon's pictures. The picture is scaled to `width` by `height` (square when no height is given) by averaging the pixels
+ * each new pixel covers, so a large PNG (512 px) becomes a smooth small icon (128 px). Both must be powers of two, as the
+ * game wants.
  */
-export function convertPngToTga(pngBytes: Buffer, size: number): Buffer {
+export function convertPngToTga(pngBytes: Buffer, width: number, height = width): Buffer {
     const source = PNG.sync.read(pngBytes);
-    const scaleX = source.width / size;
-    const scaleY = source.height / size;
+    const scaleX = source.width / width;
+    const scaleY = source.height / height;
     const header = Buffer.alloc(18);
     header[2] = 2;
-    header.writeUInt16LE(size, 12);
-    header.writeUInt16LE(size, 14);
+    header.writeUInt16LE(width, 12);
+    header.writeUInt16LE(height, 14);
     header[16] = 32;
     header[17] = 8;
-    const body = Buffer.alloc(size * size * 4);
+    const body = Buffer.alloc(width * height * 4);
 
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
             const [red, green, blue, alpha] = averageArea(source, x * scaleX, y * scaleY, scaleX, scaleY);
             // TGA rows start at the bottom, and its pixels are blue, green, red, alpha
-            const out = ((size - 1 - y) * size + x) * 4;
+            const out = ((height - 1 - y) * width + x) * 4;
             body[out] = blue;
             body[out + 1] = green;
             body[out + 2] = red;

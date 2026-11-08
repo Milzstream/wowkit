@@ -81,6 +81,7 @@ export class RemindersPage implements OptionsPage {
             (isChecked) => this.settings.change("isDisabled", isChecked),
         );
         this.reminderControls.addSwitch(category, "shouldStayQuietInTowns", "OPT_STAY_QUIET_IN_TOWNS", "TIP_STAY_QUIET_IN_TOWNS");
+        this.reminderControls.addSwitch(category, "isAfkRainbowOn", "OPT_AFK_RAINBOW", "TIP_AFK_RAINBOW");
         this.reminderControls.addSwitch(category, "shouldShowGreeting", "OPT_SHOW_GREETING", "TIP_SHOW_GREETING");
 
         // The party members: a part of the buff reminder that is not one buff
