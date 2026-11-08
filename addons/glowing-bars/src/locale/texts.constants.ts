@@ -139,9 +139,9 @@ export const TEXTS = {
     OPT_MESSAGE_SIZE_PULSE: "Pulse (size)",
     TIP_MESSAGE_SIZE_PULSE: "Messages keep growing and shrinking while they are on screen. Default: off.",
     TIP_ALPHA_PROC:
-        "Experimental: it glows when the game shows this spell as free or instant. If it doesn't work for you, switch it off with Enabled and tell me.",
+        "Experimental: it glows when the game shows this spell as free or instant. If it doesn't work for you, switch it off in the Enabled column and tell me.",
     TIP_ALPHA_EXECUTE:
-        "Experimental: the game shows this glow by itself on a low target, without telling the addon. If it doesn't work for you, switch it off with Enabled and tell me.",
+        "Experimental: the game shows this glow by itself on a low target, without telling the addon. If it doesn't work for you, switch it off in the Enabled column and tell me.",
     WELCOME_TEXT:
         "It makes your action buttons glow when something needs doing. Its settings are in two places: Esc > Options > AddOns, and the table you open with /gb.",
     WELCOME_QUIET_TIP: "When ticked, reminders stay quiet while you are in a town or an inn.",
