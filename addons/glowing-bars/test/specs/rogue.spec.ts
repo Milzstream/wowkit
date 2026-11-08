@@ -1,3 +1,4 @@
+import { findLabel } from "./table.helpers";
 import {
     beforeEach,
     describe,
@@ -215,5 +216,72 @@ describe("a rogue with Instant Poison II in a macro, and a When on the row of In
 
     it("sees no glow out of combat, as the row says", () => {
         expect(createMacroWorld(false).glowsOn(1)).toBe(0);
+    });
+});
+
+describe("a rogue who added a sharpening stone by the spell it casts, as a weapon buff", () => {
+    function createStoneWorld(count: number): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, ROGUE);
+                state.spells[2828] = { id: 2828, name: "Sharpen Blade", rank: 1, icon: 135248, isHelpful: true };
+                state.itemUseSpells[2862] = 2828;
+                state.barItems[1] = 2862;
+                state.bags[2862] = count;
+                state.equippedItems[MAIN_HAND] = 1234;
+            },
+            { addedSpells: [{ id: 2828, reminderType: "weaponBuff" }] },
+        );
+        world.advance(2);
+        return world;
+    }
+
+    it("sees the stone glow while the main hand has nothing on it", () => {
+        expect(createStoneWorld(5).glowsOn(1)).toBe(1);
+    });
+
+    it("sees no glow once the main hand has something on it", () => {
+        const world = createStoneWorld(5);
+        world.state.enchants[MAIN_HAND] = poisonLasting(40, 3600);
+        world.advance(2);
+        expect(world.glowsOn(1)).toBe(0);
+    });
+
+    it("sees no glow with no stone left", () => {
+        expect(createStoneWorld(0).glowsOn(1)).toBe(0);
+    });
+});
+
+describe("the table of a rogue who added a sharpening stone", () => {
+    function openTable(barItem: number | undefined, saved: Record<string, unknown> = {}): World {
+        const world = createWorld(
+            (state) => {
+                playAs(state, ROGUE);
+                state.spells[2828] = { id: 2828, name: "Sharpen Blade", rank: 1, icon: 135248, isHelpful: true };
+                state.itemUseSpells[2862] = 2828;
+                state.itemNames[2862] = "Rough Sharpening Stone";
+                state.barItems[1] = barItem;
+                state.bags[2862] = 5;
+                state.equippedItems[MAIN_HAND] = 1234;
+            },
+            { addedSpells: [{ id: 2828, reminderType: "weaponBuff" }], ...saved },
+        );
+        world.advance(2);
+        SlashCmdList["GLOWINGBARS"]!("", undefined as never);
+        return world;
+    }
+
+    it("names the row after the stone on the bar", () => {
+        const world = openTable(2862);
+        expect(findLabel(world, "Rough Sharpening Stone")).toBeDefined();
+        expect(findLabel(world, "Sharpen Blade")).toBeUndefined();
+    });
+
+    it("keeps the stone's name when it has left the bars", () => {
+        expect(findLabel(openTable(undefined, { fedItems: { "2828": 2862 } }), "Rough Sharpening Stone")).toBeDefined();
+    });
+
+    it("goes by the spell's name until the stone has been on a bar", () => {
+        expect(findLabel(openTable(undefined), "Sharpen Blade")).toBeDefined();
     });
 });

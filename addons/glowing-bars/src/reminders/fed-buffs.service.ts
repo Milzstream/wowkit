@@ -96,9 +96,8 @@ export class FedBuffsService {
             .some((button) => this.findButtonSpell(button) === spellId && !isOutOfItem(this.actionBars, button));
     }
 
-    /** The item of a food or drink the player added, by what a button holds; kept once seen, for when it leaves the bars. */
+    /** The item behind a spell the player added (a food, a drink, a sharpening stone), by what a button holds; kept once seen, for when it leaves the bars. */
     findItemLook(spellId: number): { name: string | undefined; iconId: number | undefined } | undefined {
-        if (!this.isFedSpell(spellId)) return undefined;
         const key = string.format("%d", spellId);
         const button = this.actionBars.findButtonsOf(spellId).find((candidate) => this.findButtonSpell(candidate) === spellId);
         const seen = button !== undefined ? findButtonItem(this.actionBars, button) : undefined;

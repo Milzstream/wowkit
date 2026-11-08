@@ -77,9 +77,18 @@ export class StyleRowsService {
         return this.fedBuffs.isFedSpell(spellId);
     }
 
-    /** How a row shows a spell. A food or drink the player added goes by its item: the spell's name is the same for all of them. */
-    private readLook(spellId: number, name: string, isAdded: boolean): { key: string; label: string; iconId: number | undefined } {
-        const item = isAdded ? this.fedBuffs.findItemLook(spellId) : undefined;
+    /**
+     * How a row shows a spell. A food or drink the player added goes by its item (the spell's name is the same for all of
+     * them), and so does a weapon buff put on with an item (Rough Sharpening Stone, not Sharpen Blade).
+     */
+    private readLook(
+        reminderType: ReminderType,
+        spellId: number,
+        name: string,
+        isAdded: boolean,
+    ): { key: string; label: string; iconId: number | undefined } {
+        const hasItem = isAdded && (reminderType === "weaponBuff" || this.isSharingName(spellId));
+        const item = hasItem ? this.fedBuffs.findItemLook(spellId) : undefined;
         return {
             key: isAdded && this.isSharingName(spellId) ? string.format("%d", spellId) : name,
             label: item?.name ?? this.spells.getSpellLabel(spellId) ?? name,
@@ -112,7 +121,7 @@ export class StyleRowsService {
         const add = (reminderType: ReminderType, spellId: number | undefined, extra: Partial<StyleRow> = {}, suffix?: string) => {
             if (spellId === undefined) return;
             const name = this.styles.getSpellKey(spellId);
-            const look = this.readLook(spellId, name, extra.isAdded === true);
+            const look = this.readLook(reminderType, spellId, name, extra.isAdded === true);
             // A spell the player added has a row of its own even when a list has it as another type: it glows on its own too
             const key = extra.isAdded === true ? `${reminderType}:${look.key}` : suffix !== undefined ? `${name}|${suffix}` : name;
             if (keys.has(key)) return;
