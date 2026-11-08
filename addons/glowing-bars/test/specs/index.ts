@@ -10,6 +10,7 @@ import "./druid.spec";
 import "./hunter.spec";
 import "./shaman.spec";
 import "./rogue.spec";
+import "./rogue-macros.spec";
 import "./ranks.spec";
 import "./town.spec";
 import "./glows.spec";

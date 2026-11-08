@@ -81,10 +81,7 @@ export class FindRemindersService {
 
         const none = this.noReminders;
         const found = this.findBuffReminders();
-        const isWeaponBuffEnabled = this.settings.get("isWeaponBuffEnabled");
-        const weaponCheck = isWeaponBuffEnabled ? this.weaponReminder.check() : undefined;
-        found.weaponSpell = weaponCheck?.isNeeded ? weaponCheck.spellId : undefined;
-        found.addedWeaponSpells = isWeaponBuffEnabled ? this.addedReminders.findWeaponSpells() : none.addedWeaponSpells;
+        this.addWeaponReminders(found);
         found.seals = this.sealReminder.findMissingSeal();
         found.trackings = this.trackingReminder.findMissingTrackings();
         found.outdatedRanks = this.settings.get("isOldRankEnabled") ? this.outdatedRanks.findOutdatedRanks() : none.outdatedRanks;
@@ -94,6 +91,17 @@ export class FindRemindersService {
         found.lowReagents = lowReagents;
         found.lowStock = lowStock;
         return found;
+    }
+
+    /** The weapon buffs, into the answer of this tick. */
+    private addWeaponReminders(found: Reminders): void {
+        // Unarmed there is nothing to put a weapon buff on
+        const isWeaponBuffEnabled = this.settings.get("isWeaponBuffEnabled") && this.player.isMainHandWeaponEquipped();
+        const weaponCheck = isWeaponBuffEnabled ? this.weaponReminder.check() : undefined;
+        found.weaponSpell = weaponCheck?.isNeeded ? weaponCheck.spellId : undefined;
+        found.weaponHandSlot = weaponCheck?.isNeeded ? weaponCheck.handSlot : undefined;
+        found.coveredWeaponButtons = isWeaponBuffEnabled ? this.addedReminders.findCoveredButtons() : this.noReminders.coveredWeaponButtons;
+        found.addedWeaponSpells = isWeaponBuffEnabled ? this.addedReminders.findWeaponSpells() : this.noReminders.addedWeaponSpells;
     }
 
     /** The missing buffs, the player's and the party's, into the answer of this tick. */

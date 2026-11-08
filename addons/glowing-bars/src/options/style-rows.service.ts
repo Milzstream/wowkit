@@ -91,13 +91,14 @@ export class StyleRowsService {
         spellId: number,
         name: string,
         isAdded: boolean,
-    ): { key: string; label: string; iconId: number | undefined } {
+    ): { key: string; label: string; iconId: number | undefined; isFromItem: boolean } {
         const hasItem = isAdded && (reminderType === "weaponBuff" || this.isSharingName(spellId));
         const item = hasItem ? this.fedBuffs.findItemLook(spellId) : undefined;
         return {
             key: isAdded && this.isSharingName(spellId) ? string.format("%d", spellId) : name,
             label: item?.name ?? this.spells.getSpellLabel(spellId) ?? name,
             iconId: item?.iconId ?? this.spells.getSpellInfo(spellId)?.iconID,
+            isFromItem: item !== undefined,
         };
     }
 
@@ -136,7 +137,8 @@ export class StyleRowsService {
                 spellId,
                 label: suffix !== undefined ? `${look.label} (${suffix})` : look.label,
                 iconId: look.iconId,
-                isLearned: extra.itemId !== undefined ? undefined : this.spells.isLearned(spellId),
+                // What goes through an item is never learned: having it is what counts
+                isLearned: extra.itemId !== undefined || look.isFromItem ? undefined : this.spells.isLearned(spellId),
                 ...extra,
             });
         };

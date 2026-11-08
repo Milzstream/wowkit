@@ -90,7 +90,7 @@ export interface ClientState {
     /** Action slot (1-12 for the main bar) -> the spell on it. */
     bars: { [slot: number]: number | undefined };
     /** The macros on the bars, by action slot: the text, and the spell the game says the macro casts. */
-    barMacros: { [slot: number]: { body: string; spellId?: number } | undefined };
+    barMacros: { [slot: number]: { body: string; spellId?: number; name?: string; isShowingItem?: boolean } | undefined };
     /** A spell asked for by name answers with its first rank, not its highest. */
     isFirstRankByName: boolean;
     /** The buffs on the player, in the order the game lists them. */

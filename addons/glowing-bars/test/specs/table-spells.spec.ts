@@ -234,6 +234,7 @@ describe("the spells of other types a player adds", () => {
     });
 
     it("lights an added weapon buff while the weapon has no temporary enchant", () => {
+        world.state.equippedItems[16] = 1234;
         addAs(SHARPEN.id, "Weapon buff");
         expect(world.glowsOn(2)).toBe(1);
     });

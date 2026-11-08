@@ -18,8 +18,12 @@ export function installItems(state: ClientState, sounds: number[]): void {
         },
         // Every equipped item is a one-handed mace: item class 2 is a weapon
         GetItemInfoInstant: (item) => $multi(item as number, "Weapon", "Mace", "INVTYPE_WEAPON", 0, 2, 4),
-        // The name is not needed by the addon, only the ID
-        GetItemSpell: (item) => $multi(undefined, state.itemUseSpells[item as number]),
+        // By ID; by name only of what is in the bags, as the game does. The name it gives is not needed by the addon, only the ID
+        GetItemSpell: (item) => {
+            if (type(item) !== "string") return $multi(undefined, state.itemUseSpells[item as number]);
+            const id = state.itemIds[item as string];
+            return $multi(undefined, id !== undefined && (state.bags[id] ?? 0) > 0 ? state.itemUseSpells[id] : undefined);
+        },
         // By ID, or by a name the test gave an item ID
         GetItemCount: (item) => state.bags[(type(item) === "string" ? state.itemIds[item as string] : (item as number)) ?? 0] ?? 0,
         GetItemNameByID: (item) => state.itemNames[item as number],

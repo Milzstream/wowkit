@@ -30,6 +30,8 @@ declare function GetActionInfo(
 ): LuaMultiReturn<[actionType: string | undefined, id: number | undefined, subType: string | undefined, spellId: number | undefined]>;
 declare function GetMacroSpell(macro: number | string): number | undefined;
 declare function GetMacroBody(macro: number | string): string | undefined;
+declare function GetActionText(slot: number): string | undefined;
+declare function GetMacroIndexByName(name: string): number;
 declare function GetNumShapeshiftForms(): number;
 declare function GetShapeshiftFormInfo(
     index: number,

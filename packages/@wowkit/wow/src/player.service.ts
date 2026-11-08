@@ -5,7 +5,7 @@ import { OnGameEvent } from "@wowkit/core";
 import { Consumable } from "@wowkit/wow-data";
 import { attempt, attemptMulti, tryCall } from "./utils/protected-call.utils";
 import { getReadable, isReadable } from "./utils/secret-value.utils";
-import { OFF_HAND_SLOT, RANGED_SLOT } from "./wow.constants";
+import { MAIN_HAND_SLOT, OFF_HAND_SLOT, RANGED_SLOT } from "./wow.constants";
 
 /** A point in the world: yards on the map, and the map's ID. */
 export interface WorldPosition {
@@ -134,6 +134,11 @@ export class PlayerService {
     }
 
     /** Is a weapon (not a shield or a held item) in the off-hand slot? */
+    /** Is anything held in the main hand? */
+    isMainHandWeaponEquipped(): boolean {
+        return this.getEquippedItemId(MAIN_HAND_SLOT) !== undefined;
+    }
+
     isOffhandWeaponEquipped(): boolean {
         const itemId = this.getEquippedItemId(OFF_HAND_SLOT);
         if (itemId === undefined) return false;

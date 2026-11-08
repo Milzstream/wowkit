@@ -3,7 +3,7 @@
 // (weapon-reading.service.ts), the timeline the reminder remembers (weapon-memory.service.ts) and
 // what to do with a reading (weapon-reactions.ts).
 
-import type { ClockService, WeaponEnchantsService } from "@wowkit/wow";
+import { MAIN_HAND_SLOT, OFF_HAND_SLOT, type ClockService, type WeaponEnchantsService } from "@wowkit/wow";
 import type { WeaponCheck } from "../reminders.interface";
 import type { WeaponChoiceService } from "./weapon-choice.service";
 import type { WeaponMemoryService, Hand } from "./weapon-memory.service";
@@ -67,7 +67,7 @@ export class WeaponReminderService {
         const reading = this.reading.readWeaponBuff(pick.entry);
         const { remain, isNeeded } = reactToReading(this.memory, pick.entry, reading, this.clock.getCurrentTime());
         this.wasNeededLast = isNeeded;
-        return { spellId: pick.spellId, remain, isNeeded };
+        return { spellId: pick.spellId, remain, isNeeded, handSlot: MAIN_HAND_SLOT };
     }
 
     /** One hand of a two-weapon class: its spell when it needs a reminder. */
@@ -93,9 +93,16 @@ export class WeaponReminderService {
     /** Two coated weapons (rogue): each hand on its own; the first one that needs a poison wins. */
     private checkBothHands(): WeaponCheck {
         const now = this.clock.getCurrentTime();
-        const due = this.checkHand(false, now) ?? this.checkHand(true, now);
+        const main = this.checkHand(false, now);
+        const due = main ?? this.checkHand(true, now);
         this.wasNeededLast = due !== undefined;
-        if (due) return { spellId: due.spellId, remain: due.remain, isNeeded: true };
+        if (due)
+            return {
+                spellId: due.spellId,
+                remain: due.remain,
+                isNeeded: true,
+                handSlot: main !== undefined ? MAIN_HAND_SLOT : OFF_HAND_SLOT,
+            };
         return { spellId: this.choice.findSelectedWeaponBuff(false)?.spellId, remain: 0, isNeeded: false };
     }
 }

@@ -38,6 +38,8 @@ export interface WeaponCheck {
     remain: number;
     /** Remind now (missing, wrong, or about to run out). */
     isNeeded: boolean;
+    /** The weapon it is about. */
+    handSlot?: number;
 }
 
 export interface PickedWeaponBuff {

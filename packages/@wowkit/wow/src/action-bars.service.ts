@@ -5,11 +5,11 @@
 // client when many slots updated after a quest turn-in), and map the bars a few buttons per frame.
 // The client's own bars are mapped (Blizzard's, and the gamepad bars Forever draws in its gamepad mode), and Bartender4's,
 // Dominos's and EllesmereUI's: their buttons keep their action slot where Blizzard's do.
-import { type EventBus, type OnFirstLogin, trimText } from "@wowkit/core";
+import { type EventBus, OnGameEvent, type OnFirstLogin, trimText } from "@wowkit/core";
 import type { ButtonRegistryService, ButtonShape } from "./button-registry.service";
 import type { ClockService } from "./clock.service";
-import { findButtonItem, findItemUseSpell, getItemButtonKey } from "./utils/item-button.utils";
-import { listMacroTokens } from "./utils/macro-text.utils";
+import { findButtonItem, findItemUseSpell, getItemButtonKey, readTextureKey } from "./utils/item-button.utils";
+import { findMacroOfSlot, readMacroSpells } from "./utils/macro-text.utils";
 import { attempt, attemptMulti } from "./utils/protected-call.utils";
 import { getReadableId, isReadable } from "./utils/secret-value.utils";
 import type { SpellsService } from "./spells.service";
@@ -49,6 +49,10 @@ export class ActionBarsService implements OnFirstLogin {
     private mapGeneration = 0;
     /** When the player last changed the bars (a form, a stance, a page, a slot); the map is old until it is mapped again. */
     private barsChangedAt = -10;
+    /** Does a macro on the bars use something the game could not name: an item the player may not have yet? */
+    private hasUnknownMacroUse = false;
+    /** The weapon each macro button puts something on, where its text says (/use 16 or /use 17). */
+    private readonly handSlotOfButton = new LuaMap<ActionButton, number>();
 
     constructor(
         private readonly clock: ClockService,
@@ -70,6 +74,12 @@ export class ActionBarsService implements OnFirstLogin {
         return this.clock.getCurrentTime() - this.barsChangedAt;
     }
 
+    /** An item came into the bags: a macro that uses it is read again, now that the game can tell what it is. */
+    @OnGameEvent("BAG_UPDATE_DELAYED")
+    mapBarsForMacroItems(): void {
+        if (this.hasUnknownMacroUse) this.mapBars(false);
+    }
+
     /** Maps every action button, a few per frame. `isForced` ignores the throttle. */
     mapBars(isForced: boolean): void {
         if (!isForced && this.lastMapAt > 0 && this.clock.getCurrentTime() - this.lastMapAt < MAP_THROTTLE) return;
@@ -79,6 +89,8 @@ export class ActionBarsService implements OnFirstLogin {
         this.clear(this.buttonsByIcon);
         this.clear(this.slotByButton);
         this.clear(this.macroSpellNames);
+        this.hasUnknownMacroUse = false;
+        this.clear(this.handSlotOfButton);
         this.lastMapAt = this.clock.getCurrentTime();
 
         const queue = this.listButtonsToMap();
@@ -177,6 +189,11 @@ export class ActionBarsService implements OnFirstLogin {
         return undefined;
     }
 
+    /** The weapon a macro button puts something on; undefined where it does not say. */
+    findMacroHandSlot(button: ActionButton): number | undefined {
+        return this.handSlotOfButton.get(button);
+    }
+
     /** Have the bars been mapped at least once? */
     isMapped(): boolean {
         return this.lastMapAt > 0;
@@ -221,7 +238,7 @@ export class ActionBarsService implements OnFirstLogin {
 
     private addIcons(button: ActionButton, slot: number): void {
         const add = (value: unknown) => {
-            const key = this.getTextureKey(value);
+            const key = readTextureKey(value);
             if (key !== undefined) this.push(this.buttonsByIcon, key, button);
         };
         add(attempt(C_ActionBar.GetActionTexture, slot));
@@ -230,20 +247,16 @@ export class ActionBarsService implements OnFirstLogin {
         if (icon) add(attempt(() => icon.GetTexture()));
     }
 
-    /** The spells named on the cast lines of a macro (#showtooltip, /cast ...). */
+    /** The spells and the items a macro on the bars names. */
     private addMacroSpells(macro: number | string, button: ActionButton): void {
-        const body = attempt(GetMacroBody, macro);
-        if (body === undefined || !isReadable(body)) return;
-        for (const token of listMacroTokens(body)) this.addMacroToken(token, button);
-    }
-
-    private addMacroToken(token: string, button: ActionButton): void {
-        const info = attempt(C_Spell.GetSpellInfo, token);
-        if (info === undefined || type(info) !== "table") return;
-        const name = isReadable(info.name) && info.name !== "" ? info.name : token;
-        this.macroSpellNames.set(name, true);
-        this.addSpellName(name, button);
-        this.addSpell(info.spellID, button);
+        const found = readMacroSpells(macro);
+        for (const name of found.names) {
+            this.macroSpellNames.set(name, true);
+            this.addSpellName(name, button);
+        }
+        for (const spellId of found.spellIds) this.addSpell(spellId, button);
+        if (found.hasUnknownUse) this.hasUnknownMacroUse = true;
+        if (found.handSlot !== undefined) this.handSlotOfButton.set(button, found.handSlot);
     }
 
     private addButton(button: ActionButton): void {
@@ -267,7 +280,7 @@ export class ActionBarsService implements OnFirstLogin {
     private addIconKeys(spellId: number | undefined, keys: LuaSet<number | string>): void {
         if (spellId === undefined) return;
         const add = (value: unknown) => {
-            const key = this.getTextureKey(value);
+            const key = readTextureKey(value);
             if (key !== undefined) keys.add(key);
         };
         add(attempt(() => C_Spell.GetSpellTexture(spellId)));
@@ -323,21 +336,11 @@ export class ActionBarsService implements OnFirstLogin {
         return queue;
     }
 
-    private getGlobal<T>(name: string): T | undefined {
-        return (_G as unknown as { [name: string]: T | undefined })[name];
-    }
+    private readonly getGlobal = <T>(name: string): T | undefined => (_G as unknown as { [name: string]: T | undefined })[name];
 
     /** A value equal to `expected`; secret values never are (comparing them would raise an error). */
     private isToken(value: unknown, expected: string): boolean {
         return isReadable(value) && value === expected;
-    }
-
-    /** A texture key: a readable file ID or a lowercase path. */
-    private getTextureKey(value: unknown): number | string | undefined {
-        if (!isReadable(value) || value === 0 || value === "") return undefined;
-        if (type(value) === "number" && (value as number) > 0) return value as number;
-        if (type(value) === "string") return string.lower(value as string);
-        return undefined;
     }
 
     /**
@@ -360,15 +363,15 @@ export class ActionBarsService implements OnFirstLogin {
         const [didSucceed, kind, actionId, subType, spellFromAction] = attemptMulti(() => GetActionInfo(slot));
         if (!didSucceed) return $multi(undefined, undefined);
         if (this.isToken(kind, "spell")) return $multi("spell", getReadableId(spellFromAction) ?? getReadableId(actionId));
-        if (this.isToken(kind, "macro")) return this.readMacroAction(actionId, subType);
+        if (this.isToken(kind, "macro")) return this.readMacroAction(actionId, subType, slot);
         const itemSpell = this.isToken(kind, "item") ? findItemUseSpell(getReadableId(actionId)!) : undefined;
         if (itemSpell !== undefined) return $multi("spell", itemSpell);
         return $multi(undefined, undefined);
     }
 
     /** A macro that shows a spell: the game then gives the ID of that spell, not of the macro, whose text cannot be read by it. */
-    private readMacroAction(actionId: unknown, subType: unknown): LuaMultiReturn<[kind: string | undefined, id: unknown]> {
-        if (!this.isToken(subType, "spell")) return $multi("macro", actionId);
+    private readMacroAction(actionId: unknown, subType: unknown, slot: number): LuaMultiReturn<[kind: string | undefined, id: unknown]> {
+        if (!this.isToken(subType, "spell")) return $multi("macro", findMacroOfSlot(slot) ?? actionId);
         const spellId = getReadableId(actionId);
         const name = this.getReadableSpellName(spellId);
         if (name !== undefined) this.macroSpellNames.set(name, true);

@@ -44,9 +44,11 @@ export function installSpells(state: ClientState): void {
     }
 
     defineNamespace<typeof C_Spell>("C_Spell", {
+        // By name the game answers only of what the player knows
         GetSpellInfo: (idOrName) => {
             const spell = findSpell(idOrName);
-            return spell ? toSpellInfo(spell) : undefined;
+            if (spell === undefined || (type(idOrName) === "string" && state.knownSpells[spell.id] !== true)) return undefined;
+            return toSpellInfo(spell);
         },
         GetSpellSubtext: (idOrName) => {
             const spell = findSpell(idOrName);

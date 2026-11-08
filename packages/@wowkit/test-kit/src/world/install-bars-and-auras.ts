@@ -71,6 +71,7 @@ export function installActionBars(state: ClientState, frames: FrameRegistry): vo
             // A macro that shows a spell is given as that spell, as the game does; any other by its number
             const macro = state.barMacros[slot];
             if (macro?.spellId !== undefined) return $multi("macro", macro.spellId, "spell", undefined);
+            if (macro?.isShowingItem === true) return $multi("macro", slot - 1, "item", undefined);
             if (macro !== undefined) return $multi("macro", slot, undefined, undefined);
             const spellId = state.bars[slot];
             if (spellId === undefined) return $multi(undefined, undefined, undefined, undefined);
@@ -83,6 +84,11 @@ export function installActionBars(state: ClientState, frames: FrameRegistry): vo
         },
         strtrim: (text: string) => string.match(text, "^%s*(.-)%s*$")[0] ?? "",
         GetMacroSpell: (macro) => state.barMacros[macro as number]?.spellId,
+        GetActionText: (slot) => state.barMacros[slot]?.name,
+        GetMacroIndexByName: (name) => {
+            for (const [slot, macro] of pairs(state.barMacros)) if (macro.name === name) return slot as number;
+            return 0;
+        },
         GetMacroBody: (macro) => state.barMacros[macro as number]?.body,
     });
 

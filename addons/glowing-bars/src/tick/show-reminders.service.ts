@@ -125,6 +125,10 @@ export class ShowRemindersService {
     private usedUpShown: number[] = [];
     /** The spells of each glow, by its look. */
     private groupSpells = new LuaMap<string, number[]>();
+    /** The weapon buff that glows, and the weapon it is for: a macro for the other weapon stays dark. */
+    private weaponSpell: number | undefined;
+    private weaponHandSlot: number | undefined;
+    private coveredButtons: ActionButton[] = [];
 
     constructor(
         private readonly glow: GlowService,
@@ -139,7 +143,11 @@ export class ShowRemindersService {
     ) {}
 
     showReminders(reminders: Reminders): void {
-        const isSame = this.collectSpells(reminders);
+        const isSameHand = reminders.weaponHandSlot === this.weaponHandSlot && this.isSameCovered(reminders.coveredWeaponButtons);
+        this.coveredButtons = reminders.coveredWeaponButtons;
+        this.weaponSpell = reminders.weaponSpell;
+        this.weaponHandSlot = reminders.weaponHandSlot;
+        const isSame = this.collectSpells(reminders) && isSameHand;
         this.playSoundsForNewReminders(reminders);
         this.notices.showNoticeIfNew(reminders);
         this.updateGlows(isSame);
@@ -254,7 +262,7 @@ export class ShowRemindersService {
             if (reminderType.category === "weaponBuff" || reminderType.category === "lowStock")
                 pushAll(this.usedUpShown, this.current[index]!);
         });
-        const glowKey = groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";");
+        const glowKey = `${this.weaponHandSlot ?? 0}/${this.coveredButtons.length}/${groups.map((group) => `${group.key}=${group.spells.join(",")}`).join(";")}`;
         if (glowKey === this.shownGlowKey) return;
         this.glow.setRoundAnimation(this.settings.get("roundAnimation"));
         // A look that no spell has now: its glow goes out
@@ -275,6 +283,7 @@ export class ShowRemindersService {
 
     /** A button glows unless it holds an item that has run out, or its bar is switched off (a button of no numbered bar always may). */
     private isBarShown(button: ActionButton, groupKey: string): boolean {
+        if (this.isForOtherWeapon(button) || this.coveredButtons.includes(button)) return false;
         const isUsedUpShown = this.usedUpShown.some((id) => this.actionBars.findButtonsOf(id).includes(button));
         if (!isUsedUpShown && isOutOfItem(this.actionBars, button)) return false;
         // Foods of one name are found on each other's buttons: a button glows only in the look of its own food
@@ -283,6 +292,18 @@ export class ShowRemindersService {
         if (!isOwnUsedUp && !this.fedBuffs.isButtonWanted(button, spells)) return false;
         const bar = this.actionBars.getBarNumber(button);
         return bar === undefined || this.settings.get("barsThatGlow")[string.format("%d", bar)] !== false;
+    }
+
+    private isSameCovered(buttons: ActionButton[]): boolean {
+        const old = this.coveredButtons;
+        return buttons.length === old.length && buttons.every((button) => old.includes(button));
+    }
+
+    /** Does this macro of the weapon buff put it on the other weapon than the one that needs it? */
+    private isForOtherWeapon(button: ActionButton): boolean {
+        const handSlot = this.actionBars.findMacroHandSlot(button);
+        if (handSlot === undefined || this.weaponHandSlot === undefined || handSlot === this.weaponHandSlot) return false;
+        return this.actionBars.findButtonsOf(this.weaponSpell).includes(button);
     }
 
     /** The spells to glow, in groups of the same look. */

@@ -3,7 +3,15 @@
 // of its name (a food or drink: see FedBuffsService), a weapon buff when the main hand has no temporary enchant at all, a reagent when the item the spell's
 // tooltip names as its reagent runs low.
 import type { LowReagent } from "../reagents/reagent.interface";
-import { type ActionBarsService, type BagsService, type SpellsService, type WeaponEnchantsService, isOutOfItem } from "@wowkit/wow";
+import {
+    type ActionBarsService,
+    type BagsService,
+    type PlayerService,
+    type SpellsService,
+    type WeaponEnchantsService,
+    OFF_HAND_SLOT,
+    isOutOfItem,
+} from "@wowkit/wow";
 import type { BuffStateService } from "../character/buff-state.service";
 import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { ReagentsService } from "../reagents/reagents.service";
@@ -21,6 +29,7 @@ export class AddedRemindersService {
         private readonly settings: AddonSettingsService,
         private readonly reagents: ReagentsService,
         private readonly fedBuffs: FedBuffsService,
+        private readonly player: PlayerService,
     ) {}
 
     /** The added buffs that are on a button and not on the player (in combat a cast one counts until the fight ends). */
@@ -33,11 +42,32 @@ export class AddedRemindersService {
         );
     }
 
-    /** The added weapon buffs, when the main-hand weapon has no temporary enchant (poison, imbue or stone) at all. */
+    /** The added weapon buffs with a button for a weapon that has no temporary enchant (poison, imbue or stone) at all. */
     findWeaponSpells(): number[] {
         const spellIds = this.listOnBars("weaponBuff");
         if (spellIds.length === 0) return [];
-        return this.weaponEnchants.getWeaponEnchant(false).has === false ? spellIds : [];
+        return spellIds.filter((id) => this.actionBars.findButtonsOf(id).some((button) => this.isButtonForBareWeapon(button)));
+    }
+
+    /** The buttons of the added weapon buffs whose weapon has something on it: they stay dark. */
+    findCoveredButtons(): ActionButton[] {
+        const covered: ActionButton[] = [];
+        for (const id of this.listOnBars("weaponBuff")) {
+            for (const button of this.actionBars.findButtonsOf(id)) if (!this.isButtonForBareWeapon(button)) covered.push(button);
+        }
+        return covered;
+    }
+
+    /** Is the weapon of this button bare: the one its macro says (/use 16 or /use 17), else either of them? */
+    private isButtonForBareWeapon(button: ActionButton): boolean {
+        const handSlot = this.actionBars.findMacroHandSlot(button);
+        if (handSlot === undefined) return this.isWeaponBare(false) || this.isWeaponBare(true);
+        return this.isWeaponBare(handSlot === OFF_HAND_SLOT);
+    }
+
+    private isWeaponBare(isOffhand: boolean): boolean {
+        if (isOffhand && !this.player.isOffhandWeaponEquipped()) return false;
+        return this.weaponEnchants.getWeaponEnchant(isOffhand).has === false;
     }
 
     /** The added spells whose reagent, named in the spell's tooltip, runs low in the bags. */

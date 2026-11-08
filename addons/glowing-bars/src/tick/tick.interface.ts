@@ -8,6 +8,10 @@ export interface Reminders {
     buffsToCast: number[];
     /** The weapon buff that needs attention: its button glows. */
     weaponSpell?: number;
+    /** The weapon the weapon buff is for. */
+    weaponHandSlot?: number;
+    /** The buttons of added weapon buffs whose weapon has something on it. */
+    coveredWeaponButtons: ActionButton[];
     /** Weapon buffs the player added, when the main-hand weapon has no temporary enchant: their buttons glow. */
     addedWeaponSpells: number[];
     /** A paladin with no seal up: the seal to put on. */

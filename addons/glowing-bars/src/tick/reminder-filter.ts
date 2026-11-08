@@ -13,6 +13,7 @@ export function createEmptyReminders(): Reminders {
         buffsToCast: [],
         weaponSpell: undefined,
         addedWeaponSpells: [],
+        coveredWeaponButtons: [],
         seals: [],
         trackings: [],
         buffsNotOnBars: [],
@@ -57,6 +58,8 @@ export function filterReminders(target: Reminders, reminders: Reminders, isShown
     copyShown(target.partySuggestions, reminders.partySuggestions, "missingBuff", getSuggestionId, isShown);
     const weapon = reminders.weaponSpell;
     target.weaponSpell = weapon !== undefined && isShown("weaponBuff", weapon) ? weapon : undefined;
+    target.weaponHandSlot = reminders.weaponHandSlot;
+    target.coveredWeaponButtons = reminders.coveredWeaponButtons;
     copyShown(target.addedWeaponSpells, reminders.addedWeaponSpells, "weaponBuff", getOwnId, isShown);
     copyShown(target.seals, reminders.seals, "missingSeal", getOwnId, isShown);
     copyShown(target.trackings, reminders.trackings, "missingTracking", getOwnId, isShown);

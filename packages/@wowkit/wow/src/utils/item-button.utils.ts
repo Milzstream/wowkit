@@ -1,7 +1,7 @@
 // Buttons of items: a food, a drink or a potion stays on the bars when the last one is gone, and nothing is to be done with it then.
 import type { ActionBarsService } from "../action-bars.service";
 import { attempt, attemptMulti } from "./protected-call.utils";
-import { getReadable, getReadableId } from "./secret-value.utils";
+import { getReadable, getReadableId, isReadable } from "./secret-value.utils";
 
 /** Items are looked up among the buttons of the spells, under numbers no spell has. */
 const ITEM_BUTTON_KEYS = 1000000000;
@@ -41,4 +41,12 @@ export function findItemUseSpell(itemId: number): number | undefined {
 /** The name and icon of an item, as the client knows them. */
 export function readItemLook(itemId: number): { name: string | undefined; iconId: number | undefined } {
     return { name: getReadable(attempt(C_Item.GetItemNameByID, itemId)), iconId: getReadable(attempt(C_Item.GetItemIconByID, itemId)) };
+}
+
+/** A texture key: a readable file ID or a lowercase path. */
+export function readTextureKey(value: unknown): number | string | undefined {
+    if (!isReadable(value) || value === 0 || value === "") return undefined;
+    if (type(value) === "number" && (value as number) > 0) return value as number;
+    if (type(value) === "string") return string.lower(value as string);
+    return undefined;
 }
