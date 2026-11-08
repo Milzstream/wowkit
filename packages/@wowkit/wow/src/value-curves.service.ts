@@ -15,8 +15,8 @@ export class ValueCurvesService {
     private readonly curves = new LuaMap<string, LuaCurveObject | false>();
 
     /** The unit's health through the curve; undefined when the client cannot do it. */
-    getHealthAlpha(unit: UnitToken, thresholdPercent: number, side: CurveSide): HiddenAlpha | undefined {
-        const curve = this.getCurve(thresholdPercent, side);
+    getHealthAlpha(unit: UnitToken, thresholdPercent: number, side: CurveSide, strength = 1): HiddenAlpha | undefined {
+        const curve = this.getCurve(thresholdPercent, side, strength);
         if (curve === undefined) return undefined;
         return attempt(UnitHealthPercent, unit, true, curve) as HiddenAlpha | undefined;
     }
@@ -28,17 +28,17 @@ export class ValueCurvesService {
         return attempt(UnitPowerPercent, "player", Enum.PowerType.Mana, false, curve) as HiddenAlpha | undefined;
     }
 
-    /** A step at the threshold: 1 on its side, 0 on the other (a short linear ramp just before it). */
-    private getCurve(thresholdPercent: number, side: CurveSide): LuaCurveObject | undefined {
+    /** A step at the threshold: `strength` on its side, 0 on the other (a short linear ramp just before it). */
+    private getCurve(thresholdPercent: number, side: CurveSide, strength = 1): LuaCurveObject | undefined {
         const threshold = math.floor(thresholdPercent + 0.5);
-        const key = `${side}:${threshold}`;
+        const key = `${side}:${threshold}:${strength}`;
         const cached = this.curves.get(key);
         if (cached !== undefined) return cached === false ? undefined : cached;
         const made = attempt(() => {
             const curve = C_CurveUtil.CreateCurve();
             curve.SetType(Enum.LuaCurveType.Linear);
             const at = math.max(0.05, math.min(1, threshold / 100));
-            const [low, high] = side === "below" ? [1, 0] : [0, 1];
+            const [low, high] = side === "below" ? [strength, 0] : [0, strength];
             curve.AddPoint(0, low);
             curve.AddPoint(math.max(0.01, at - 0.02), low);
             curve.AddPoint(at, high);

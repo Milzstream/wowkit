@@ -2,6 +2,8 @@
 // can have a look of their own: the buffs, the weapon buffs, the seals, the gathering trackings, the cooldowns, the procs, the group buffs with a reagent, and
 // every spell of the book that has ranks. Plain lists; the window draws them.
 import { type PlayerService, type SpellsService, getItemButtonKey, readItemLook } from "@wowkit/wow";
+import { Warrior } from "@wowkit/wow-data";
+import { DEFENSIVE_EXECUTE_ROW } from "../glows/defensive-execute.service";
 import type { AddedSpellsService } from "../glows/added-spells.service";
 import type { GlowCuesService } from "../glows/glow-cues.service";
 import type { AddonLocale } from "../locale/locale.interface";
@@ -31,6 +33,10 @@ export interface StyleRow {
     isLearned?: boolean;
     /** The low stock: the item the row is about (its `spellId` is what the item's buttons are found by). */
     itemId?: number;
+    /** The ID of a spell of the lists that this row shows and changes too (the same spell, a row of its own). */
+    sharesIdOf?: number;
+    /** A glow only the game itself can light: what would have to know when it starts is faded on the row. */
+    isFadeOnly?: boolean;
 }
 
 /** The words that name each type of reminder. */
@@ -153,8 +159,23 @@ export class StyleRowsService {
         // The spells that have ranks (a spell with one rank has no "Rank" in its subtext), on a bar or not. The ranks are read
         // off the bars, by the IDs there: a rank row's ID is not one to fix
         for (const id of this.spells.listSpellBookIds()) if (this.spells.getSpellRank(id) !== undefined) add("oldRank", id);
+        if (this.player.getClassToken() === "WARRIOR") rows.push(this.createDefensiveExecuteRow());
         rows.sort((a, b) => this.compareRows(a, b));
         return rows;
+    }
+
+    /** Execute in Defensive Stance: a row of its own beside the one of Execute, whose glow can do all that this one cannot. */
+    private createDefensiveExecuteRow(): StyleRow {
+        const stance = this.spells.getSpellLabel(Warrior.DefensiveStance) ?? "";
+        return {
+            reminderType: "proc",
+            spellId: DEFENSIVE_EXECUTE_ROW,
+            label: `${this.spells.getSpellLabel(Warrior.Execute) ?? ""} (${stance})`,
+            iconId: this.spells.getSpellInfo(Warrior.Execute)?.iconID,
+            isLearned: this.spells.isLearned(Warrior.Execute),
+            sharesIdOf: Warrior.Execute,
+            isFadeOnly: true,
+        };
     }
 
     private compareRows(a: StyleRow, b: StyleRow): number {

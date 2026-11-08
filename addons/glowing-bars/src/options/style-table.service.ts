@@ -23,7 +23,8 @@ import {
     findWindowWidth,
 } from "./style-table.constants";
 import { showHeaderTip } from "./header-tip";
-import { applyRowView, createIcon, createStripe, createText } from "./style-row-layout";
+import { setFadeOnly } from "./fade-only-controls";
+import { applyRowView, createIcon, createStripe, createText, createSwatch } from "./style-row-layout";
 import type { StyleWindowService } from "./style-window.service";
 import type { ChoiceButtons, StyleChoicesService } from "./style-choices.service";
 import type { StyleEditsService } from "./style-edits.service";
@@ -236,6 +237,7 @@ export class StyleTableService {
         widgets.message.SetChecked(style.isMessageOn);
         widgets.sound.SetText(findSoundLabel(style.sound, CUSTOM_SOUND_FOLDER));
         this.choices.fillChoices(widgets.choices, row);
+        setFadeOnly(this.listFadeOnlyControls(widgets), row.isFadeOnly === true, this.locale.getText("TIP_FADE_ONLY"));
         widgets.reset.SetShown(isOverridden);
         widgets.remove.SetShown(row.isAdded === true);
         this.edits.fillEnabled(widgets.enabled, widgets.frame, row, [widgets.icon, widgets.name]);
@@ -254,7 +256,7 @@ export class StyleTableService {
             icon: createIcon(frame),
             name: createText(frame, COLUMN.name, "GameFontHighlight"),
             typeText: createText(frame, COLUMN.type, "GameFontNormalSmall"),
-            ...this.createSwatch(frame),
+            ...createSwatch(frame),
             glowPercent: this.createGlowPercentBox(frame),
             message: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
             sound: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
@@ -276,16 +278,9 @@ export class StyleTableService {
         return widgets;
     }
 
-    private createSwatch(frame: Frame): { swatch: Button; swatchColor: Texture } {
-        const swatch = CreateFrame("Button", undefined, frame);
-        swatch.SetSize(22, 16);
-        const border = swatch.CreateTexture(undefined, "BACKGROUND");
-        border.SetAllPoints(swatch);
-        border.SetColorTexture(0.55, 0.42, 0.2, 1);
-        const swatchColor = swatch.CreateTexture(undefined, "ARTWORK");
-        swatchColor.SetPoint("TOPLEFT", swatch, "TOPLEFT", 1, -1);
-        swatchColor.SetPoint("BOTTOMRIGHT", swatch, "BOTTOMRIGHT", -1, 1);
-        return { swatch, swatchColor };
+    /** What a glow only the game can light cannot use: all of it needs to know when the glow starts. */
+    private listFadeOnlyControls(widgets: RowWidgets): Button[] {
+        return [widgets.message, widgets.sound, widgets.choices.repeat, widgets.choices.glowTime];
     }
 
     private createGlowPercentBox(frame: Frame): EditBox {

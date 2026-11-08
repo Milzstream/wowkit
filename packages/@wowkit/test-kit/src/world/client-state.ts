@@ -102,6 +102,8 @@ export interface ClientState {
     areCooldownsHidden: boolean;
     /** The spells of the stance bar (forms, a paladin's auras), the first stance first. */
     stances: number[];
+    /** The spell of the stance the player is in. */
+    activeStance: number | undefined;
     /** The spell on the class button of the gamepad bars (the paladin's aura, picked from a flyout). */
     gamepadClassSpell: number | undefined;
     /** What the game loaded from the account's file (## SavedVariables); undefined: the first run. */
@@ -190,6 +192,7 @@ export function createClientState(): ClientState {
         areAurasHidden: false,
         areCooldownsHidden: false,
         stances: [],
+        activeStance: undefined,
         gamepadClassSpell: undefined,
         accountSaved: undefined,
         hasBartender: false,

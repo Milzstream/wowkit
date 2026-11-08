@@ -26,6 +26,7 @@ import "./food-buff.spec";
 import "./food-buff-learning.spec";
 import "./gathering.spec";
 import "./shield-block.spec";
+import "./defensive-execute.spec";
 import "./id-tooltip.spec";
 import "./sound-repeat.spec";
 import "./custom-sounds.spec";

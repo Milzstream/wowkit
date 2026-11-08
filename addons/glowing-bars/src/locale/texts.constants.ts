@@ -106,6 +106,8 @@ export const TEXTS = {
         "Reminds you when you have fewer than this. The number on a row under Defaults is used for every row of that type, unless you set a different number on the row.",
     TIP_ENABLED:
         "Turns the reminder on or off. On a row under Defaults, it turns the whole type on or off: while it's off, none of its rows work and they are grayed out.",
+    TIP_FADE_ONLY:
+        "The game hides the target's health, so the addon can't tell when this glow starts: it can't play a sound, show a message or time the glow.",
     TIP_ADD:
         'Low stock needs an Item ID, every other type a Spell ID. To see them, turn on "Show spell and item IDs in tooltips" in the Settings.',
     HDR_TABLE_ADD: "Add spell/item by ID",

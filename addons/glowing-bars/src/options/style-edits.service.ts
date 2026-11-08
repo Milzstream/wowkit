@@ -74,13 +74,13 @@ export class StyleEditsService {
         const box = this.createNumberBox(frame, findCenteredX(COLUMN.id, 58), 58, 7);
         const restore = () => {
             const row = getRow();
-            const id = row?.itemId ?? row?.spellId;
+            const id = row !== undefined ? this.getShownId(row) : undefined;
             box.SetText(id !== undefined ? string.format("%d", id) : "");
         };
         const apply = () => {
             const row = getRow();
             const spellId = tonumber(box.GetText());
-            if (row !== undefined && this.isIdEditable(row) && spellId !== undefined && spellId !== row.spellId) {
+            if (row !== undefined && this.isIdEditable(row) && spellId !== undefined && spellId !== this.getShownId(row)) {
                 this.changeId(row, spellId);
             }
             restore();
@@ -97,7 +97,8 @@ export class StyleEditsService {
     /** Shows the ID of a spell's row (a type's row has none); grayed where it cannot be changed (the ranks). */
     fillIdBox(box: EditBox, row: StyleRow): void {
         box.SetShown(row.spellId !== undefined);
-        if (row.spellId !== undefined) box.SetText(string.format("%d", row.itemId ?? row.spellId));
+        const id = this.getShownId(row);
+        if (id !== undefined) box.SetText(string.format("%d", id));
         const isEditable = this.isIdEditable(row);
         box.SetEnabled(isEditable);
         const shade = isEditable ? 1 : 0.5;
@@ -137,7 +138,19 @@ export class StyleEditsService {
 
     /** A spell of the lists can be given another ID, and an added spell; a rank is the ID on the bar. */
     private isIdEditable(row: StyleRow): boolean {
-        return row.itemId === undefined && (row.listId !== undefined || row.isAdded === true);
+        return row.itemId === undefined && (row.listId !== undefined || row.isAdded === true || row.sharesIdOf !== undefined);
+    }
+
+    /** The ID a row shows: its item's, the one of the spell it shares its ID with, else its spell's. */
+    private getShownId(row: StyleRow): number | undefined {
+        return row.itemId ?? (row.sharesIdOf !== undefined ? this.addedSpells.getEffectiveId(row.sharesIdOf) : row.spellId);
+    }
+
+    /** Is this row the one being changed, or the row of the spell whose ID it shares? */
+    private isSameSpellRow(row: StyleRow, except: StyleRow | undefined): boolean {
+        if (except === undefined) return false;
+        if (except.sharesIdOf !== undefined && row.listId === except.sharesIdOf) return true;
+        return row.reminderType === except.reminderType && row.listId === except.listId && row.spellId === except.spellId;
     }
 
     /** The row at the end of the list: an ID, the type (a click goes to the next one), and the button that adds it. */
@@ -221,12 +234,7 @@ export class StyleEditsService {
                     row.reminderType !== "oldRank" &&
                     row.spellId !== undefined &&
                     (isSharingName ? row.spellId === spellId : this.styles.getSpellKey(row.spellId) === name) &&
-                    !(
-                        except !== undefined &&
-                        row.reminderType === except.reminderType &&
-                        row.listId === except.listId &&
-                        row.spellId === except.spellId
-                    ),
+                    !this.isSameSpellRow(row, except),
             );
     }
 
@@ -236,10 +244,11 @@ export class StyleEditsService {
             this.showProblem(string.format(this.locale.getText("MSG_ALREADY_LISTED"), name), ERROR_COLOR);
             return;
         }
+        const listId = row.listId ?? row.sharesIdOf;
         const isChanged =
             row.isAdded === true
                 ? row.spellId !== undefined && this.addedSpells.changeAdded(row.spellId, spellId)
-                : row.listId !== undefined && this.addedSpells.changeOverride(row.listId, spellId);
+                : listId !== undefined && this.addedSpells.changeOverride(listId, spellId);
         if (!isChanged) this.showUnknown(spellId);
     }
 

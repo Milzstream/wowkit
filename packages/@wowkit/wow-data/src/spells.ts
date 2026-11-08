@@ -120,6 +120,7 @@ export const Warrior = {
     ThunderClap: 6343,
     Overpower: 7384,
     Execute: 5308,
+    DefensiveStance: 71,
     MortalStrike: 12294,
     Bloodthirst: 23881,
     Whirlwind: 1680,

@@ -56,3 +56,16 @@ export function createText(frame: Frame, column: Column, font: string): FontStri
     text.SetJustifyH("LEFT");
     return text;
 }
+
+/** The color square of a row: a button, its border, and the color. */
+export function createSwatch(frame: Frame): { swatch: Button; swatchColor: Texture } {
+    const swatch = CreateFrame("Button", undefined, frame);
+    swatch.SetSize(22, 16);
+    const border = swatch.CreateTexture(undefined, "BACKGROUND");
+    border.SetAllPoints(swatch);
+    border.SetColorTexture(0.55, 0.42, 0.2, 1);
+    const swatchColor = swatch.CreateTexture(undefined, "ARTWORK");
+    swatchColor.SetPoint("TOPLEFT", swatch, "TOPLEFT", 1, -1);
+    swatchColor.SetPoint("BOTTOMRIGHT", swatch, "BOTTOMRIGHT", -1, 1);
+    return { swatch, swatchColor };
+}
