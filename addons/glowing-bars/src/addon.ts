@@ -232,7 +232,7 @@ function makeTick(addon: Addon, addonName: string, game: Game, texts: Texts, buf
             game.clock,
         ),
     );
-    const notices = addon.register(new NoticesService(game.actionBars, game.clock, game.notice, game.spells, locale, styles));
+    const notices = addon.register(new NoticesService(game.actionBars, game.clock, game.notice, game.spells, locale, styles, settings));
     const { fedBuffs } = reminders;
     const shower = addon.register(
         new ShowRemindersService(game.glow, messages, settings, notices, styles, game.actionBars, game.barFade, game.clock, fedBuffs),

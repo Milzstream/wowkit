@@ -1,5 +1,7 @@
 // What the table of looks lets the player pick from a list (the sound, how often it repeats, when the reminder shows, for
 // how long and how it moves), and a color from the game's picker.
+import { OnEvent } from "@wowkit/core";
+import { MessageWindow } from "./message-window";
 import { listSoundChoices, type MessagesService } from "@wowkit/ui";
 import type { AddonLocale } from "../locale/locale.interface";
 import { ANIMATION_CHOICES, CUSTOM_SOUND_FOLDER, GLOW_TIME_CHOICES, REPEAT_CHOICES, listWhenChoices } from "../settings/settings.constants";
@@ -31,13 +33,22 @@ const WHEN_TEXTS: { [when in When]: TextKey } = {
     townAlert: "WHEN_TOWN_ALERT",
 };
 
+/** The gear of the message of a row, the game's own art; dim until the player changed something in it. */
+const GEAR_TEXTURE = "Interface\\Buttons\\UI-OptionsButton";
+const GEAR_SIZE = 20;
+const GEAR_DIM_ALPHA = 0.45;
+
 export class StyleChoicesService {
+    private readonly messageWindow: MessageWindow;
+
     constructor(
         private readonly locale: AddonLocale,
         private readonly styles: StyleService,
         private readonly messages: MessagesService,
         private readonly settings: AddonSettingsService,
-    ) {}
+    ) {
+        this.messageWindow = new MessageWindow(locale, styles, (row) => this.chooseColor(row, "messageColor"));
+    }
 
     /** The list of sounds of a row; the one picked plays once as a preview. */
     connectSoundMenu(button: Button, getRow: () => StyleRow | undefined): void {
@@ -121,14 +132,46 @@ export class StyleChoicesService {
         return seconds === 0 ? this.locale.getText("GLOW_UNTIL_DONE") : string.format(this.locale.getText("REPEAT_SECONDS"), seconds);
     }
 
+    /** The gear of a row: it opens the small window of its message. */
+    createMessageGear(frame: Frame, getRow: () => StyleRow | undefined): Button {
+        const gear = CreateFrame("Button", undefined, frame);
+        gear.SetSize(GEAR_SIZE, GEAR_SIZE);
+        gear.SetPoint("LEFT", frame, "LEFT", findCenteredX(COLUMN.messageLook, GEAR_SIZE), 0);
+        gear.SetNormalTexture(GEAR_TEXTURE);
+        gear.SetScript("OnClick", () => {
+            const row = getRow();
+            if (row !== undefined) this.messageWindow.open(row);
+        });
+        return gear;
+    }
+
+    /** Only in the Advanced view; dim until something was changed in it. */
+    fillMessageGear(gear: Button, row: StyleRow, isAdvanced: boolean): void {
+        gear.SetShown(isAdvanced);
+        if (row.isFadeOnly === true) return;
+        const override = this.styles.getOverride(row.reminderType, row.spellId);
+        gear.SetAlpha(
+            (["messageTextChoice", "messageText", "messageColor", "messageShowFor"] as const).some((part) => override[part] !== undefined)
+                ? 1
+                : GEAR_DIM_ALPHA,
+        );
+    }
+
+    @OnEvent("setting.changed")
+    refreshMessageWindow(): void {
+        this.messageWindow.refresh();
+    }
+
     /** The game's color picker; every move of it changes the color, and cancelling puts the old one back. */
-    chooseColor(row: StyleRow): void {
+    chooseColor(row: StyleRow, part: "color" | "messageColor" = "color"): void {
         const picker = ColorPickerFrame;
         if (picker.SetupColorPickerAndShow === undefined) {
             this.messages.say(this.locale.getText("NO_COLOR_PICKER"));
             return;
         }
-        const [r, g, b] = this.styles.getStyle(row.reminderType, row.spellId).color;
+        const style = this.styles.getStyle(row.reminderType, row.spellId);
+        const old = part === "color" ? style.color : style.messageColor;
+        const [r, g, b] = old ?? style.color;
         picker.SetupColorPickerAndShow({
             r,
             g,
@@ -136,9 +179,12 @@ export class StyleChoicesService {
             hasOpacity: false,
             swatchFunc: () => {
                 const [pickedR, pickedG, pickedB] = picker.GetColorRGB();
-                this.styles.changeStyle(row.reminderType, row.spellId, { color: [pickedR, pickedG, pickedB] });
+                this.styles.changeStyle(row.reminderType, row.spellId, { [part]: [pickedR, pickedG, pickedB] });
             },
-            cancelFunc: () => this.styles.changeStyle(row.reminderType, row.spellId, { color: [r, g, b] }),
+            cancelFunc: () =>
+                old !== undefined
+                    ? this.styles.changeStyle(row.reminderType, row.spellId, { [part]: old })
+                    : this.styles.resetPart(row.reminderType, row.spellId, part),
         });
     }
 }

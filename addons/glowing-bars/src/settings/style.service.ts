@@ -3,10 +3,23 @@
 // of its old rank when the player colors the buff.
 import type { Rgb, SpellsService } from "@wowkit/wow";
 import { SPELL_STYLE_DEFAULTS, STYLE_DEFAULTS } from "./settings.constants";
-import type { AddonSettingsService, ReminderType, Style, StyleOverride } from "./settings.interface";
+import type { AddonSettingsService, MessageTextChoice, ReminderType, Style, StyleOverride } from "./settings.interface";
 
 /** The parts of a look. */
-const PARTS: (keyof Style)[] = ["color", "glowPercent", "isMessageOn", "sound", "repeat", "when", "glowTime", "animation"];
+const PARTS: (keyof Style)[] = [
+    "color",
+    "glowPercent",
+    "isMessageOn",
+    "sound",
+    "repeat",
+    "when",
+    "glowTime",
+    "animation",
+    "messageTextChoice",
+    "messageText",
+    "messageColor",
+    "messageShowFor",
+];
 
 export class StyleService {
     /** Is this a spell whose look goes by its ID, not its name (see useOwnLooks)? */
@@ -46,7 +59,17 @@ export class StyleService {
             when: this.pickPart(layers, "when"),
             glowTime: this.pickPart(layers, "glowTime"),
             animation: this.pickPart(layers, "animation"),
+            messageTextChoice: this.pickPart(layers, "messageTextChoice"),
+            messageText: this.pickPart(layers, "messageText"),
+            messageColor: this.pickPart(layers, "messageColor"),
+            messageShowFor: this.pickPart(layers, "messageShowFor"),
         };
+    }
+
+    /** What the message of a type or a spell says: what the player chose; else the item and its count, or the type alone. */
+    getMessageTextChoice(reminderType: ReminderType, spellId: number | undefined): MessageTextChoice {
+        const choice = this.getStyle(reminderType, spellId).messageTextChoice;
+        return choice ?? (reminderType === "lowStock" || reminderType === "lowReagent" ? "typeAndName" : "typeOnly");
     }
 
     /** The spell's own default look, where it has one; the same for every rank (by name). */
@@ -87,9 +110,20 @@ export class StyleService {
         for (const part of PARTS) {
             const value = change[part];
             if (value === undefined) continue;
-            if (this.isSameValue(value, inherited[part])) delete merged[part];
+            if (value === "" || this.isSameValue(value, inherited[part])) delete merged[part];
             else (merged as Record<string, unknown>)[part] = value;
         }
+        this.saveOverride(reminderType, spellId, merged);
+    }
+
+    /** A part follows what it inherits again (a message that takes the color of its glow). */
+    resetPart(reminderType: ReminderType, spellId: number | undefined, part: keyof Style): void {
+        const merged: StyleOverride = { ...this.getOverride(reminderType, spellId) };
+        delete merged[part];
+        this.saveOverride(reminderType, spellId, merged);
+    }
+
+    private saveOverride(reminderType: ReminderType, spellId: number | undefined, merged: StyleOverride): void {
         const isEmpty = !PARTS.some((part) => merged[part] !== undefined);
         if (spellId === undefined) {
             const styles = this.copyWithout(this.settings.get("styles"), reminderType);

@@ -14,6 +14,9 @@ export type AddonSettingsService = SettingsService<AddonSettings>;
  */
 export type When = "always" | "inCombat" | "outOfCombat" | "enemyTargeted" | "townAlert";
 
+/** What a message says: the type of reminder, the type and the spell or item, the spell or item, or the player's own words. */
+export type MessageTextChoice = "typeOnly" | "typeAndName" | "name" | "custom";
+
 /** How a reminder looks and sounds, and when it shows. */
 export interface Style {
     /** Of the glow and of the message. */
@@ -30,6 +33,14 @@ export interface Style {
     glowTime: number;
     /** How the glow moves: around the button, breathing, or still (fading in and out only as it comes and goes). */
     animation: GlowAnimation;
+    /** What the message says; none: what its type says by default (StyleService.getMessageTextChoice). */
+    messageTextChoice?: MessageTextChoice;
+    /** The player's own words for the message, for the Custom choice. */
+    messageText?: string;
+    /** The color of the message, where it is not the glow's. */
+    messageColor?: Rgb;
+    /** Seconds the message stays; 0: as long as the button glows; none: the usual time (NOTICE_SECONDS). */
+    messageShowFor?: number;
 }
 
 /** The types a spell can be added as by the player: every type but the old ranks, which are found for every spell. */
@@ -47,6 +58,20 @@ export type StyleOverride = Partial<Style>;
 
 export interface AddonSettings {
     isDisabled: boolean;
+    /** How big the messages at the top of the screen are, in percent. */
+    messageSize: number;
+    /** How far below the top of the screen the messages are, in pixels. */
+    messageTop: number;
+    /** Do the messages grow into place as they appear? */
+    isMessageZoomInOn: boolean;
+    /** Do the messages shrink away as they disappear? */
+    isMessageZoomOutOn: boolean;
+    /** Do the messages keep fading a little and back while they are on screen? */
+    isMessageFadePulseOn: boolean;
+    /** Do the messages keep growing and shrinking while they are on screen? */
+    isMessageSizePulseOn: boolean;
+    /** Do all the messages of one type share a line? */
+    isOneLinePerType: boolean;
     /** Does the greeting in the chat come at each login? */
     shouldShowGreeting: boolean;
     shouldStayQuietInTowns: boolean;

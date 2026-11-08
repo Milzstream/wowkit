@@ -87,8 +87,8 @@ describe("the views of the table", () => {
     it("explains its columns as the mouse comes over their headers: only the ones of the view", () => {
         const basic = readHeaderTips(createOpenTable());
         const advanced = readHeaderTips(createOpenTable({ isTableAdvanced: true }));
-        expect(basic.length).toBe(6);
-        expect(advanced.length).toBe(12);
+        expect(basic.length).toBe(7);
+        expect(advanced.length).toBe(14);
         for (const tips of [basic, advanced]) {
             expect(tips.some((tip) => tip.includes("Reset: undoes your changes on this row."))).toBe(true);
             expect(tips.some((tip) => tip.includes("The sound that plays when the reminder starts."))).toBe(true);

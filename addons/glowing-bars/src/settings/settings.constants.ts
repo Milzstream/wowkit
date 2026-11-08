@@ -2,7 +2,7 @@ import { isSoundKey } from "@wowkit/ui";
 import { tryCall, type GlowAnimation } from "@wowkit/wow";
 import { Warrior } from "@wowkit/wow-data";
 import { convertOldSettings } from "./settings-migration";
-import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, When } from "./settings.interface";
+import type { AddonSettings, ReminderType, AddableType, Style, StyleOverride, When, MessageTextChoice } from "./settings.interface";
 
 /** The global the TOC saves per character (## SavedVariablesPerCharacter). */
 export const SAVED_VARIABLES_NAME = "GlowingBarsCharDB";
@@ -17,6 +17,13 @@ export function createDefaultSettings(): AddonSettings {
         roundAnimation: "breathing",
         isMissingBuffEnabled: true,
         isWeaponBuffEnabled: true,
+        messageSize: 100,
+        messageTop: 180,
+        isMessageZoomInOn: true,
+        isMessageZoomOutOn: true,
+        isMessageFadePulseOn: false,
+        isMessageSizePulseOn: false,
+        isOneLinePerType: false,
         showPartyBuffs: true,
         showRaidBuffs: true,
         partyGroupFrom: 2,
@@ -209,6 +216,12 @@ export const TYPE_ORDER: ReminderType[] = [
 ];
 
 /** A saved value that is one of the choices; undefined for any other. */
+/** How long a message can stay, in seconds; 0 is as long as the button glows. */
+export const MESSAGE_SHOW_FOR_CHOICES = [5, 10, 20, 0];
+
+/** What a message can say. */
+export const MESSAGE_TEXT_CHOICES: MessageTextChoice[] = ["typeOnly", "typeAndName", "name", "custom"];
+
 function pickChoice<T>(value: T | undefined, choices: T[]): T | undefined {
     return value !== undefined && choices.includes(value) ? value : undefined;
 }
@@ -230,11 +243,18 @@ function repairStyle(style: StyleOverride | undefined, reminderType: ReminderTyp
     repaired.animation = pickChoice(style.animation, ANIMATION_CHOICES);
     const glowPercent = tonumber(style.glowPercent);
     if (glowPercent !== undefined) repaired.glowPercent = math.max(1, math.min(100, math.floor(glowPercent + 0.5)));
-    const color = style.color;
-    if (color !== undefined && type(color) === "table" && tonumber(color[0]) !== undefined) {
-        repaired.color = [color[0], color[1] ?? 0, color[2] ?? 0];
-    }
+    repaired.messageTextChoice = pickChoice(style.messageTextChoice, MESSAGE_TEXT_CHOICES);
+    repaired.messageShowFor = pickChoice(style.messageShowFor, MESSAGE_SHOW_FOR_CHOICES);
+    repaired.color = repairColor(style.color);
+    repaired.messageColor = repairColor(style.messageColor);
+    if (type(style.messageText) === "string" && style.messageText !== "") repaired.messageText = style.messageText;
     return repaired;
+}
+
+function repairColor(color: StyleOverride["color"]): StyleOverride["color"] {
+    return color !== undefined && type(color) === "table" && tonumber(color[0]) !== undefined
+        ? [color[0], color[1] ?? 0, color[2] ?? 0]
+        : undefined;
 }
 
 /** A limit of how few is running low: any number from 0. */

@@ -30,14 +30,15 @@ export const COLUMN = {
     color: { x: 360, width: 56 },
     glowPercent: { x: 416, width: 60 },
     message: { x: 476, width: 66 },
-    sound: { x: 542, width: 130 },
-    repeat: { x: 672, width: 62 },
-    when: { x: 734, width: 108 },
-    glowTime: { x: 842, width: 76 },
-    animation: { x: 918, width: 110 },
-    belowLimits: { x: 1028, width: 56 },
-    enabled: { x: 1084, width: 66 },
-    actions: { x: 1150, width: 72 },
+    messageLook: { x: 542, width: 46 },
+    sound: { x: 588, width: 130 },
+    repeat: { x: 718, width: 62 },
+    when: { x: 780, width: 108 },
+    glowTime: { x: 888, width: 76 },
+    animation: { x: 964, width: 110 },
+    belowLimits: { x: 1074, width: 56 },
+    enabled: { x: 1130, width: 66 },
+    actions: { x: 1196, width: 72 },
 } satisfies { [name: string]: Column };
 
 /** The columns of the Basic view: the ones everybody needs. The others keep working, unseen. */

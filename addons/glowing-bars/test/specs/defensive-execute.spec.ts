@@ -82,9 +82,9 @@ describe("the row of Execute in Defensive Stance", () => {
         return world;
     }
 
-    it("fades Message, Sound, Repeat and Glow time, and says why", () => {
+    it("fades Message, its gear, Sound, Repeat and Glow time, and says why", () => {
         const world = openWorld();
-        expect(listTips(world, ROW_LABEL).length).toBe(4);
+        expect(listTips(world, ROW_LABEL).length).toBe(5);
         expect(findRow(world, ROW_LABEL).message.alpha).toBe(0.4);
     });
 

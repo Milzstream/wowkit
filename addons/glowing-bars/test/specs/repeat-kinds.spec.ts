@@ -245,7 +245,8 @@ describe("a reagent that runs low after the town message came", () => {
         world.state.bags[6265] = 2;
         world.fire("BAG_UPDATE_DELAYED");
         world.advance(2);
-        expect(world.notice()).toContain("Holy Candle (1), Soul Shard (2)");
+        expect(world.notice()).toContain("Running low: Holy Candle (1)");
+        expect(world.notice()).toContain("Running low: Soul Shard (2)");
         world.advance(11);
         expect(world.notice()).not.toContain("Soul Shard");
         world.advance(60);

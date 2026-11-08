@@ -44,6 +44,8 @@ interface RowWidgets {
     /** The ID of a cooldown or proc: it can be fixed. */
     spellIdBox: EditBox;
     message: CheckButton;
+    /** Opens the small window of the message's words and color (Advanced view). */
+    messageGear: Button;
     sound: Button;
     /** The other buttons that open a list of choices: how often it repeats, when it may show, for how long, how it moves. */
     choices: ChoiceButtons;
@@ -244,6 +246,7 @@ export class StyleTableService {
         this.edits.fillIdBox(widgets.spellIdBox, row);
         this.edits.fillBelowBox(widgets.belowBox, row);
         applyRowView(widgets, this.windows.getColumns(), this.windows.isAdvanced());
+        this.choices.fillMessageGear(widgets.messageGear, row, this.windows.isAdvanced());
     }
 
     private createWidgets(content: Frame): RowWidgets {
@@ -259,6 +262,7 @@ export class StyleTableService {
             ...createSwatch(frame),
             glowPercent: this.createGlowPercentBox(frame),
             message: CreateFrame("CheckButton", undefined, frame, "UICheckButtonTemplate"),
+            messageGear: this.choices.createMessageGear(frame, () => widgets.row),
             sound: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
             reset: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
             remove: CreateFrame("Button", undefined, frame, "UIPanelButtonTemplate"),
@@ -280,7 +284,7 @@ export class StyleTableService {
 
     /** What a glow only the game can light cannot use: all of it needs to know when the glow starts. */
     private listFadeOnlyControls(widgets: RowWidgets): Button[] {
-        return [widgets.message, widgets.sound, widgets.choices.repeat, widgets.choices.glowTime];
+        return [widgets.message, widgets.messageGear, widgets.sound, widgets.choices.repeat, widgets.choices.glowTime];
     }
 
     private createGlowPercentBox(frame: Frame): EditBox {

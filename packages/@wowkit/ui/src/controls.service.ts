@@ -75,6 +75,23 @@ export class ControlsService<T extends object> {
         return Settings.CreateDropdown(category, setting, buildOptions, tooltip);
     }
 
+    /** A number the player sets with a slider; `formatValue` is what it shows beside it. */
+    addSlider(
+        category: SettingsCategory,
+        variable: string,
+        label: string,
+        tooltip: string,
+        range: { min: number; max: number; step: number; defaultValue: number },
+        formatValue: (this: void, value: number) => string,
+        get: () => number,
+        set: (value: number) => void,
+    ): SettingsInitializer {
+        const setting = this.registerSetting(category, variable, Settings.VarType.Number, label, range.defaultValue, get, set);
+        const options = Settings.CreateSliderOptions(range.min, range.max, range.step);
+        options.SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, formatValue);
+        return Settings.CreateSlider(category, setting, options, tooltip);
+    }
+
     /** The sound of a reminder; choosing one plays it once as a preview. */
     addSoundDropdown(
         category: SettingsCategory,

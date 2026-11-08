@@ -13,6 +13,14 @@ import type { WhatsNewService } from "./whats-new.service";
 import type { ReminderControlsService } from "./reminder-controls.service";
 import type { WeaponSection } from "./weapon.section";
 
+/** How the messages come and go. */
+const MESSAGE_SWITCHES = [
+    ["isMessageZoomInOn", "OPT_MESSAGE_ZOOM_IN", "TIP_MESSAGE_ZOOM_IN"],
+    ["isMessageZoomOutOn", "OPT_MESSAGE_ZOOM_OUT", "TIP_MESSAGE_ZOOM_OUT"],
+    ["isMessageFadePulseOn", "OPT_MESSAGE_FADE_PULSE", "TIP_MESSAGE_FADE_PULSE"],
+    ["isMessageSizePulseOn", "OPT_MESSAGE_SIZE_PULSE", "TIP_MESSAGE_SIZE_PULSE"],
+] as const;
+
 export class RemindersPage implements OptionsPage {
     /** The Help section at the bottom: where to ask, and where to report a problem. */
     private readonly about: AboutSection;
@@ -75,6 +83,8 @@ export class RemindersPage implements OptionsPage {
         this.reminderControls.addSwitch(category, "shouldStayQuietInTowns", "OPT_STAY_QUIET_IN_TOWNS", "TIP_STAY_QUIET_IN_TOWNS");
         this.reminderControls.addSwitch(category, "shouldShowGreeting", "OPT_SHOW_GREETING", "TIP_SHOW_GREETING");
 
+        this.addMessages(category, layout);
+
         // The party members: a part of the buff reminder that is not one buff
         if (this.classBuffs.getClassBuffs().some((classBuff) => classBuff.party !== undefined)) {
             this.reminderControls.addHeader(layout, "HDR_BUFFS");
@@ -96,6 +106,40 @@ export class RemindersPage implements OptionsPage {
         this.barsSection.addFadedSection(category, layout);
 
         this.about.addAboutSection(layout);
+    }
+
+    /** How the messages at the top of the screen come: their words and colors are the table's. */
+    private addMessages(category: SettingsCategory, layout: SettingsLayout): void {
+        this.reminderControls.addHeader(layout, "HDR_MESSAGES");
+        this.controls.addSlider(
+            category,
+            "messageSize",
+            this.locale.getText("OPT_MESSAGE_SIZE"),
+            this.locale.getText("TIP_MESSAGE_SIZE"),
+            { min: 50, max: 200, step: 5, defaultValue: 100 },
+            (value) => string.format("%d%%", value),
+            () => this.settings.get("messageSize"),
+            (value) => this.settings.change("messageSize", value),
+        );
+        this.controls.addSlider(
+            category,
+            "messageTop",
+            this.locale.getText("OPT_MESSAGE_TOP"),
+            this.locale.getText("TIP_MESSAGE_TOP"),
+            { min: 20, max: 700, step: 10, defaultValue: 180 },
+            (value) => string.format("%d", value),
+            () => this.settings.get("messageTop"),
+            (value) => this.settings.change("messageTop", value),
+        );
+        for (const [key, label, tip] of MESSAGE_SWITCHES) {
+            this.controls.addSwitchCheckbox(category, key, this.locale.getText(label), this.locale.getText(tip));
+        }
+        this.controls.addSwitchCheckbox(
+            category,
+            "isOneLinePerType",
+            this.locale.getText("OPT_ONE_LINE_PER_TYPE"),
+            this.locale.getText("TIP_ONE_LINE_PER_TYPE"),
+        );
     }
 
     /** The button to the What's new window, and the switch of its opening by itself after an update. */

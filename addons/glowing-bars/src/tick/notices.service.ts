@@ -1,11 +1,13 @@
-// The notice at the top of the screen: one message with a short line for each type of reminder whose message the player
-// switched on, in the color of its glow. A line says what type of reminder it is, not which spell; only a reminder with
-// no button to glow (a buff on no bar, a party member) names what it is about. A line comes once, as what it is about
-// starts, and again only where the player chose it to repeat, together with the sound.
+// The notice at the top of the screen: a short line for each reminder whose message the player switched on, in the color of
+// its glow or the one the player gave it. What a line says is the player's to choose, for each type and spell: the type of
+// reminder, the type and the spell or item, the spell or item, or their own words. A reminder with no button to glow (a buff
+// on no bar, a party member) always names what it is about. A line comes once, as what it is about starts, and again only
+// where the player chose it to repeat, together with the sound.
 
+import { OnEvent } from "@wowkit/core";
 import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
-import type { ReminderType, Style } from "../settings/settings.interface";
+import type { AddonSettingsService, ReminderType, Style } from "../settings/settings.interface";
 import type { StyleService } from "../settings/style.service";
 import { NOTICE_SECONDS, type ActionBarsService, type ClockService, type NoticeService, type Rgb, type SpellsService } from "@wowkit/wow";
 import type { Reminders } from "./tick.interface";
@@ -15,18 +17,54 @@ const NAMES_MAX = 5;
 /** After the bars changed they are mapped again; until then the old map would call every spell missing. */
 const NOTICE_AFTER_BAR_CHANGE = 1.5;
 
-interface Line {
+/** What a line says; `prefix` and `body` are its two halves where it says "Type: name". */
+interface Words {
+    words: string;
+    prefix?: string;
+    body?: string;
+}
+
+interface Line extends Words {
     /** What it is about: it comes again only when one of these is new, or with its repeat. */
     parts: string[];
-    /** Already in its color. */
-    text: string;
+    color: Rgb;
+    /** Seconds it stays; 0: as long as the button glows, so as long as the line is there. */
+    showFor: number;
+    /** The type it is a line of; none: it stands on its own (a party member, a buff on no bar). */
+    reminderType?: ReminderType;
     /** Seconds between its repeats, the sound's (0: it comes once). */
     repeat: number;
+}
+
+/** The settings that change how the message on screen looks. */
+const LOOK_SETTINGS = [
+    "messageSize",
+    "messageTop",
+    "isMessageZoomInOn",
+    "isMessageZoomOutOn",
+    "isMessageFadePulseOn",
+    "isMessageSizePulseOn",
+];
+
+/** The sliders of how a message looks: moved with nothing on screen, a sample shows what they do. */
+const SLIDER_SETTINGS = ["messageSize", "messageTop"];
+const SAMPLE_SECONDS = 3;
+
+/** How long the message of a look stays. */
+function findShowFor(style: Style): number {
+    return style.messageShowFor ?? NOTICE_SECONDS;
+}
+
+/** The longer of two times a message stays; 0 is as long as the button glows, longer than any. */
+function pickLonger(first: number, second: number): number {
+    return first === 0 || second === 0 ? 0 : math.max(first, second);
 }
 
 export class NoticesService {
     /** The text showing now. */
     private lastText = "";
+    /** How long the text showing now stays. */
+    private lastSeconds = NOTICE_SECONDS;
     /** When each part of a line last came; a part that is over is forgotten, so it comes again when it is back. */
     private readonly shownAt = new LuaMap<string, number>();
     /** The parts of this tick's lines, to forget the others. */
@@ -44,6 +82,7 @@ export class NoticesService {
         private readonly spells: SpellsService,
         private readonly locale: AddonLocale,
         private readonly styles: StyleService,
+        private readonly settings: AddonSettingsService,
     ) {}
 
     /** Shows the lines that are due, with those that are still up: the notice takes one text. */
@@ -60,16 +99,39 @@ export class NoticesService {
             return;
         }
         const due = lines.filter((line) => this.isDue(line, now));
-        const text = lines
-            .filter((line) => due.includes(line) || this.isStillUp(line, now))
-            .map((line) => line.text)
-            .join("\n");
+        const shown = lines.filter((line) => due.includes(line) || this.isStillUp(line, now));
+        const text = this.buildNoticeText(shown);
         for (const line of due) for (const part of line.parts) this.shownAt.set(part, now);
         if (due.length === 0 && text === this.lastText) return;
         this.lastText = text;
         // What the message was about is over: it goes out at once, not when its time is up
         if (text === "") this.notice.clearNotice();
-        else this.notice.showNotice(text);
+        else
+            this.showText(
+                text,
+                due.length > 0,
+                shown.reduce((longest, line) => pickLonger(longest, line.showFor), 1),
+            );
+    }
+
+    /** A setting of how messages come changed: the one on screen takes it at once. */
+    @OnEvent("setting.changed")
+    applyMessageSetting(key: string): void {
+        if (LOOK_SETTINGS.includes(key) && this.lastText !== "") this.showText(this.lastText, false, this.lastSeconds);
+        else if (SLIDER_SETTINGS.includes(key)) this.showText(this.locale.getText("TEXT_MESSAGE_SAMPLE"), false, SAMPLE_SECONDS);
+    }
+
+    private showText(text: string, isNew: boolean, seconds: number): void {
+        this.lastSeconds = seconds;
+        this.notice.showNotice(text, {
+            scale: this.settings.get("messageSize") / 100,
+            top: this.settings.get("messageTop"),
+            shouldZoomIn: isNew && this.settings.get("isMessageZoomInOn"),
+            shouldZoomOut: this.settings.get("isMessageZoomOutOn"),
+            isFadePulsing: this.settings.get("isMessageFadePulseOn"),
+            isSizePulsing: this.settings.get("isMessageSizePulseOn"),
+            seconds,
+        });
     }
 
     private isDue(line: Line, now: number): boolean {
@@ -80,7 +142,7 @@ export class NoticesService {
     }
 
     private isStillUp(line: Line, now: number): boolean {
-        return line.parts.some((part) => now - (this.shownAt.get(part) ?? 0) < NOTICE_SECONDS);
+        return line.showFor === 0 || line.parts.some((part) => now - (this.shownAt.get(part) ?? 0) < line.showFor);
     }
 
     private forgetOver(lines: Line[]): void {
@@ -117,15 +179,11 @@ export class NoticesService {
         this.addTypeLines(lines, "readyCooldown", reminders.readyCooldowns, "TEXT_COOLDOWN");
         this.addTypeLines(lines, "proc", reminders.procs, "TEXT_PROC");
         this.addTypeLines(lines, "oldRank", this.listRankIds(reminders), "TEXT_RANK");
-        for (const stock of reminders.lowStock) {
-            const style = this.styles.getStyle("lowStock", stock.key);
-            const text = this.styles.applyTextColor(
-                style.color,
-                string.format(this.locale.getText("NOTICE_STOCK_LOW"), stock.name, stock.count),
-            );
-            if (this.isTold(style, reminders)) lines.push({ parts: [`lowStock:${stock.itemId}`], text, repeat: style.repeat });
+        for (const stock of reminders.lowStock)
+            this.addCountLine(lines, "lowStock", stock.key, `lowStock:${stock.itemId}`, stock, reminders);
+        for (const stock of reminders.lowReagents) {
+            this.addCountLine(lines, "lowReagent", stock.spellId, `lowReagent:${stock.name}`, stock, reminders);
         }
-        this.addReagentLine(lines, reminders);
         for (const spellId of reminders.buffsNotOnBars) {
             const name = this.spells.getSpellName(spellId) ?? "?";
             this.addNamedLine(lines, spellId, [`bar:${spellId}`], string.format(this.locale.getText("NOTICE_NOT_ON_BAR"), name));
@@ -149,49 +207,93 @@ export class NoticesService {
         return style.isMessageOn && (style.when !== "townAlert" || reminders.isInTown === true);
     }
 
-    /** One line that names the reagents running low, in the color of the first; it repeats with the row that repeats soonest. */
-    private addReagentLine(lines: Line[], reminders: Reminders): void {
-        if (reminders.lowReagents.length === 0) return;
-        const told = reminders.lowReagents
-            .map((stock) => ({ stock, style: this.styles.getStyle("lowReagent", stock.spellId) }))
-            .filter(({ style }) => this.isTold(style, reminders));
-        const first = told[0];
-        if (first === undefined) return;
-        let repeat = 0;
-        for (const { style } of told) if (style.repeat > 0 && (repeat === 0 || style.repeat < repeat)) repeat = style.repeat;
-        const names = told.map(({ stock }) => `${stock.name} (${stock.count})`).join(", ");
-        lines.push({
-            parts: told.map(({ stock }) => `lowReagent:${stock.name}`),
-            text: this.styles.applyTextColor(first.style.color, string.format(this.locale.getText("NOTICE_REAGENTS_LOW"), names)),
-            repeat,
-        });
-    }
-
-    /** A line for a reminderType of reminder: one for each color its spells (whose message is on) are shown in. */
+    /** The lines of a type of reminder: those that would say the same in one color are one, repeating with the soonest. */
     private addTypeLines(lines: Line[], reminderType: ReminderType, spellIds: number[], text: TextKey): void {
         if (spellIds.length === 0) return;
-        const groups: { color: Rgb; ids: number[]; repeat: number }[] = [];
+        const added: Line[] = [];
         for (const id of spellIds) {
             const style = this.styles.getStyle(reminderType, id);
             if (!style.isMessageOn) continue;
-            const group = groups.find((candidate) => candidate.color.join(",") === style.color.join(","));
-            if (group === undefined) {
-                groups.push({ color: style.color, ids: [id], repeat: style.repeat });
+            const color = style.messageColor ?? style.color;
+            const words = this.findWords(reminderType, id, style, text, this.spells.getSpellLabel(id));
+            const same = added.find((line) => line.words === words.words && line.color.join(",") === color.join(","));
+            if (same === undefined) {
+                added.push({
+                    ...words,
+                    parts: [`${reminderType}:${id}`],
+                    color,
+                    showFor: findShowFor(style),
+                    repeat: style.repeat,
+                    reminderType,
+                });
             } else {
-                group.ids.push(id);
+                same.parts.push(`${reminderType}:${id}`);
+                same.showFor = pickLonger(same.showFor, findShowFor(style));
                 // The line comes again with the sound that repeats soonest
-                if (style.repeat > 0 && (group.repeat === 0 || style.repeat < group.repeat)) group.repeat = style.repeat;
+                if (style.repeat > 0 && (same.repeat === 0 || style.repeat < same.repeat)) same.repeat = style.repeat;
             }
         }
-        for (const group of groups) {
-            const lineText = this.styles.applyTextColor(group.color, this.locale.getText(text));
-            lines.push({ parts: group.ids.map((id) => `${reminderType}:${id}`), text: lineText, repeat: group.repeat });
-        }
+        for (const line of added) lines.push(line);
+    }
+
+    /** The line of something running low: the item and how many are left is its name. */
+    private addCountLine(
+        lines: Line[],
+        reminderType: ReminderType,
+        id: number,
+        part: string,
+        stock: { name: string; count: number },
+        reminders: Reminders,
+    ): void {
+        const style = this.styles.getStyle(reminderType, id);
+        if (!this.isTold(style, reminders)) return;
+        const words = this.findWords(reminderType, id, style, "TEXT_LOW", `${stock.name} (${stock.count})`);
+        lines.push({
+            ...words,
+            parts: [part],
+            color: style.messageColor ?? style.color,
+            showFor: findShowFor(style),
+            repeat: style.repeat,
+            reminderType,
+        });
+    }
+
+    /** What a line says, by what the player chose for it. */
+    private findWords(reminderType: ReminderType, id: number, style: Style, text: TextKey, name: string | undefined): Words {
+        const typeWords = this.locale.getText(text);
+        const choice = this.styles.getMessageTextChoice(reminderType, id);
+        if (choice === "custom") return { words: style.messageText ?? typeWords };
+        if (choice === "typeOnly" || name === undefined) return { words: typeWords };
+        return choice === "name" ? { words: name } : { words: `${typeWords}: ${name}`, prefix: typeWords, body: name };
     }
 
     /** A line that names what it is about, in the buff color of the spell. */
     private addNamedLine(lines: Line[], spellId: number, parts: string[], text: string): void {
         const style = this.styles.getStyle("missingBuff", spellId);
-        if (style.isMessageOn) lines.push({ parts, text: this.styles.applyTextColor(style.color, text), repeat: style.repeat });
+        if (style.isMessageOn) {
+            lines.push({ words: text, parts, color: style.messageColor ?? style.color, showFor: findShowFor(style), repeat: style.repeat });
+        }
+    }
+
+    /** The lines as the notice's one text: each on its own, or (as the player chose) those of one type side by side. */
+    private buildNoticeText(lines: Line[]): string {
+        if (!this.settings.get("isOneLinePerType")) {
+            return lines.map((line) => this.styles.applyTextColor(line.color, line.words)).join("\n");
+        }
+        const rows: { reminderType: ReminderType | undefined; prefix?: string; seen: string[]; texts: string[] }[] = [];
+        for (const line of lines) {
+            let row = line.reminderType !== undefined ? rows.find((candidate) => candidate.reminderType === line.reminderType) : undefined;
+            if (row === undefined) {
+                row = { reminderType: line.reminderType, seen: [], texts: [] };
+                rows.push(row);
+            }
+            if (row.seen.includes(line.words)) continue;
+            row.seen.push(line.words);
+            // "Proc: Overpower, Revenge": what they share is said once
+            const words = line.prefix !== undefined && line.prefix === row.prefix ? line.body! : line.words;
+            row.prefix = line.prefix ?? row.prefix;
+            row.texts.push(this.styles.applyTextColor(line.color, words));
+        }
+        return rows.map((row) => row.texts.join(", ")).join("\n");
     }
 }

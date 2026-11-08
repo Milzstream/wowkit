@@ -21,11 +21,13 @@ const SCREEN_MARGIN = 40;
 
 /** The headers that explain their column as the mouse comes over them. */
 const HEADER_TIPS: { [name in keyof typeof COLUMN]?: TextKey } = {
+    name: "TIP_SPELL_ITEM",
     type: "TIP_TYPE",
     id: "TIP_ID",
     color: "TIP_COLOR",
     glowPercent: "TIP_GLOW_PERCENT",
     message: "TIP_MESSAGE",
+    messageLook: "TIP_MESSAGE_LOOK",
     sound: "TIP_SOUND",
     repeat: "TIP_REPEAT",
     when: "TIP_WHEN",
@@ -144,6 +146,7 @@ export class StyleWindowService {
             ["color", "COL_COLOR", true],
             ["glowPercent", "COL_GLOW_PERCENT", true],
             ["message", "COL_MESSAGE", true],
+            ["messageLook", "COL_MESSAGE_LOOK", true],
             ["sound", "COL_SOUND", true],
             ["repeat", "COL_REPEAT", true],
             ["when", "COL_WHEN", true],

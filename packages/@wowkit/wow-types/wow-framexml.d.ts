@@ -129,6 +129,14 @@ interface SettingsControlTextContainer {
     GetData(): unknown;
 }
 
+/** The range and the label of a slider of the Settings panel. */
+interface SettingsSliderOptions {
+    SetLabelFormatter(labelType: number, formatter: (this: void, value: number) => string): void;
+}
+
+/** Where a slider of the Settings panel shows its value. */
+declare const MinimalSliderWithSteppersMixin: { Label: { Right: number } };
+
 declare namespace Settings {
     const VarType: { Boolean: "boolean"; Number: "number"; String: "string" };
     function RegisterVerticalLayoutCategory(name: string): LuaMultiReturn<[SettingsCategory, SettingsLayout]>;
@@ -153,6 +161,8 @@ declare namespace Settings {
         tooltip?: string,
     ): SettingsInitializer;
     function CreateControlTextContainer(): SettingsControlTextContainer;
+    function CreateSliderOptions(minValue: number, maxValue: number, step: number): SettingsSliderOptions;
+    function CreateSlider(category: SettingsCategory, setting: SettingsSetting, options: SettingsSliderOptions, tooltip?: string): SettingsInitializer;
     /** Missing on some clients: check before use. */
     const CreateColorSwatch:
         | ((this: void, category: SettingsCategory, setting: SettingsSetting, tooltip?: string) => SettingsInitializer)

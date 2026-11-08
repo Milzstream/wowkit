@@ -99,6 +99,7 @@ export function installUi(frames: FrameRegistry, chat: string[], proxySettings: 
         CreateSettingsButtonInitializer: () => createInertObject<SettingsInitializer>(),
     });
 
+    defineValues({ MinimalSliderWithSteppersMixin: { Label: { Right: 3 } } });
     defineNamespace<typeof Settings>("Settings", {
         VarType: { Boolean: "boolean", Number: "number", String: "string" },
         RegisterVerticalLayoutCategory: () => $multi(createInertObject<SettingsCategory>(), createInertObject<SettingsLayout>()),
@@ -118,6 +119,8 @@ export function installUi(frames: FrameRegistry, chat: string[], proxySettings: 
             options();
             return createInertObject<SettingsInitializer>();
         },
+        CreateSliderOptions: () => createInertObject<SettingsSliderOptions>(),
+        CreateSlider: () => createInertObject<SettingsInitializer>(),
         CreateControlTextContainer: () => {
             const entries: [string, string][] = [];
             return {
