@@ -1,4 +1,4 @@
-// The welcome window, once for each account, in front of What's new if that opens too: the one setting a new player trips
+// The welcome window, once for each character, as its settings are the character's; What's new waits for it: the one setting a new player trips
 // over, and a scan that lights each action button it finds, in the colors of a rainbow. /gb scan runs it again.
 import { OnGameEvent, type OnLogin } from "@wowkit/core";
 import type { ButtonSearchResult, ButtonSearchService, ClockService, GlowService, PlayerService } from "@wowkit/wow";
@@ -27,7 +27,7 @@ export class WelcomeService implements OnLogin {
         private readonly clock: ClockService,
         private readonly player: PlayerService,
         private readonly locale: AddonLocale,
-        settings: AddonSettingsService,
+        private readonly settings: AddonSettingsService,
         private readonly whatsNew: WhatsNewService,
         private readonly messages: MessagesService,
         private readonly report: ScanReport,
@@ -43,12 +43,9 @@ export class WelcomeService implements OnLogin {
     }
 
     onLogin(): void {
-        if (!this.whatsNew.isWelcomeDone()) this.clock.runAfter(OPEN_DELAY, () => this.openWhenAtPeace());
-    }
-
-    /** /gb welcome: the window, with what the last scan found if there was one. */
-    openWindow(): void {
-        this.window.open();
+        if (this.settings.get("isWelcomeDone")) return;
+        this.whatsNew.useWelcomeFirst();
+        this.clock.runAfter(OPEN_DELAY, () => this.openWhenAtPeace());
     }
 
     /** /gb scan: the buttons light up, and the chat says what was found. */
@@ -57,9 +54,9 @@ export class WelcomeService implements OnLogin {
         this.scan();
     }
 
-    /** The first time. */
+    /** The window, and its scan: the first time, /gb welcome and the Settings page. */
     open(): void {
-        this.whatsNew.noteWelcomeDone();
+        this.settings.change("isWelcomeDone", true);
         this.window.open();
         this.scan();
     }

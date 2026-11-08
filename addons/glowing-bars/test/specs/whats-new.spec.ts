@@ -4,7 +4,7 @@ import { createWorld, describe, expect, it, playAs, PRIEST, type World } from "@
 function createAccountWorld(account?: Record<string, unknown>, isInCombat = false): World {
     const world = createWorld((state) => {
         playAs(state, PRIEST);
-        state.accountSaved = account !== undefined ? { isWelcomeDone: true, ...account } : undefined;
+        state.accountSaved = account;
         state.isInCombat = isInCombat;
     });
     world.advance(5);

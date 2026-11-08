@@ -199,8 +199,7 @@ export function createClientState(): ClientState {
         stances: [],
         activeStance: undefined,
         gamepadClassSpell: undefined,
-        // The welcome window is its own spec's: in the others its scan would light the buttons
-        accountSaved: { isWelcomeDone: true },
+        accountSaved: undefined,
         hasBartender: false,
         hasDominos: false,
         hasEllesmere: false,

@@ -157,6 +157,8 @@ export const TEXTS = {
     WELCOME_PRESS_COPY: "Now press Ctrl+C",
     OPT_AFK_RAINBOW: "Rainbow when AFK",
     TIP_AFK_RAINBOW: "While you are AFK, your action buttons light up in rainbow colors, on every bar at once. Default: off.",
+    OPT_DEBUG_WELCOME: "Debug with the welcome screen",
+    TIP_DEBUG_WELCOME: "Opens the welcome window and scans your action buttons, with a report you can select and send.",
     TIP_FADE_ONLY: "The game hides the target's health, so the addon can't tell when this glow starts: it can't play a sound or time it.",
     TIP_ADD:
         'Low stock needs an Item ID, every other type a Spell ID. To see them, turn on "Show spell and item IDs in tooltips" in the Settings.',

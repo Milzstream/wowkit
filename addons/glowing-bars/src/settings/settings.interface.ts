@@ -77,6 +77,8 @@ export interface AddonSettings {
     /** Does the greeting in the chat come at each login? */
     shouldShowGreeting: boolean;
     shouldStayQuietInTowns: boolean;
+    /** Has this character seen the welcome window? */
+    isWelcomeDone: boolean;
     /** Do the action buttons light up in rainbow colors while the player is AFK? */
     isAfkRainbowOn: boolean;
     /** What a circling glow does on a round button (Forever's gamepad bars, another addon's), where it cannot circle. */

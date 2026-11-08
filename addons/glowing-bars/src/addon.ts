@@ -263,6 +263,7 @@ function makeOptions(
             barsSection,
             animationSection,
             whatsNew,
+            welcome,
         ),
     );
     addon.register(new OptionsService(messages, locale.getText("TITLE"), page));

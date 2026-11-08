@@ -9,6 +9,7 @@ import type { BarsSection } from "./bars.section";
 import type { AnimationSection } from "./animation.section";
 import type { GlowsSection } from "./glows.section";
 import type { StyleTableService } from "./style-table.service";
+import type { WelcomeService } from "./welcome.service";
 import type { WhatsNewService } from "./whats-new.service";
 import type { ReminderControlsService } from "./reminder-controls.service";
 import type { WeaponSection } from "./weapon.section";
@@ -38,6 +39,7 @@ export class RemindersPage implements OptionsPage {
         private readonly barsSection: BarsSection,
         private readonly animationSection: AnimationSection,
         private readonly whatsNew: WhatsNewService,
+        private readonly welcome: WelcomeService,
     ) {}
 
     buildPage(category: SettingsCategory, layout: SettingsLayout): void {
@@ -159,6 +161,13 @@ export class RemindersPage implements OptionsPage {
             true,
             () => !this.whatsNew.isOff(),
             (isChecked) => this.whatsNew.setOff(!isChecked),
+        );
+        this.widgets.addButton(
+            layout,
+            this.locale.getText("OPT_DEBUG_WELCOME"),
+            this.locale.getText("BTN_OPEN"),
+            () => this.welcome.open(),
+            this.locale.getText("TIP_DEBUG_WELCOME"),
         );
         this.widgets.addLinkButton(layout, this.locale.getText("INFO_ISSUES"), ISSUES_URL);
     }

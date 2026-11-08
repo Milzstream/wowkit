@@ -76,7 +76,8 @@ export function createWorld(setup: (state: ClientState) => void, savedSettings?:
     // The notice area of the earlier world is gone with its frames
     clearGlobal("WowkitNotices");
     // What the game loaded from the character's file before the addon started: a character that played before
-    if (savedSettings !== undefined) defineValues({ [config.savedVariables]: savedSettings });
+    // The welcome window is its own spec's: in the others its scan would light the buttons
+    defineValues({ [config.savedVariables]: { isWelcomeDone: true, ...savedSettings } });
     const state = createClientState();
     setup(state);
     // What the game loaded from the account's file: an account that played before
