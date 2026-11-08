@@ -64,12 +64,12 @@ describe("what a message says", () => {
 
     it("shares a line with its type when the player asks", () => {
         const world = createWith({ messageTextChoice: "name" }, { isOneLinePerType: true });
-        expect(world.notice()).toBe("|cffff1f14Overpower|r, |cffff1f14Revenge|r");
+        expect(world.notice()).toBe("|cffff1f14Overpower,|r |cffff1f14Revenge|r");
     });
 
     it("says the type once on a shared line", () => {
         const world = createWith({ messageTextChoice: "typeAndName" }, { isOneLinePerType: true });
-        expect(world.notice()).toBe("|cffff1f14Proc: Overpower|r, |cffff1f14Revenge|r");
+        expect(world.notice()).toBe("|cffff1f14Proc: Overpower,|r |cffff1f14Revenge|r");
     });
 });
 

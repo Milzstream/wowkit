@@ -3,10 +3,8 @@ export const TEXTS = {
     TITLE: "Glowing Bars",
     INIT: "Loaded. Type /gb to customize your reminders.",
 
-    HDR_ABOUT: "Help",
-    INFO_GITHUB: "GitHub",
     INFO_ISSUES: "Report an issue",
-    INFO_COPY: "Copy",
+    INFO_COPY: "Show in chat",
     OPT_WHATS_NEW: "What's new",
     TIP_WHATS_NEW: "The changes of each version of Glowing Bars. Also /gb changelog.",
     TITLE_WHATS_NEW: "What's new in Glowing Bars",

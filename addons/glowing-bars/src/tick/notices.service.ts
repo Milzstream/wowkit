@@ -285,11 +285,12 @@ export class NoticesService {
         if (!this.settings.get("isOneLinePerType")) {
             return lines.map((line) => this.styles.applyTextColor(line.color, line.words)).join("\n");
         }
-        const rows: { reminderType: ReminderType | undefined; prefix?: string; seen: string[]; texts: string[] }[] = [];
+        const rows: { reminderType: ReminderType | undefined; prefix?: string; seen: string[]; parts: { color: Rgb; words: string }[] }[] =
+            [];
         for (const line of lines) {
             let row = line.reminderType !== undefined ? rows.find((candidate) => candidate.reminderType === line.reminderType) : undefined;
             if (row === undefined) {
-                row = { reminderType: line.reminderType, seen: [], texts: [] };
+                row = { reminderType: line.reminderType, seen: [], parts: [] };
                 rows.push(row);
             }
             if (row.seen.includes(line.words)) continue;
@@ -297,8 +298,11 @@ export class NoticesService {
             // "Proc: Overpower, Revenge": what they share is said once
             const words = line.prefix !== undefined && line.prefix === row.prefix ? line.body! : line.words;
             row.prefix = line.prefix ?? row.prefix;
-            row.texts.push(this.styles.applyTextColor(line.color, words));
+            row.parts.push({ color: line.color, words });
         }
-        return rows.map((row) => row.texts.join(", ")).join("\n");
+        // The comma in the color of what it follows
+        const applyPartColor = (part: { color: Rgb; words: string }, isLast: boolean) =>
+            this.styles.applyTextColor(part.color, isLast ? part.words : `${part.words},`);
+        return rows.map((row) => row.parts.map((part, index) => applyPartColor(part, index === row.parts.length - 1)).join(" ")).join("\n");
     }
 }

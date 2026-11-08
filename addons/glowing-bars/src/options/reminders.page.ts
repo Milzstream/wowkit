@@ -4,7 +4,7 @@
 import type { AddonLocale } from "../locale/locale.interface";
 import type { ClassBuffsService } from "../reminders/class-buffs.service";
 import type { AddonSettingsService, AddonSettings } from "../settings/settings.interface";
-import { AboutSection, type ControlsService, type OptionsPage, type WidgetsService } from "@wowkit/ui";
+import type { ControlsService, OptionsPage, WidgetsService } from "@wowkit/ui";
 import type { BarsSection } from "./bars.section";
 import type { AnimationSection } from "./animation.section";
 import type { GlowsSection } from "./glows.section";
@@ -21,10 +21,10 @@ const MESSAGE_SWITCHES = [
     ["isMessageSizePulseOn", "OPT_MESSAGE_SIZE_PULSE", "TIP_MESSAGE_SIZE_PULSE"],
 ] as const;
 
-export class RemindersPage implements OptionsPage {
-    /** The Help section at the bottom: where to ask, and where to report a problem. */
-    private readonly about: AboutSection;
+/** Where a player reports a problem. */
+const ISSUES_URL = "https://github.com/vattiss/wowkit/issues";
 
+export class RemindersPage implements OptionsPage {
     constructor(
         private readonly locale: AddonLocale,
         private readonly classBuffs: ClassBuffsService,
@@ -38,17 +38,7 @@ export class RemindersPage implements OptionsPage {
         private readonly barsSection: BarsSection,
         private readonly animationSection: AnimationSection,
         private readonly whatsNew: WhatsNewService,
-    ) {
-        this.about = new AboutSection(
-            widgets,
-            {
-                header: locale.getText("HDR_ABOUT"),
-                githubLabel: locale.getText("INFO_GITHUB"),
-                issuesLabel: locale.getText("INFO_ISSUES"),
-            },
-            "https://github.com/vattiss/wowkit",
-        );
-    }
+    ) {}
 
     buildPage(category: SettingsCategory, layout: SettingsLayout): void {
         // What's new first: the window of the changes, and whether it opens by itself
@@ -105,8 +95,6 @@ export class RemindersPage implements OptionsPage {
         // The bars last: eight switches and eight more for the faded bars
         this.barsSection.addBarsSection(category, layout);
         this.barsSection.addFadedSection(category, layout);
-
-        this.about.addAboutSection(layout);
     }
 
     /** How the messages at the top of the screen come: their words and colors are the table's. */
@@ -172,5 +160,6 @@ export class RemindersPage implements OptionsPage {
             () => !this.whatsNew.isOff(),
             (isChecked) => this.whatsNew.setOff(!isChecked),
         );
+        this.widgets.addLinkButton(layout, this.locale.getText("INFO_ISSUES"), ISSUES_URL);
     }
 }
