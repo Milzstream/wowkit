@@ -4,7 +4,7 @@ import type { AddonLocale } from "../locale/locale.interface";
 import type { TextKey } from "../locale/texts.constants";
 import type { AddonSettingsService } from "../settings/settings.interface";
 import { CustomSoundsSection } from "./custom-sounds-section";
-import { applyScrollBarTint, connectEscape, createFrameWithBorder } from "./window-frame";
+import { applyScrollBarTint, connectEscape, createFrameWithBorder, createCloseButton } from "./window-frame";
 import {
     COLUMN,
     findColumns,
@@ -112,8 +112,7 @@ export class StyleWindowService {
         const title = window.CreateFontString(undefined, "OVERLAY", "GameFontNormalLarge");
         title.SetPoint("TOP", window, "TOP", 0, -16);
         title.SetText(this.locale.getText("TABLE_TITLE"));
-        const close = CreateFrame("Button", undefined, window, "UIPanelCloseButton");
-        close.SetPoint("TOPRIGHT", window, "TOPRIGHT", -6, -6);
+        createCloseButton(window);
         this.createViewButton(window);
         this.addColumnHeaders(window);
         const scroll = CreateFrame("ScrollFrame", undefined, window, "UIPanelScrollFrameTemplate");

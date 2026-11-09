@@ -114,7 +114,7 @@ export class ButtonSearchService implements OnFirstLogin {
         return count;
     }
 
-    /** Does it show, and say it is an action button, and is on no list? */
+    /** Does it show, and say it is an action button, and is on no list? A frame that keeps its answers secret (Blizzard's aura buttons) is none. */
     private isUnknownActionButton(frame: Frame): boolean {
         if (getReadable(attempt(() => frame.IsForbidden())) !== false || !this.isShown(frame)) return false;
         if (getReadable(attempt(() => frame.IsObjectType("Button"))) !== true) return false;

@@ -4,7 +4,7 @@
 import type { AddonLocale } from "../locale/locale.interface";
 import { RELEASE_NOTES } from "../changelog/release-notes.generated";
 import { BORDER_COLOR } from "./style-table.constants";
-import { applyScrollBarTint, connectEscape, createFrameWithBorder } from "./window-frame";
+import { applyScrollBarTint, connectEscape, createFrameWithBorder, createCloseButton } from "./window-frame";
 
 const WINDOW_NAME = "GlowingBarsWhatsNew";
 const WINDOW_WIDTH = 620;
@@ -71,8 +71,7 @@ export class WhatsNewWindow {
         const title = window.CreateFontString(undefined, "OVERLAY", "GameFontNormalLarge");
         title.SetPoint("TOP", window, "TOP", 0, -16);
         title.SetText(this.locale.getText("TITLE_WHATS_NEW"));
-        const close = CreateFrame("Button", undefined, window, "UIPanelCloseButton");
-        close.SetPoint("TOPRIGHT", window, "TOPRIGHT", -6, -6);
+        createCloseButton(window);
         this.createVersionList(window);
         this.createTextArea(window);
         this.createOffBox(window);

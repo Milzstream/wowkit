@@ -8,7 +8,7 @@ import type { MessageTextChoice } from "../settings/settings.interface";
 import { connectChoiceMenu } from "./choice-menu";
 import { setFadeOnly } from "./fade-only-controls";
 import type { StyleRow } from "./style-rows.service";
-import { connectEscape, createFrameWithBorder } from "./window-frame";
+import { connectEscape, createFrameWithBorder, createCloseButton } from "./window-frame";
 
 const WINDOW_NAME = "GlowingBarsMessage";
 const WINDOW_WIDTH = 340;
@@ -82,8 +82,7 @@ export class MessageWindow {
         connectEscape(window);
         const title = window.CreateFontString(undefined, "OVERLAY", "GameFontNormalLarge");
         title.SetPoint("TOP", window, "TOP", 0, -16);
-        const close = CreateFrame("Button", undefined, window, "UIPanelCloseButton");
-        close.SetPoint("TOPRIGHT", window, "TOPRIGHT", -6, -6);
+        createCloseButton(window);
         this.createReset(window);
         this.addLabel(window, "MESSAGE_TEXT", -52);
         const choice = this.createChoice(window);

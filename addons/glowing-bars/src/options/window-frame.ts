@@ -25,6 +25,16 @@ export function createFrameWithBorder(name: string): Frame {
 }
 
 /**
+ * The X in the corner of a window. It closes the window itself: the template's own script goes through the game's panel
+ * handling, which is blocked in a fight.
+ */
+export function createCloseButton(window: Frame): void {
+    const close = CreateFrame("Button", undefined, window, "UIPanelCloseButton");
+    close.SetPoint("TOPRIGHT", window, "TOPRIGHT", -6, -6);
+    close.SetScript("OnClick", () => window.Hide());
+}
+
+/**
  * Escape closes the window: it takes the key itself while it is open, and lets every other key on to the game. Not
  * through the game's list of windows Escape closes (UISpecialFrames): its own Escape handling reads that list, and a
  * name an addon put there taints it, so the game then blocks what it does next (ClearTarget, the game menu...). In
