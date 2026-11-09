@@ -6,6 +6,7 @@ import type { ActionBarsService } from "./action-bars.service";
 import { BARS, listAddonButtonNames } from "./bar-names";
 import type { ButtonRegistryService } from "./button-registry.service";
 import { attempt } from "./utils/protected-call.utils";
+import { getReadable } from "./utils/secret-value.utils";
 
 /** Frames looked at in one frame of the game. */
 const FRAMES_PER_STEP = 500;
@@ -111,13 +112,17 @@ export class ButtonSearchService implements OnFirstLogin {
         return count;
     }
 
-    /** Does it show, and say it is an action button, and is on no list? */
+    /** Does it show, and say it is an action button, and is on no list? A frame that keeps its answers secret (Blizzard's aura buttons) is none. */
     private isUnknownActionButton(frame: Frame): boolean {
-        if (attempt(() => frame.IsForbidden()) === true || !frame.IsVisible() || attempt(() => frame.IsObjectType("Button")) !== true)
+        if (
+            getReadable(attempt(() => frame.IsForbidden())) === true ||
+            getReadable(attempt(() => frame.IsVisible())) !== true ||
+            getReadable(attempt(() => frame.IsObjectType("Button"))) !== true
+        )
             return false;
-        const name = frame.GetName();
+        const name = getReadable(attempt(() => frame.GetName()));
         if ((name !== undefined && this.getKnownNames().has(name)) || this.registry.isRegistered(frame as ActionButton)) return false;
-        return attempt(() => (frame as ActionButton).GetAttribute("type")) === "action";
+        return getReadable(attempt(() => (frame as ActionButton).GetAttribute("type"))) === "action";
     }
 
     private getKnownNames(): LuaSet<string> {
